@@ -1,0 +1,26 @@
+[
+    {
+        "name": "noslol",
+        "target": "wss://nos.lol",
+        "active": true,
+        "proxy": null
+    },
+    {
+        "name": "damus",
+        "target": "wss://relay.damus.io",
+        "active": true,
+        "proxy": null
+    },
+    {
+        "name": "nostr-info",
+        "target": "wss://relay.nostr.info",
+        "active": true,
+        "proxy": null
+    },
+    {
+        "name": "nostrical",
+        "target": "wss://nostrical.com",
+        "active": true,
+        "proxy": "127.0.0.1:9050"
+    }
+]
