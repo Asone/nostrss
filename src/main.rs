@@ -44,14 +44,14 @@ async fn main() -> Result<()> {
     let feeds = rss_instance.config.feeds.clone();
 
     // Build the main app instance.
-    let app = App {
+    let mut app = App {
         nostr: nostr_instance.clone(),
         rss: rss_instance,
         config: app_config,
         memory_map: HashMap::new(),
     };
 
-    // Declare identity on Nostr
+    // Broadcast identity update on Nostr
     let config = &app.nostr.config;
     let _ = &app.nostr.update_profile(config).await.unwrap();
 
@@ -71,6 +71,8 @@ async fn main() -> Result<()> {
 
         let job = schedule(scheduler_rule, feed, shared_data_arc, client).await;
         info!("Job id for feed {:?}: {:?}", f.name, job.guid());
+
+        let _ = &app.rss.feeds_jobs.insert(f.id, job.guid());
 
         let _ = &app.rss.scheduler.add(job).await;
     }
