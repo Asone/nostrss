@@ -109,10 +109,7 @@ impl RssConfig {
 
 #[cfg(test)]
 pub mod tests {
-    use std::io::Write;
-
     use super::*;
-    use tempfile::NamedTempFile;
 
     #[test]
     fn test_load_valid_json_feed() {
@@ -161,47 +158,3 @@ pub mod tests {
         assert_eq!(config.feeds.len(), 0);
     }
 }
-
-// #[test]
-// fn test_load_yaml_feeds() {
-//     let args = Args { feeds: Some("tests/fixtures/valid_yaml_feeds.yml".to_string()), ..Default::default() };
-//     let config = RssConfig::new(&args);
-//     assert_eq!(config.feeds.len(), 2);
-
-//     let expected_feeds = vec![
-//         Feed {
-//             name: "RSS Feed 1".to_string(),
-//             url: "https://rss-feed-1.com/feed".parse().unwrap(),
-//             schedule: "*/5 * * * *".to_string(),
-//         },
-//         Feed {
-//             name: "RSS Feed 2".to_string(),
-//             url: "https://rss-feed-2.com/feed".parse().unwrap(),
-//             schedule: "0 */2 * * *".to_string(),
-//         },
-//     ];
-
-//     assert_eq!(config.feeds, expected_feeds);
-// }
-
-// #[test]
-// fn test_load_json_feeds() {
-//     let args = Args { feeds: Some("tests/fixtures/valid_json_feeds.json".to_string()), ..Default::default() };
-//     let config = RssConfig::new(&args);
-//     assert_eq!(config.feeds.len(), 2);
-
-//     let expected_feeds = vec![
-//         Feed {
-//             name: "RSS Feed 1".to_string(),
-//             url: "https://rss-feed-1.com/feed".parse().unwrap(),
-//             schedule: "*/5 * * * *".to_string(),
-//         },
-//         Feed {
-//             name: "RSS Feed 2".to_string(),
-//             url: "https://rss-feed-2.com/feed".parse().unwrap(),
-//             schedule: "0 */2 * * *".to_string(),
-//         },
-//     ];
-
-//     assert_eq!(config.feeds, expected_feeds);
-// }

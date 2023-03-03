@@ -45,7 +45,7 @@ impl NostrInstance {
         }
     }
 
-    // Broadcasts profile metadata (NIP-01) to relays using a NostrConfig
+    // Broadcasts profile metadata (NIP-01) to relays using a
     pub async fn update_profile(&self, _config: &NostrConfig) -> Result<EventId> {
         let mut metadata = Metadata::new();
 
