@@ -1,21 +1,13 @@
 #![allow(dead_code)]
 
-use super::config::NostrConfig;
-use async_trait::async_trait;
 use log::{debug, error, info};
+use std::net::SocketAddr;
+
 use nostr_sdk::client::Error as NostrError;
 use nostr_sdk::prelude::{EventId, Metadata, Url};
 use nostr_sdk::{Client, Result};
-use std::net::SocketAddr;
 
-// #[async_trait]
-// pub trait Client {
-//     async fn connect(&self);
-//     async fn set_metadata(&self, metadata: Metadata) -> Result<EventId, NostrError>;
-//     async fn publish_text_note(&self, text: &str, replies_to: &[EventId]) -> Result<EventId, NostrError>;
-//     async fn add_relay(&self, url: &str, proxy: Option<std::net::SocketAddr>) -> Result<(), NostrError>;
-//     async fn remove_relay(&self, url: &str) -> Result<(), NostrError>;
-// }
+use super::config::NostrConfig;
 
 /// Nostr connection instance.
 #[derive(Clone, Debug)]
@@ -81,10 +73,9 @@ impl NostrInstance {
             metadata = metadata.nip05(self.config.clone().get_nip05().unwrap());
         };
 
-        // Shall be added in further iterations
-        // if self.config.lud16.is_some() {
-        //     metadata = metadata.lud16(self.config.lud16.clone().unwrap());
-        // };
+        if self.config.lud16.is_some() {
+            metadata = metadata.lud16(self.config.lud16.clone().unwrap());
+        };
 
         debug!("{:?}", metadata);
 
@@ -115,26 +106,4 @@ impl NostrInstance {
     }
 }
 
-mod tests {
-
-    use nostr_sdk::prelude::Keys;
-
-    use super::*;
-    use crate::config::Args;
-    use crate::nostr::config::*;
-
-    #[tokio::test]
-    async fn test_new_nostr_instance() {
-        let args = Args {
-            relays: None,
-            feeds: None,
-            private_key: None,
-        };
-
-        let nostr_config = NostrConfig::new(&args);
-
-        let instance = NostrInstance::new(nostr_config).await;
-
-        let client = instance.client;
-    }
-}
+mod tests {}

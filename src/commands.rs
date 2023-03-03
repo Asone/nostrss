@@ -1,13 +1,38 @@
-use std::{str::SplitWhitespace, sync::Arc};
+use std::{collections::HashMap, io, str::SplitWhitespace, sync::Arc};
 
 use log::warn;
 use tokio::sync::Mutex;
 
 use crate::{nostr::nostr::NostrInstance, rss::rss::RssInstance};
-
+use tokio::task;
 pub struct CommandsHandler {}
 
 impl CommandsHandler {
+    pub fn new(
+        rss: Arc<Mutex<RssInstance>>,
+        nostr: Arc<Mutex<NostrInstance>>,
+        map: Arc<Mutex<HashMap<String, String>>>,
+    ) -> task::JoinHandle<()> {
+        task::spawn(async move {
+            let mut input = String::new();
+
+            let client = Arc::clone(&nostr);
+            let rss = Arc::clone(&rss);
+            let _map_arc = Arc::clone(&map);
+
+            loop {
+                // Read input from stdin
+                io::stdin()
+                    .read_line(&mut input)
+                    .expect("Failed to read input");
+
+                CommandsHandler::dispatch(&input, &client, &rss).await;
+                // publish_note(nostr_ref.clone(), input.trim()).await.unwrap();
+                // println!("You entered: {}", input.trim());
+                input.clear();
+            }
+        })
+    }
     async fn relays_handler(
         mut input: SplitWhitespace<'_>,
         nostr_arc: &Arc<Mutex<NostrInstance>>,
