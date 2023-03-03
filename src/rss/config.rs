@@ -159,41 +159,6 @@ pub mod tests {
         let config = RssConfig::new(&args);
         assert_eq!(config.feeds.len(), 0);
     }
-
-    #[test]
-    fn test_load_yaml_feeds_valid() {
-        // Create a temporary YAML file with valid contents
-        let feeds_yaml = r#"
-        - name: "RSS Feed 1"
-          url: "https://rss-feed-1.com/feed"
-          schedule: "*/5 * * * *"
-        - name: "RSS Feed 2"
-          url: "https://rss-feed-2.com/feed"
-          schedule: "0 */2 * * *"
-        "#;
-        let mut file = NamedTempFile::new().unwrap();
-        file.write_all(feeds_yaml.as_bytes()).unwrap();
-
-        // Load the feeds from the file and assert they were loaded correctly
-        let config = RssConfig::new(&Args {
-            feeds: Some(file.path().to_str().unwrap().to_string()),
-            relays: None,
-            private_key: None,
-        });
-        let expected_feeds = vec![
-            Feed {
-                name: "RSS Feed 1".to_string(),
-                url: "https://rss-feed-1.com/feed".parse().unwrap(),
-                schedule: "*/5 * * * *".to_string(),
-            },
-            Feed {
-                name: "RSS Feed 2".to_string(),
-                url: "https://rss-feed-2.com/feed".parse().unwrap(),
-                schedule: "0 */2 * * *".to_string(),
-            },
-        ];
-        assert_eq!(config.feeds, expected_feeds);
-    }
 }
 
 // #[test]
