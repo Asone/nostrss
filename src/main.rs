@@ -4,6 +4,8 @@ mod nostr;
 mod rss;
 mod scheduler;
 
+use std::thread::sleep;
+use std::time::Duration;
 use std::{collections::HashMap, io, sync::Arc};
 
 use crate::commands::CommandsHandler;
@@ -86,5 +88,8 @@ async fn main() -> Result<()> {
     let _ = CommandsHandler::new(shared_rss, shared_nostr, main_data_arc);
 
     // Loop to maintain program running
-    loop {}
+    loop {
+        // Sleep to avoid high CPU usage
+        let _ = sleep(Duration::from_millis(100));
+    }
 }

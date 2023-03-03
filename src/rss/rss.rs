@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -5,6 +7,7 @@ use super::config::RssConfig;
 use tokio_cron_scheduler::Job;
 use tokio_cron_scheduler::JobScheduler;
 use uuid::Uuid;
+
 #[derive(Clone)]
 pub struct RssInstance {
     pub config: RssConfig,
@@ -28,12 +31,16 @@ impl RssInstance {
         }
     }
 
+    // Add a job to the scheduler. 
+    // Might be useless as the scheduler is publicly accessible. 
     pub async fn add_job(self, job: Job) {
         let scheduler = self.scheduler;
 
         let _ = scheduler.add(job).await;
     }
 
+    // Remove a job to the scheduler. 
+    // Might be useless as the scheduler is publicly accessible. 
     pub async fn remove_job(self, uuid: uuid::Uuid) {
         let scheduler = self.scheduler;
 
