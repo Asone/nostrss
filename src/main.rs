@@ -31,15 +31,6 @@ async fn main() -> Result<()> {
     // init env logger
     env_logger::init();
 
-    async fn publish_note(reference: NostrInstance, message: &str) -> Result<()> {
-        reference
-            .client
-            .publish_text_note(message, &[])
-            .await
-            .unwrap();
-        Ok(())
-    }
-
     // Load app configs
     let app_config = AppConfig::new();
 
@@ -53,14 +44,14 @@ async fn main() -> Result<()> {
     let feeds = rss_instance.config.feeds.clone();
 
     // Build the main app instance.
-    let app = App {
+    let mut app = App {
         nostr: nostr_instance.clone(),
         rss: rss_instance,
         config: app_config,
         memory_map: HashMap::new(),
     };
 
-    // Declare identity on Nostr
+    // Broadcast identity update on Nostr
     let config = &app.nostr.config;
     let _ = &app.nostr.update_profile(config).await.unwrap();
 
@@ -81,6 +72,8 @@ async fn main() -> Result<()> {
         let job = schedule(scheduler_rule, feed, shared_data_arc, client).await;
         info!("Job id for feed {:?}: {:?}", f.name, job.guid());
 
+        let _ = &app.rss.feeds_jobs.insert(f.id, job.guid());
+
         let _ = &app.rss.scheduler.add(job).await;
     }
 
@@ -90,25 +83,7 @@ async fn main() -> Result<()> {
     let shared_rss = Arc::new(Mutex::new(app.rss));
 
     // Input handler
-    let _ = task::spawn(async move {
-        let mut input = String::new();
-
-        let client = Arc::clone(&shared_nostr);
-        let rss = Arc::clone(&shared_rss);
-        let _map_arc = Arc::clone(&main_data_arc);
-
-        loop {
-            // Read input from stdin
-            io::stdin()
-                .read_line(&mut input)
-                .expect("Failed to read input");
-
-            CommandsHandler::dispatch(&input, &client, &rss).await;
-            // publish_note(nostr_ref.clone(), input.trim()).await.unwrap();
-            // println!("You entered: {}", input.trim());
-            input.clear();
-        }
-    });
+    let _ = CommandsHandler::new(shared_rss, shared_nostr, main_data_arc);
 
     // Loop to maintain program running
     loop {}

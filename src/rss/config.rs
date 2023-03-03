@@ -15,6 +15,7 @@ pub enum RssConfigErrors {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Feed {
+    pub id: String,
     pub name: String,
     pub url: Url,
     pub schedule: String,

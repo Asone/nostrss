@@ -1,20 +1,24 @@
 [
     {
+        "id": "wikipedia",
         "name": "Latest french wikipedia changes",
         "url": "https://fr.wikipedia.org/w/api.php?hidebots=1&hidecategorization=1&hideWikibase=1&urlversion=1&days=7&limit=50&action=feedrecentchanges&feedformat=rss",
         "schedule": "1/2 * * * * * *"
     },
     {
+        "id": "stackernews",
         "name": "Stacker news",
         "url": "https://stacker.news/rss",
         "schedule": "1/2 * * * * * *"
     },
     {
+        "id": "bitcoin-reddit",
         "name": "reddit r/bitcoin",
         "url": "https://www.reddit.com/r/bitcoin/.rss",
         "schedule": "1/5 * * * * * *"
     },
     {
+        "id": "nostr-reddit",
         "name": "reddit r/nostr",
         "url": "https://www.reddit.com/r/nostr/.rss",
         "schedule": "1/10 * * * * * *"

@@ -1,13 +1,39 @@
-use std::{str::SplitWhitespace, sync::Arc};
+use std::{collections::HashMap, io, str::SplitWhitespace, sync::Arc};
 
 use log::warn;
 use tokio::sync::Mutex;
 
 use crate::{nostr::nostr::NostrInstance, rss::rss::RssInstance};
-
+use tokio::task;
 pub struct CommandsHandler {}
 
 impl CommandsHandler {
+    pub fn new(
+        rss: Arc<Mutex<RssInstance>>,
+        nostr: Arc<Mutex<NostrInstance>>,
+        map: Arc<Mutex<HashMap<String, String>>>,
+    ) -> task::JoinHandle<()> {
+        task::spawn(async move {
+            let mut input = String::new();
+
+            let client = Arc::clone(&nostr);
+            let rss = Arc::clone(&rss);
+            let _map_arc = Arc::clone(&map);
+
+            loop {
+                // Read input from stdin
+                io::stdin()
+                    .read_line(&mut input)
+                    .expect("Failed to read input");
+
+                // Send input content to dispatcher
+                Self::dispatch(&input, &client, &rss).await;
+
+                // Clear input once processed
+                input.clear();
+            }
+        })
+    }
     async fn relays_handler(
         mut input: SplitWhitespace<'_>,
         nostr_arc: &Arc<Mutex<NostrInstance>>,
@@ -18,11 +44,11 @@ impl CommandsHandler {
                 "list" => {
                     let nostr_lock = nostr_arc.lock().await;
                     let relays = nostr_lock.client.relays().await;
-                    println!("Relays list :");
+                    println!("Relays list :\n\r");
                     for (key, _value) in relays {
                         println!("Relay URL : {:?}", key.host_str().unwrap_or(""));
                     }
-                    println!("############################");
+                    println!("\n\r");
                 }
                 "add" => {
                     let url = input.next();
@@ -43,13 +69,45 @@ impl CommandsHandler {
         }
     }
 
-    fn feeds_handler(mut input: SplitWhitespace, rss: &Arc<Mutex<RssInstance>>) -> () {
+    async fn feeds_handler(mut input: SplitWhitespace<'_>, rss: &Arc<Mutex<RssInstance>>) -> () {
         let subcommand = input.next();
         match subcommand {
             Some(subcommand) => match subcommand {
-                "list" => {}
+                "list" => {
+                    let rss_lock = rss.lock().await;
+                    for feed_job in &rss_lock.feeds_jobs {
+                        println!("feed id : {:?}, job uuid: {:?}", feed_job.0, feed_job.1);
+                    }
+                }
                 "add" => {}
-                "remove" => {}
+                "remove" => {
+                    let feed_id = input.next();
+                    match feed_id {
+                        Some(id) => {
+                            let mut rss_lock = &mut rss.lock().await;
+                            let feed_id = id.to_string();
+                            let mut feeds_jobs = &rss_lock.feeds_jobs;
+                            match &rss_lock.feeds_jobs.contains_key(&feed_id) {
+                                true => {
+                                    let job_uuid = feeds_jobs[&feed_id];
+                                    println!("{:?}", job_uuid);
+                                    let _ = &rss_lock.scheduler.remove(&job_uuid).await;
+                                    let _ = rss_lock.feeds_jobs.remove_entry(&feed_id);
+                                    println!(
+                                        "Job for {:?} feed with uuid {:?} removed",
+                                        &feed_id, &job_uuid
+                                    );
+                                }
+                                false => {
+                                    println!("No job matching with this feed id.")
+                                }
+                            }
+                        }
+                        None => {
+                            println!("No feed id provided.");
+                        }
+                    }
+                }
                 _ => {
                     warn!("No command handler found for sub-command {:?}", subcommand);
                 }
@@ -62,18 +120,24 @@ impl CommandsHandler {
     }
 
     fn relays_help_message() -> () {
-        let msg = "Relays commands:\n\
+        let msg = "\n\
+        Relays commands:\n\
+        \n\
         list : prints the current list of connected relays to app's client\n\
         add : add a new relay to the list\n\
-        remove : remove a relay from the list
+        remove : remove a relay from the list\n\
+        \n\
         ";
         print!("{}", msg);
     }
     fn feeds_help_message() -> () {
-        let msg = "feeds commands:\n\
+        let msg = "\n\
+        feeds commands:\n\
+        \n\
         list : prints the current list of feeds to app's client\n\
         add : add a new feed to the list\n\
-        remove : remove a feed from the list
+        remove : remove a feed from the list\n\
+        \n\
         ";
         print!("{}", msg);
     }
@@ -92,7 +156,7 @@ impl CommandsHandler {
                     Self::relays_handler(input, nostr).await;
                 }
                 "feeds" => {
-                    Self::feeds_handler(input, rss);
+                    Self::feeds_handler(input, rss).await;
                 }
                 _ => warn!("No command handler found for command {:?}", command),
             },

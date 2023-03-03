@@ -53,7 +53,6 @@ impl RssParser {
         let feed = match feed_rs::parser::parse(content.as_bytes()) {
             Ok(feed) => feed,
             Err(e) => {
-                println!("{:?}", e);
                 return Err(RssParserError::new("Error while parsing Rss feed stream"));
             }
         };
@@ -61,6 +60,7 @@ impl RssParser {
         Ok(feed)
     }
 
+    // Retrieves the first item from a fetched feed
     pub async fn get_first_item(url: String) -> Result<Entry, RssParserError> {
         let feed = match Self::read(url).await {
             Ok(feed) => feed,
@@ -70,6 +70,18 @@ impl RssParser {
         };
 
         Ok(feed.entries[0].clone())
+    }
+
+    // Retrieve all items from a fetched feed
+    pub async fn get_items(url: String) -> Result<Vec<Entry>, RssParserError> {
+        let feed = match Self::read(url).await {
+            Ok(feed) => feed,
+            Err(e) => {
+                return Err(e);
+            }
+        };
+
+        Ok(feed.entries)
     }
 
     pub fn new() -> Self {
