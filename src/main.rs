@@ -6,7 +6,7 @@ mod scheduler;
 
 use std::thread::sleep;
 use std::time::Duration;
-use std::{collections::HashMap, io, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use crate::commands::CommandsHandler;
 use crate::{rss::rss::RssInstance, scheduler::scheduler::schedule};
@@ -15,14 +15,14 @@ use dotenv::dotenv;
 use log::info;
 use nostr::nostr::NostrInstance;
 use nostr_sdk::Result;
-use tokio::{sync::Mutex, task};
+use tokio::{sync::Mutex};
 
 #[derive(Clone)]
 pub struct App {
     nostr: NostrInstance,
     rss: RssInstance,
-    config: AppConfig,
-    memory_map: HashMap<String, String>,
+    _config: AppConfig,
+    memory_map: HashMap<String, Vec<String>>,
 }
 
 #[tokio::main]
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
     let mut app = App {
         nostr: nostr_instance.clone(),
         rss: rss_instance,
-        config: app_config,
+        _config: app_config,
         memory_map: HashMap::new(),
     };
 
