@@ -1,11 +1,10 @@
 # Nostrss
-
-Nostrss is a program that provide a bridge beetween rss feeds and [Nostr protocol](https://nostr.com/).
+Nostrss is a program that provides a bridge beetween rss feeds and [Nostr protocol](https://nostr.com/).
 
 
 ## Disclaimer 
 
-This project is in early stage and provided very limited features. 
+This project is in early stage and provides very limited features at the moment. 
 
 The program in its current state does not support mutliple identities or channel publishing yet.
 
@@ -30,21 +29,22 @@ If no private key is provided, a random one will be generated.
 
 If you have no private key already, you can go on [astral.ninja](https://astral.ninja/) to generate one. 
 
-## Rss broadcasting 
+## RSS broadcasting 
 
-Rss broadcasting is currently limited to the first item found in feed. 
+Cronjob rules are defined in the [feeds config file](./src/fixtures/rss.json) following the [cron crate](https://crates.io/crates/cron).
 
-The last published feed fingerprint is stored in memory and updated when first item is changed. 
+For each tick the remote feed will be matched with a local fingerprint, for which, any unmatching entry against of the feed will be broadcasted to
+relays. 
+
+
 
 ## Build from sources
 
-> git clone 
-> cd nostrss
-> cargo build
-
-## Docker
-
-> docker run akbarworld/nostrss
+````
+git clone 
+cd nostrss
+cargo build
+```
 
 ##  Licence
 

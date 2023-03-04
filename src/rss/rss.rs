@@ -19,8 +19,9 @@ impl RssInstance {
     pub async fn new(config: RssConfig) -> Self {
         let scheduler = match JobScheduler::new().await {
             Ok(result) => Arc::new(result),
-            Err(e) => {
-                panic!("meh")
+            Err(_) => {
+                // We shall improve the job creation error in a better way than just a panic
+                panic!("Job creation error. Panicking !");
             }
         };
         let feeds_jobs = HashMap::new();
@@ -31,16 +32,16 @@ impl RssInstance {
         }
     }
 
-    // Add a job to the scheduler. 
-    // Might be useless as the scheduler is publicly accessible. 
+    // Add a job to the scheduler.
+    // Might be useless as the scheduler is publicly accessible.
     pub async fn add_job(self, job: Job) {
         let scheduler = self.scheduler;
 
         let _ = scheduler.add(job).await;
     }
 
-    // Remove a job to the scheduler. 
-    // Might be useless as the scheduler is publicly accessible. 
+    // Remove a job to the scheduler.
+    // Might be useless as the scheduler is publicly accessible.
     pub async fn remove_job(self, uuid: uuid::Uuid) {
         let scheduler = self.scheduler;
 
