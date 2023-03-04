@@ -13,7 +13,7 @@ impl CommandsHandler {
     pub fn new(
         rss: Arc<Mutex<RssInstance>>,
         nostr: Arc<Mutex<NostrInstance>>,
-        map: Arc<Mutex<HashMap<String, String>>>,
+        map: Arc<Mutex<HashMap<String, Vec<String>>>>,
     ) -> task::JoinHandle<()> {
         task::spawn(async move {
             let mut input = String::new();
@@ -124,7 +124,7 @@ impl CommandsHandler {
                                     let _ = &rss_lock.scheduler.remove(&job_uuid).await;
                                     let _ = rss_lock.feeds_jobs.remove_entry(&feed_id);
                                     println!(
-                                        "Job for {:?} feed with uuid {:?} removed",
+                                        "Job for {} feed with uuid {} removed",
                                         &feed_id, &job_uuid
                                     );
                                 }
@@ -139,7 +139,7 @@ impl CommandsHandler {
                     }
                 }
                 _ => {
-                    warn!("No command handler found for sub-command {:?}", subcommand);
+                    warn!("No command handler found for sub-command {}", subcommand);
                 }
             },
             None => {
