@@ -44,7 +44,7 @@ relays.
 git clone 
 cd nostrss
 cargo build
-```
+````
 
 ##  Licence
 
