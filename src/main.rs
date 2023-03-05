@@ -15,7 +15,7 @@ use dotenv::dotenv;
 use log::info;
 use nostr::nostr::NostrInstance;
 use nostr_sdk::Result;
-use tokio::{sync::Mutex};
+use tokio::sync::Mutex;
 
 #[derive(Clone)]
 pub struct App {
