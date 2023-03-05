@@ -32,7 +32,7 @@ impl NostrInstance {
         }
     }
 
-    // Broadcast message to network (NIP-02) 
+    // Broadcast message to network (NIP-02)
     pub async fn send_message(&self, message: &str) {
         let response = &self.client.publish_text_note(message, &[]).await;
 
