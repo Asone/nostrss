@@ -91,7 +91,9 @@ jobs:
           profile: minimal
           override: true
           target: ${{ matrix.target }}
-
+      - name: Install ssl 
+        run: sudo apt-get install libssl-dev
+      
       - name: Build target
         uses: actions-rs/cargo@v1
         with:
