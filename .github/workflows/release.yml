@@ -88,7 +88,7 @@ jobs:
       - name: Install ssl & musl
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev musl-tools linux-musl-dev
+          sudo apt-get install -y pkg-config libssl-dev musl-tools
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
