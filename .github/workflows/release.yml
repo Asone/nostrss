@@ -93,7 +93,7 @@ jobs:
           override: true
           target: ${{ matrix.target }}
       - name: Install ssl 
-        run: sudo apt-get install libssl-dev musl-tools
+        run: sudo apt install libssl-dev musl-tools
       - name: Build target
         uses: actions-rs/cargo@v1
         with:
