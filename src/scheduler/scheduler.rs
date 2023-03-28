@@ -26,7 +26,8 @@ pub async fn schedule(
         // Arc instances for current job
         let client_arc = Arc::clone(&client);
         let map_arc = Arc::clone(&map_job_copy);
-        return Box::pin(async move {
+
+        Box::pin(async move {
             let mut map_lock = map_arc.lock().await;
 
             let uuid = &uuid.to_string();
@@ -56,7 +57,7 @@ pub async fn schedule(
                                     entry_id, &feed.id
                                 );
                                 let message = format!("{} - {}. Url: {}", &feed.name, title, url);
-                                let _ = client_lock.send_message(&message).await;
+                                client_lock.send_message(&message).await;
                                 map.insert(0, entry.id);
                             }
                         }
@@ -66,7 +67,7 @@ pub async fn schedule(
                     // The limit of entries should be provided dynamicaly in further
                     // iterations
                     map.truncate(200);
-                    let _ = &map_lock.insert(uuid.to_string(), map);
+                    _ = &map_lock.insert(uuid.to_string(), map);
                 }
                 Err(_) => {
                     error!(
@@ -75,7 +76,7 @@ pub async fn schedule(
                     );
                 }
             };
-        });
+        })
     })
     .unwrap();
 
@@ -86,7 +87,7 @@ pub async fn schedule(
     let initial_snapshot = feed_snapshot(f).await;
     map_lock.insert(job.guid().to_string(), initial_snapshot);
 
-    return job;
+    job
 }
 
 // Retrieves a feed and returns a vec of ids for the feed.

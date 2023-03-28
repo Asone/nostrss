@@ -8,7 +8,9 @@
   name: "Stacker news feed"
   url: "https://stacker.news/rss"
   schedule: "1/30 * * * * * *"
+  profile: 
 - id: "bitcoin-reddit"
   name: "r/bitcoin reddit feed"
   url: "https://www.reddit.com/r/bitcoin/.rss"
   schedule: "1/10 * * * * * *"
+  profile: "reddit"

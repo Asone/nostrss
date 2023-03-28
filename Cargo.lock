@@ -1118,9 +1118,9 @@ checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
 
 [[package]]
 name = "nostr"
-version = "0.19.2"
+version = "0.19.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24aa7f71193e1b617a294122ab2c038545cb19eedd7a2a4f4bc33124bb511b5c"
+checksum = "b2e51853af6091c8728450b379e325310bc1103adb3c0ceb95302558dc07baff"
 dependencies = [
  "aes",
  "base64 0.21.0",
@@ -1174,7 +1174,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss"
-version = "0.1.0-alpha"
+version = "0.2.0-alpha"
 dependencies = [
  "async-trait",
  "atom_syndication",
