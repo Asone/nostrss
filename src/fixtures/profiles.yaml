@@ -1,0 +1,20 @@
+    - id: "reddit"
+      private_key: "56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234"
+      about: "Reddit rss feed"
+      name: "nostrss-reddit"
+      display_name: "nostrss-reddit"
+      description: "A nostrss bot instance that provides reddit rss stream"
+      picture: null
+      banner: null
+      nip05: null
+      lud16: null
+    - id: "stackernews"
+      private_key: "6789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345"
+      about: "Stacker news rss feed"
+      name: "nostrss-stackernews"
+      display_name: "nostrss-stackernews"
+      description: "A nostrss bot instance that provides reddit stacker news stream"
+      picture: null
+      banner: null
+      nip05: null
+      lud16: null

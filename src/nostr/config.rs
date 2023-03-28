@@ -6,7 +6,7 @@ use nostr_sdk::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr, path::Path};
 
-use crate::config::Args;
+use super::nostr::NostrProfile;
 
 #[derive(Debug)]
 pub enum NostrConfigErrors {
@@ -16,17 +16,68 @@ pub enum NostrConfigErrors {
     KeyParsingError,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Relay {
-    name: String,
-    pub target: String,
-    active: bool,
-    pub proxy: Option<SocketAddr>,
-}
+impl NostrProfile for NostrConfig {
+    fn get_display_name(self) -> Option<String> {
+        if self.display_name.is_some() {
+            return self.display_name;
+        }
 
-impl Into<String> for Relay {
-    fn into(self) -> String {
-        return self.target;
+        Self::get_env_display_name()
+    }
+
+    fn get_description(self) -> Option<String> {
+        if self.description.is_some() {
+            return self.description;
+        }
+
+        Self::get_env_description()
+    }
+
+    fn get_picture(self) -> Option<String> {
+        if self.picture.is_some() {
+            return self.picture;
+        }
+
+        Self::get_env_picture()
+    }
+
+    fn get_banner(self) -> Option<String> {
+        if self.banner.is_some() {
+            return self.banner;
+        }
+
+        Self::get_env_banner()
+    }
+
+    fn get_nip05(self) -> Option<String> {
+        if self.nip05.is_some() {
+            return self.nip05;
+        }
+
+        Self::get_env_nip05()
+    }
+
+    fn get_lud16(self) -> Option<String> {
+        if self.lud16.is_some() {
+            return self.lud16;
+        }
+
+        Self::get_env_lud16()
+    }
+
+    fn get_keys(&self) -> Keys {
+        self.keys.clone()
+        // match Keys::from_sk_str(&self.private_key) {
+        //         Ok(val) => val,
+        //         Err(_) => {
+        //             // warn!("Invalid private key found for Nostr. Generating random keys...");
+        //            panic!("Invalid private key found. This should not happen.");
+        //         }
+        // }
+    }
+
+    fn get_relays(&self) -> Vec<Relay> {
+        self.relays.clone()
     }
 }
 
@@ -44,25 +95,10 @@ pub struct NostrConfig {
     pub lud16: Option<String>,
 }
 
-impl NostrConfig {
-    pub fn new(args: &Args) -> Self {
-        let keys = match &args.private_key {
-            Some(private_keys) => match Self::set_keys(private_keys) {
-                Ok(keys) => keys,
-                Err(_) => {
-                    panic!("{:#?}", NostrConfigErrors::KeyParsingError)
-                }
-            },
-            None => Self::load_keys(),
-        };
-
-        info!("public key : {:?}", &keys.public_key());
-        info!(
-            "bech32 public key : {:?}",
-            &keys.public_key().to_bech32().unwrap()
-        );
-        let mut config = Self {
-            keys: keys,
+impl Default for NostrConfig {
+    fn default() -> Self {
+        Self {
+            keys: Self::load_keys(),
             relays: Vec::new(),
             about: Self::get_env_description(),
             name: Self::get_env_name(),
@@ -72,11 +108,38 @@ impl NostrConfig {
             banner: None,
             nip05: None,
             lud16: None,
-        };
+        }
+    }
+}
 
-        if args.relays.is_some() {
+impl NostrConfig {
+    pub fn new(private_key: Option<String>, relays: Option<String>) -> Self {
+        // Init default configuration
+        let mut config: Self = Default::default();
+
+        // Load private key if provided
+        if let Some(private_key) = private_key {
+            let keys = match Self::set_keys(&private_key) {
+                Ok(keys) => keys,
+                Err(_) => {
+                    panic!("{:#?}", NostrConfigErrors::KeyParsingError)
+                }
+            };
+
+            config.keys = keys;
+        }
+
+        // Displays keys in logger. This is useful
+        // as config can be started with random keys.
+        info!("public key : {:?}", &config.keys.public_key());
+        info!(
+            "bech32 public key : {:?}",
+            &config.keys.public_key().to_bech32().unwrap()
+        );
+
+        if relays.is_some() {
             info!("Found relays file path argument. Parsing file...");
-            config = config.load_relays(&args.relays.as_ref().unwrap());
+            config = config.load_relays(relays.as_ref().unwrap());
         }
 
         config
@@ -105,7 +168,7 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -131,7 +194,7 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -157,7 +220,7 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -183,7 +246,7 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -209,7 +272,20 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
+                true => Some(result),
+                false => None,
+            },
+            Err(_) => None,
+        }
+    }
+
+    fn get_env_nip05() -> Option<String> {
+        match env::var("NOSTR_NIP05")
+            .unwrap_or("".to_string())
+            .parse::<String>()
+        {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -231,7 +307,20 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
+                true => Some(result),
+                false => None,
+            },
+            Err(_) => None,
+        }
+    }
+
+    fn get_env_lud16() -> Option<String> {
+        match env::var("NOSTR_LUD16")
+            .unwrap_or("".to_string())
+            .parse::<String>()
+        {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -248,7 +337,7 @@ impl NostrConfig {
             .unwrap_or("".to_string())
             .parse::<String>()
         {
-            Ok(result) => match result.len() > 0 {
+            Ok(result) => match !result.is_empty() {
                 true => Some(result),
                 false => None,
             },
@@ -262,16 +351,16 @@ impl NostrConfig {
     }
 
     fn get_env_var(var_name: &str) -> Option<String> {
-        match env::var(&format!("NOSTR_{}", var_name.to_uppercase())) {
+        match env::var(format!("NOSTR_{}", var_name.to_uppercase())) {
             Ok(val) => Some(val),
             Err(_) => None,
         }
     }
 
-    fn set_keys(secret_key: &String) -> Result<Keys, NostrConfigErrors> {
+    pub fn set_keys(secret_key: &str) -> Result<Keys, NostrConfigErrors> {
         match Keys::from_sk_str(secret_key) {
             Ok(keys) => Ok(keys),
-            Err(_) => return Err(NostrConfigErrors::KeyParsingError),
+            Err(_) => Err(NostrConfigErrors::KeyParsingError),
         }
     }
 
@@ -359,12 +448,11 @@ mod tests {
     // Test the `NostrConfig` constructor with empty arguments
     #[test]
     fn test_nostrconfig_new_empty_args() {
-        let args = Args {
-            private_key: None,
-            relays: None,
-            feeds: None,
+        let args = Profile {
+            ..Default::default()
         };
-        let config = NostrConfig::new(&args);
+
+        let config = NostrConfig::new(args.private_key, args.relays);
         assert_eq!(config.relays.len(), 0);
         assert_eq!(config.name, None);
         assert_eq!(config.display_name, None);
@@ -385,8 +473,9 @@ mod tests {
             )),
             relays: None,
             feeds: None,
+            profiles: None,
         };
-        let config = NostrConfig::new(&args);
+        let config = NostrConfig::new(args.private_key, args.relays);
         assert_eq!(
             config.keys.public_key().to_bech32().unwrap(),
             "npub1ger2u5z8x945yvxsppkg4nkxslcqk8xe68wxxnmvkdv2cz563lls9fwehy"
@@ -402,8 +491,9 @@ mod tests {
             private_key: None,
             relays: Some(relays_file_path),
             feeds: Some(feeds_file_path),
+            profiles: None,
         };
-        let config = NostrConfig::new(&args);
+        let config = NostrConfig::new(args.private_key, args.relays);
         assert_eq!(config.relays.len(), 4);
         assert_eq!(config.relays[0].name, String::from("noslol"));
         assert_eq!(config.relays[0].target, String::from("wss://nos.lol"));
@@ -421,8 +511,9 @@ mod tests {
             private_key: None,
             relays: Some(relays_file_path),
             feeds: Some(feeds_file_path),
+            profiles: None,
         };
-        let mut config = NostrConfig::new(&args);
+        let mut config = NostrConfig::new(args.private_key, args.relays);
 
         config = config.set_banner(Some("https://domain.com/image.jpg".to_string()));
         assert_eq!(
@@ -450,5 +541,25 @@ mod tests {
         }];
         config = config.set_relays(relays);
         assert_eq!(config.description, Some("Ad lorem ipsum".to_string()));
+    }
+
+    #[test]
+    fn test_nostrconfig_into() {
+        use super::Relay;
+
+        let relays_file_path = "./src/fixtures/relays.json".to_string();
+        let feeds_file_path = "./src/fixtures/rss.json".to_string();
+        let args = Args {
+            private_key: None,
+            relays: Some(relays_file_path),
+            feeds: Some(feeds_file_path),
+            profiles: None,
+        };
+        let config = NostrConfig::new(args.private_key, args.relays);
+
+        let slice = config.relays.iter().next();
+        // let url: String = *slice.unwrap().into();
+
+        // assert_eq!(url,"wss://nos.lol".to_string());
     }
 }

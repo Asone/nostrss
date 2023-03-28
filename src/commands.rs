@@ -42,7 +42,7 @@ impl CommandsHandler {
         input: &str,
         nostr: &Arc<Mutex<NostrInstance>>,
         rss: &Arc<Mutex<RssInstance>>,
-    ) -> () {
+    ) {
         let mut input = input.split_whitespace();
         let arg1 = input.next();
 
@@ -61,10 +61,7 @@ impl CommandsHandler {
     }
 
     // handles relays related commands
-    async fn relays_handler(
-        mut input: SplitWhitespace<'_>,
-        nostr_arc: &Arc<Mutex<NostrInstance>>,
-    ) -> () {
+    async fn relays_handler(mut input: SplitWhitespace<'_>, nostr_arc: &Arc<Mutex<NostrInstance>>) {
         let subcommand = input.next();
         match subcommand {
             Some(subcommand) => match subcommand {
@@ -79,12 +76,9 @@ impl CommandsHandler {
                 }
                 "add" => {
                     let url = input.next();
-                    match url {
-                        Some(_) => {
-                            info!("This command is not implemented yet.")
-                        }
-                        None => {}
-                    }
+                    if let Some(_) = url {
+                            info!("This command is not implemented yet.");
+                    };
                 }
                 "remove" => {}
                 _ => {
@@ -99,7 +93,7 @@ impl CommandsHandler {
     }
 
     // handles feed jobs related commands
-    async fn feeds_handler(mut input: SplitWhitespace<'_>, rss: &Arc<Mutex<RssInstance>>) -> () {
+    async fn feeds_handler(mut input: SplitWhitespace<'_>, rss: &Arc<Mutex<RssInstance>>) {
         let subcommand = input.next();
         match subcommand {
             Some(subcommand) => match subcommand {
@@ -121,8 +115,8 @@ impl CommandsHandler {
                                 true => {
                                     let job_uuid = feeds_jobs[&feed_id];
                                     println!("{:?}", job_uuid);
-                                    let _ = &rss_lock.scheduler.remove(&job_uuid).await;
-                                    let _ = rss_lock.feeds_jobs.remove_entry(&feed_id);
+                                    _ = &rss_lock.scheduler.remove(&job_uuid).await;
+                                    _ = rss_lock.feeds_jobs.remove_entry(&feed_id);
                                     println!(
                                         "Job for {} feed with uuid {} removed",
                                         &feed_id, &job_uuid
@@ -149,7 +143,7 @@ impl CommandsHandler {
         }
     }
 
-    fn relays_help_message() -> () {
+    fn relays_help_message() {
         let msg = "\n\
         Relays commands:\n\
         \n\
@@ -161,7 +155,7 @@ impl CommandsHandler {
         print!("{}", msg);
     }
 
-    fn feeds_help_message() -> () {
+    fn feeds_help_message() {
         let msg = "\n\
         feeds commands:\n\
         \n\

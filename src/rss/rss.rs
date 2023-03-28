@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use super::config::Feed;
 use super::config::RssConfig;
 use tokio_cron_scheduler::Job;
 use tokio_cron_scheduler::JobScheduler;
@@ -13,6 +14,8 @@ pub struct RssInstance {
     pub config: RssConfig,
     pub scheduler: Arc<JobScheduler>,
     pub feeds_jobs: HashMap<String, Uuid>,
+    pub feeds: Vec<Feed>,
+    pub maps: HashMap<String, HashMap<String, String>>,
 }
 
 impl RssInstance {
@@ -24,11 +27,14 @@ impl RssInstance {
                 panic!("Job creation error. Panicking !");
             }
         };
+        let feeds = config.feeds.clone();
         let feeds_jobs = HashMap::new();
         Self {
             config,
             scheduler,
             feeds_jobs,
+            feeds,
+            maps: HashMap::new(),
         }
     }
 
@@ -37,7 +43,7 @@ impl RssInstance {
     pub async fn add_job(self, job: Job) {
         let scheduler = self.scheduler;
 
-        let _ = scheduler.add(job).await;
+        _ = scheduler.add(job).await;
     }
 
     // Remove a job to the scheduler.
@@ -45,6 +51,10 @@ impl RssInstance {
     pub async fn remove_job(self, uuid: uuid::Uuid) {
         let scheduler = self.scheduler;
 
-        let _ = scheduler.remove(&uuid).await;
+        _ = scheduler.remove(&uuid).await;
+    }
+
+    pub fn get_feeds(&self) -> Vec<Feed> {
+        self.feeds.clone()
     }
 }
