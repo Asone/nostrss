@@ -46,7 +46,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 |-----------|---------------|----------|------------------------------------------------------------|
 | name      | String        | Yes      | The relay name                                             |
 | target    | String        | Yes      | The url to the relay, must be a websocket service          |
-| active    | String        | Yes      | Not used yet, will be used to skip using relays            |
+| active    | Boolean        | Yes      | Not used yet, will be used to skip using relays            |
 | proxy     | Cron pattern  | No       | An optional proxy to connect through                       |
 
 ##### Examples : 
@@ -60,12 +60,12 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | id            | String        | Yes      | The relay name                                             |
 | private_key   | String        | Yes      | The url to the relay, must be a websocket service          |
 | about         | String        | No       | Not used yet, will be used to skip using relays            |
-| name          | Cron pattern  | No       | The handle name                                            |
-| display_name  | Cron pattern  | No       | The name to be displayed                                   |
-| description   | Cron pattern  | No       |                                                            |
-| picture       | Cron pattern  | No       | A valid URL to an image for picture                        |
-| banner        | Cron pattern  | No       | A valid URL to an image for banner                         |
-| lud16         | Cron pattern  | No       |                                                            |
+| name          | String        | No       | The handle name                                            |
+| display_name  | String        | No       | The name to be displayed                                   |
+| description   | String        | No       |                                                            |
+| picture       | String        | No       | A valid URL to an image for picture                        |
+| banner        | String        | No       | A valid URL to an image for banner                         |
+| lud16         | String        | No       |                                                            |
 
 ##### Examples : 
 - [json file example](./src/fixtures/profiles.json)       
