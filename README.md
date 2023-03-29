@@ -36,7 +36,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | url       | String        | Yes      | The URL of the feed                                        |
 | schedule  | Cron pattern  | Yes      | The Cronjob rule                                           |
 | profile   | String        | No       | The profile to be used for this rss feed                   |
-| profile   | Array of strings        | No       | A list of tags to be used for messages                   |
+| tags   | Array of strings        | No       | A list of tags to be used for messages                   |
 
 ##### Examples : 
 - [json file example](./src/fixtures/rss.json)       
