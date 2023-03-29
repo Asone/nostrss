@@ -1,20 +1,20 @@
 [package]
 name = "nostrss"
-version = "0.2.0-alpha"
+version = "0.2.1-alpha"
 edition = "2021"
 
 [dependencies]
 serde = "1.0.152"
 serde_json = "1.0.91"
 tokio = { version = "1", features = ["full"] }
-nostr-sdk = "0.19.1"
+nostr-sdk = "0.20.1"
 tungstenite = { version = "0.18", features = ["rustls-tls-webpki-roots"]}
 clap = { version = "4.1.3", features = ["derive"] }
 tokio-cron-scheduler = "0.9.3"
 reqwest = "0.11.14"
 serde_yaml = "0.9.17"
 dotenv = "0.15.0"
-quick-xml = "0.27.1"
+quick-xml = "0.28.1"
 md5 = "0.7.0"
 log = "0.4.17"
 atom_syndication = "0.12.0"

@@ -4,9 +4,9 @@ Nostrss is a CLI program that provides a bridge beetween RSS feeds and [Nostr pr
 
 ## Disclaimer 
 
-This project is in early stage and provides very limited features at the moment. 
+This project is in early stage and provides limited features. 
 
-The program in its current state does not support channel publishing yet nor tags.
+The program in its current state does not support channel publishing and only hashtags on tag support.
 
 If you get any trouble running it, feel free to open an issue.
 
@@ -36,6 +36,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | url       | String        | Yes      | The URL of the feed                                        |
 | schedule  | Cron pattern  | Yes      | The Cronjob rule                                           |
 | profile   | String        | No       | The profile to be used for this rss feed                   |
+| profile   | Array of strings        | No       | A list of tags to be used for messages                   |
 
 ##### Examples : 
 - [json file example](./src/fixtures/rss.json)       
