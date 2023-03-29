@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 
 use nostr_sdk::client::Error as NostrError;
 use nostr_sdk::prelude::{EventId, Metadata, Url};
-use nostr_sdk::{Client, Keys, Result};
+use nostr_sdk::{Client, Keys, Result, Tag};
 
 use crate::profiles::config::Profile;
 
@@ -49,8 +49,8 @@ impl NostrInstance {
     }
 
     // Broadcast message to network (NIP-02)
-    pub async fn send_message(&self, message: &str) {
-        let response = &self.client.publish_text_note(message, &[]).await;
+    pub async fn send_message(&self, message: &str, tags: &[Tag]) {
+        let response = &self.client.publish_text_note(message, tags).await;
 
         match response {
             Ok(event_id) => {
