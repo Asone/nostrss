@@ -57,8 +57,10 @@ pub async fn schedule(
                                     "Entry not found for {} on feed with id {}, publishing...",
                                     entry_id, &feed.id
                                 );
-                                let mut message =
-                                    format!("Rss Feed : {}.\n\rEntry title: {}.\n\rUrl: {}", &feed.name, title, url);
+                                let mut message = format!(
+                                    "Rss Feed : {}.\n\rEntry title: {}.\n\rUrl: {}",
+                                    &feed.name, title, url
+                                );
                                 let mut tags = Vec::new();
 
                                 if feed.clone().tags.is_some() {
