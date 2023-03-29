@@ -58,11 +58,11 @@ pub async fn schedule(
                                     entry_id, &feed.id
                                 );
                                 let mut message =
-                                    format!("{} - {}. Url: {}", &feed.name, title, url);
+                                    format!("Rss Feed : {}.\n\rEntry title: {}.\n\rUrl: {}", &feed.name, title, url);
                                 let mut tags = Vec::new();
 
                                 if feed.clone().tags.is_some() {
-                                    message = format!("{} - tags: ", message);
+                                    message = format!("{}\n\r Tags: ", message);
                                     for tag in feed.clone().tags.unwrap() {
                                         tags.push(Tag::Hashtag(tag.clone()));
                                         message = format!("{} #{}", message, tag);
