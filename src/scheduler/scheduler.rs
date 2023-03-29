@@ -1,4 +1,5 @@
 use log::{error, info};
+use nostr_sdk::Tag;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use tokio_cron_scheduler::Job;
@@ -56,8 +57,19 @@ pub async fn schedule(
                                     "Entry not found for {} on feed with id {}, publishing...",
                                     entry_id, &feed.id
                                 );
-                                let message = format!("{} - {}. Url: {}", &feed.name, title, url);
-                                client_lock.send_message(&message).await;
+                                let mut message =
+                                    format!("{} - {}. Url: {}", &feed.name, title, url);
+                                let mut tags = Vec::new();
+
+                                if feed.clone().tags.is_some() {
+                                    message = format!("{} - tags: ", message);
+                                    for tag in feed.clone().tags.unwrap() {
+                                        tags.push(Tag::Hashtag(tag.clone()));
+                                        message = format!("{} #{}", message, tag);
+                                    }
+                                }
+
+                                client_lock.send_message(&message, &tags).await;
                                 map.insert(0, entry.id);
                             }
                         }

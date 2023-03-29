@@ -29,6 +29,8 @@ pub struct Feed {
     pub schedule: String,
     // The client profile to be used for publishing updates. Will use default profile if not provided
     pub profile: Option<String>,
+    // The tags to be applied with the feed messages
+    pub tags: Option<Vec<String>>,
 }
 
 impl Feed {
@@ -40,6 +42,12 @@ impl Feed {
     // Retrieves the optional profile id of the feed
     pub fn get_profile(&self) -> Option<String> {
         self.profile.clone()
+    }
+
+    // sets the tags for the feed
+    fn set_tags(mut self, tags: Vec<String>) -> Self {
+        self.tags = Some(tags);
+        self
     }
 }
 

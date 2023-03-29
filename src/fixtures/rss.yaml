@@ -3,6 +3,7 @@
   name: "Latest changes on wikipedia"
   url: "https://en.wikipedia.org/w/api.php?hidebots=1&hidecategorization=1&hideWikibase=1&urlversion=1&days=7&limit=50&action=feedrecentchanges&feedformat=atom"
   schedule: "1/5 * * * * * *"
+  tags: ["wikipedia","changes"]
   profile: null
 - id: "stackernews"
   name: "Stacker news feed"
@@ -13,4 +14,4 @@
   name: "r/bitcoin reddit feed"
   url: "https://www.reddit.com/r/bitcoin/.rss"
   schedule: "1/10 * * * * * *"
-  profile: "reddit"
+  profile: null
