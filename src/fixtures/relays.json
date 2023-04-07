@@ -22,5 +22,11 @@
         "target": "wss://nostrical.com",
         "active": true,
         "proxy": "127.0.0.1:9050"
+    },
+    {
+        "name": "disabled-relay",
+        "target": "wss://some-disabled-relay.com",
+        "active": false,
+        "proxy": null
     }
 ]

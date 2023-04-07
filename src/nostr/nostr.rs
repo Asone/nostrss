@@ -39,8 +39,10 @@ impl NostrInstance {
         let client = Client::new(keys);
 
         for relay in &config.get_relays().clone() {
-            let target: &String = &relay.target.clone();
-            client.add_relay(target, relay.proxy).await.unwrap();
+            if relay.active {
+                let target: &String = &relay.target.clone();
+                client.add_relay(target, relay.proxy).await.unwrap();
+            }
         }
 
         client.connect().await;
@@ -145,6 +147,7 @@ mod tests {
 
         let client = NostrInstance::new(profile).await;
 
+        // Check if default data from env is effectively loaded
         assert_eq!(
             client.config.display_name,
             Some("satoshi-nakamoto".to_string())
@@ -159,6 +162,14 @@ mod tests {
             client.client.keys().public_key().to_string(),
             "4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8fff".to_string()
         );
+
+        // Check if disabled relays are not loaded by default
+
+        let relays = client.client.relays().await;
+        let disabled_relay_url = Url::from_str("wss://some-disabled-relay.com").unwrap();
+        let disabled_relay = relays.get(&disabled_relay_url);
+
+        assert_eq!(disabled_relay, None);
     }
 
     #[tokio::test]
