@@ -27,8 +27,8 @@ pub struct Feed {
     pub url: Url,
     // The cronjob ticker rule for the feed job
     pub schedule: String,
-    // The client profile to be used for publishing updates. Will use default profile if not provided
-    pub profile: Option<String>,
+    // The clients profiles to be used for publishing updates. Will use default profile if none provided
+    pub profiles: Option<Vec<String>>,
     // The tags to be applied with the feed messages
     pub tags: Option<Vec<String>>,
 }
@@ -40,8 +40,19 @@ impl Feed {
     }
 
     // Retrieves the optional profile id of the feed
-    pub fn get_profile(&self) -> Option<String> {
-        self.profile.clone()
+    pub fn get_profiles(&self) -> Option<Vec<String>> {
+        self.profiles.clone()
+    }
+
+    // Checks if a feed uses a profile
+    pub fn has_profile(&self, id: String) -> bool {
+        if self.profiles.clone().is_none() {
+            return false;
+        }
+
+        let profiles = &self.profiles.clone().unwrap();
+
+        profiles.contains(&id)
     }
 
     // sets the tags for the feed

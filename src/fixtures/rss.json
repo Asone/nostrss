@@ -15,6 +15,9 @@
         "id": "nostr-reddit",
         "name": "reddit r/nostr",
         "url": "https://www.reddit.com/r/nostr/.rss",
-        "schedule": "1/10 * * * * * *"
+        "schedule": "1/10 * * * * * *",
+        "profiles": [
+            "reddit"
+        ]
     }
 ]
