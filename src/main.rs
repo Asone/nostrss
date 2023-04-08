@@ -47,14 +47,12 @@ async fn main() -> Result<()> {
         // Local instance of feed
         let f = feed.clone();
 
-        // Get the id of the feed for further use
-        let profile_id = &feed.profile.clone().unwrap_or("default".to_string());
-
         // Arc and lock the clients to extract the associated client
         // for the feed Based on the profile id.
         let clients_arc = Arc::new(Mutex::new(app_lock.clients.clone()));
-        let clients_lock = clients_arc.lock().await;
-        let client = Arc::new(Mutex::new(clients_lock[profile_id].clone()));
+        // let clients_lock = clients_arc.lock().await;
+
+        // let client = Arc::new(Mutex::new(clients_lock[profile_id].clone()));
 
         // Arc the map of feeds for use in the scheduled jobs
         let maps = Arc::new(Mutex::new(app_lock.feeds_map.clone()));
@@ -63,7 +61,7 @@ async fn main() -> Result<()> {
         let scheduler_rule = f.schedule.as_str();
 
         // Call job builder
-        let job = schedule(scheduler_rule, feed, maps, client).await;
+        let job = schedule(scheduler_rule, feed, maps, clients_arc).await;
         info!("Job id for feed {:?}: {:?}", f.name, job.guid());
 
         // Load job reference in jobs map

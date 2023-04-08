@@ -58,27 +58,20 @@ impl App {
         let mut clients: HashMap<String, NostrInstance> = HashMap::new();
 
         // Create nostr clients based on profiles
-        for feed in &rss.feeds {
-            let profile_id = feed.get_profile().unwrap_or("default".to_string());
-            let profile = profile_handler.get(&profile_id);
 
-            if profile.is_none() {
-                warn!(
-                    "Requested profile with id {} does not exist. Skipping rss feed...",
-                    feed.id
-                );
-                continue;
-            }
+        let profiles = profile_handler.clone().get_profiles();
 
-            let mut profile = profile.clone().unwrap();
+        for profile_entry in profiles {
+            let profile_id = profile_entry.0.clone();
+            let mut profile = profile_entry.1.clone();
 
             if profile.relays.is_empty() {
                 profile.relays = profile_handler.clone().get_default_relays();
             }
-            // build client first
-            let client = NostrInstance::new(profile).await;
 
+            let client = NostrInstance::new(profile).await;
             let profile_result = &client.update_profile().await;
+
             println!(
                 "result of profile update for {} : {:?}",
                 profile_id, profile_result

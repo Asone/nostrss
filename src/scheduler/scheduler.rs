@@ -14,7 +14,7 @@ pub async fn schedule(
     rule: &str,
     feed: Feed,
     map: Arc<Mutex<HashMap<String, Vec<String>>>>,
-    client: Arc<Mutex<NostrInstance>>,
+    clients: Arc<Mutex<HashMap<String, NostrInstance>>>,
 ) -> Job {
     // Create a copy of the map arc that will be solely used into the job
     let map_job_copy = Arc::clone(&map);
@@ -24,8 +24,15 @@ pub async fn schedule(
         // Copy feed for job execution
         let feed = job_feed.clone();
 
+        // Get the id of the feed for further use
+        let profile_ids = feed
+            .profiles
+            .clone()
+            .unwrap_or(["default".to_string()].to_vec());
+
+        // let profile_ids_arc = Arc::new(Mutex::new(profile))
         // Arc instances for current job
-        let client_arc = Arc::clone(&client);
+        let clients_arc = Arc::clone(&clients);
         let map_arc = Arc::clone(&map_job_copy);
 
         Box::pin(async move {
@@ -36,7 +43,7 @@ pub async fn schedule(
 
             match RssParser::get_items(feed.url.to_string()).await {
                 Ok(entries) => {
-                    let client_lock = client_arc.lock().await;
+                    let clients_lock = clients_arc.lock().await;
                     for entry in entries {
                         let title = match entry.title {
                             Some(title_text) => title_text.content,
@@ -71,7 +78,16 @@ pub async fn schedule(
                                     }
                                 }
 
-                                client_lock.send_message(&message, &tags).await;
+                                for profile_id in &profile_ids {
+                                    let client = clients_lock.get(profile_id);
+
+                                    if client.is_none() {}
+
+                                    if client.is_some() {
+                                        client.unwrap().send_message(&message, &tags).await;
+                                    }
+                                }
+
                                 map.insert(0, entry.id);
                             }
                         }

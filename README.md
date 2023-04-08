@@ -35,7 +35,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | name      | String        | Yes      | The name of the feed to be displayed in the nostr message  |
 | url       | String        | Yes      | The URL of the feed                                        |
 | schedule  | Cron pattern  | Yes      | The Cronjob rule                                           |
-| profile   | String        | No       | The profile to be used for this rss feed                   |
+| profile   | Array of strings | No       | The profiles to be used for this rss feed                   |
 | tags   | Array of strings        | No       | A list of tags to be used for messages                   |
 
 ##### Examples : 
