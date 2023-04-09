@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use log::{info, warn};
+use log::info;
 use nostr_sdk::prelude::ToBech32;
 use tokio_cron_scheduler::JobScheduler;
 

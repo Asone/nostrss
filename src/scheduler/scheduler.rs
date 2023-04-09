@@ -7,6 +7,7 @@ use tokio_cron_scheduler::Job;
 use crate::{
     nostr::nostr::NostrInstance,
     rss::{config::Feed, parser::RssParser},
+    template::template::TemplateProcessor,
 };
 
 /// Cronjob creation method
@@ -30,7 +31,6 @@ pub async fn schedule(
             .clone()
             .unwrap_or(["default".to_string()].to_vec());
 
-        // let profile_ids_arc = Arc::new(Mutex::new(profile))
         // Arc instances for current job
         let clients_arc = Arc::clone(&clients);
         let map_arc = Arc::clone(&map_job_copy);
@@ -44,14 +44,10 @@ pub async fn schedule(
             match RssParser::get_items(feed.url.to_string()).await {
                 Ok(entries) => {
                     let clients_lock = clients_arc.lock().await;
-                    for entry in entries {
-                        let title = match entry.title {
-                            Some(title_text) => title_text.content,
-                            None => "".to_string(),
-                        };
 
-                        let url = &entry.links[0].href;
+                    for entry in entries {
                         let entry_id = &entry.id;
+
                         match &map.contains(entry_id) {
                             true => {
                                 info!(
@@ -64,24 +60,36 @@ pub async fn schedule(
                                     "Entry not found for {} on feed with id {}, publishing...",
                                     entry_id, &feed.id
                                 );
-                                let mut message = format!(
-                                    "Rss Feed : {}.\n\rEntry title: {}.\n\rUrl: {}",
-                                    &feed.name, title, url
-                                );
+
                                 let mut tags = Vec::new();
 
                                 if feed.clone().tags.is_some() {
-                                    message = format!("{}\n\r Tags: ", message);
                                     for tag in feed.clone().tags.unwrap() {
                                         tags.push(Tag::Hashtag(tag.clone()));
-                                        message = format!("{} #{}", message, tag);
                                     }
                                 }
+
+                                let message =
+                                    match TemplateProcessor::parse(feed.clone(), entry.clone())
+                                        .await
+                                    {
+                                        Ok(message) => message,
+                                        Err(e) => {
+                                            // make tick fail in non-critical way
+                                            error!("{}", e);
+                                            return ();
+                                        }
+                                    };
 
                                 for profile_id in &profile_ids {
                                     let client = clients_lock.get(profile_id);
 
-                                    if client.is_none() {}
+                                    if client.is_none() {
+                                        error!(
+                                            "No client found for this stream : {}. Job skipped.",
+                                            feed.name
+                                        );
+                                    }
 
                                     if client.is_some() {
                                         client.unwrap().send_message(&message, &tags).await;
@@ -95,7 +103,8 @@ pub async fn schedule(
 
                     // Remove old entries if the vec has over 200 elements
                     // The limit of entries should be provided dynamicaly in further
-                    // iterations
+                    // iterations.
+                    // @todo: move to env config
                     map.truncate(200);
                     _ = &map_lock.insert(uuid.to_string(), map);
                 }

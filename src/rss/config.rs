@@ -31,6 +31,8 @@ pub struct Feed {
     pub profiles: Option<Vec<String>>,
     // The tags to be applied with the feed messages
     pub tags: Option<Vec<String>>,
+    // The template path for publication
+    pub template: Option<String>,
 }
 
 impl Feed {

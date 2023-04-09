@@ -4,6 +4,7 @@ mod nostr;
 mod profiles;
 mod rss;
 mod scheduler;
+mod template;
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
@@ -20,6 +21,7 @@ use tokio::sync::Mutex;
 ///
 /// To use it, you will have to provide some configuration, like relays and feeds to load, which are described into
 /// the [README.md](https://github.com/Asone/nostrss/blob/main/README.md) file..
+//: The application is based on async cronjobs.
 #[tokio::main]
 async fn main() -> Result<()> {
     // Load .env configuration
@@ -50,9 +52,6 @@ async fn main() -> Result<()> {
         // Arc and lock the clients to extract the associated client
         // for the feed Based on the profile id.
         let clients_arc = Arc::new(Mutex::new(app_lock.clients.clone()));
-        // let clients_lock = clients_arc.lock().await;
-
-        // let client = Arc::new(Mutex::new(clients_lock[profile_id].clone()));
 
         // Arc the map of feeds for use in the scheduled jobs
         let maps = Arc::new(Mutex::new(app_lock.feeds_map.clone()));
