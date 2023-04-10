@@ -173,7 +173,7 @@ mod tests {
         assert_eq!(result.is_ok(), true);
 
         let result = result.unwrap();
-        let expected = "test nostrss template file\nFeed: Generic feed\nUrl:https://www.nostr.info\nTags: #Test #nostrss".to_string();
+        let expected = "Default nostrss template file\nFeed: Generic feed\nUrl:https://www.nostr.info\nTags: #Test #nostrss".to_string();
 
         assert_eq!(result, expected);
     }
@@ -217,7 +217,7 @@ mod tests {
 
         let result = result.unwrap();
         let expected =
-            "test nostrss template file\nFeed: {name}\nUrl:{url}\nTags:{tags}".to_string();
+            "Default nostrss template file\nFeed: {name}\nUrl:{url}\nTags:{tags}".to_string();
         assert_eq!(result, expected);
 
         let bad_path = "./src/fixture/nonexistant.template".to_string();
