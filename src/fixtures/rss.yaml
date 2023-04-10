@@ -5,10 +5,12 @@
   schedule: "1/5 * * * * * *"
   tags: ["wikipedia","changes"]
   profiles: null
+  template: "./src/fixtures/default.template"
 - id: "stackernews"
   name: "Stacker news feed"
   url: "https://stacker.news/rss"
   schedule: "1/30 * * * * * *"
+  template: null
 - id: "bitcoin-reddit"
   name: "r/bitcoin reddit feed"
   url: "https://www.reddit.com/r/bitcoin/.rss"
