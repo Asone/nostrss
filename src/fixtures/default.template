@@ -1,4 +1,4 @@
 Default nostrss template file
 Feed: {name}
-Url:{url}
-Tags:{tags}
+Url: {url}
+Tags: {tags}

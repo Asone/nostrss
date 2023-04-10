@@ -9,7 +9,8 @@
         "id": "bitcoin-reddit",
         "name": "reddit r/bitcoin",
         "url": "https://www.reddit.com/r/bitcoin/.rss",
-        "schedule": "1/5 * * * * * *"
+        "schedule": "1/5 * * * * * *",
+        "template": "./src/fixtures/default.template"
     },
     {
         "id": "nostr-reddit",
@@ -18,6 +19,7 @@
         "schedule": "1/10 * * * * * *",
         "profiles": [
             "reddit"
-        ]
+        ],
+        "template": null
     }
 ]

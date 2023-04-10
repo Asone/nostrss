@@ -82,6 +82,7 @@ Below are the variables you can use for templating :
 | Variable     | Description                       |
 | ------------ |---------------------------------- |
 | name         | The `feed` given name             |
+| title        | The `entry` title                 |
 | content      | The `entry` content. Usually a description of the item |
 | url          | The URL to the `entry`            |
 | tags         | The tags of the `feed`            |
