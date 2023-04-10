@@ -70,9 +70,7 @@ pub async fn schedule(
                                 }
 
                                 let message =
-                                    match TemplateProcessor::parse(feed.clone(), entry.clone())
-                                        .await
-                                    {
+                                    match TemplateProcessor::parse(feed.clone(), entry.clone()) {
                                         Ok(message) => message,
                                         Err(e) => {
                                             // make tick fail in non-critical way

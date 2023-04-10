@@ -17,7 +17,7 @@ impl TemplateProcessor {
     // Tries to load a template through an option path
     // If template is not provided, the method fallsback
     // to environment template.
-    async fn load_template(path: Option<String>) -> Result<String, TemplateParserError> {
+    fn load_template(path: Option<String>) -> Result<String, TemplateParserError> {
         match path {
             Some(path) => {
                 let file = fs::read_to_string(&path);
@@ -39,14 +39,14 @@ impl TemplateProcessor {
             Ok(val) => val,
             Err(e) => {
                 error!("{}", e);
-                panic!("");
+                panic!();
             }
         }
     }
 
     // Parses template with data
-    pub async fn parse(data: Feed, entry: Entry) -> Result<String, TemplateError> {
-        let template = Self::load_template(data.clone().template).await.unwrap();
+    pub fn parse(data: Feed, entry: Entry) -> Result<String, TemplateError> {
+        let template = Self::load_template(data.clone().template).unwrap();
         let mut map = Self::parse_entry_to_hashmap(entry);
 
         map.insert("name", data.name.clone());
@@ -56,6 +56,8 @@ impl TemplateProcessor {
             // tags.push(Tag::Hashtag(tag.clone()));
             tags_string = format!("{} #{}", tags_string, tag);
         }
+
+        map.insert("tags", tags_string);
 
         let templ = Template::new(&template);
 
@@ -86,11 +88,14 @@ impl TemplateProcessor {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use dotenv::from_filename;
-    use feed_rs::model::Content;
+    extern crate mime;
 
     use super::*;
+    use dotenv::from_filename;
+
+    use feed_rs::model::{Content, Link, Text};
 
     #[test]
     fn test_default_template_fallback() {
@@ -98,29 +103,125 @@ mod tests {
 
         let entry = Entry {
             content: Some(Content {
+                body: Some("Test".to_string()),
                 ..Default::default()
             }),
-
+            links: [Link {
+                href: "https://www.nostr.info".to_string(),
+                rel: None,
+                media_type: None,
+                href_lang: None,
+                title: None,
+                length: None,
+            }]
+            .to_vec(),
             ..Default::default()
         };
+
+        let feed = Feed {
+            tags: Some(Vec::new()),
+            ..Default::default()
+        };
+
+        let result = TemplateProcessor::parse(feed, entry);
+
+        assert_eq!(result.is_ok(), true);
     }
 
+    #[test]
     fn test_custom_template() {
         from_filename(".env.test").ok();
+
         let entry = Entry {
+            title: Some(Text {
+                content_type: mime::TEXT_PLAIN,
+                src: None,
+                content: "Test content".to_string(),
+            }),
+            content: Some(Content {
+                body: Some("Test body".to_string()),
+                ..Default::default()
+            }),
+            links: [Link {
+                href: "https://www.nostr.info".to_string(),
+                rel: None,
+                media_type: None,
+                href_lang: None,
+                title: None,
+                length: None,
+            }]
+            .to_vec(),
             ..Default::default()
         };
+
+        let tags = ["Test".to_string(), "nostrss".to_string()].to_vec();
+        let feed = Feed {
+            tags: Some(tags),
+            ..Default::default()
+        };
+
+        let result = TemplateProcessor::parse(feed, entry);
+
+        assert_eq!(result.is_ok(), true);
+
+        let result = result.unwrap();
+        let expected = "test nostrss template\nFeed: Generic feed\nUrl:https://www.nostr.info\nTags: #Test #nostrss".to_string();
+
+        assert_eq!(result, expected);
     }
 
+    #[test]
     fn test_entry_to_hashmap() {
         from_filename(".env.test").ok();
         let entry = Entry {
+            title: Some(Text {
+                content_type: mime::TEXT_PLAIN,
+                src: None,
+                content: "Test content".to_string(),
+            }),
+            content: Some(Content {
+                body: Some("Test body".to_string()),
+                ..Default::default()
+            }),
+            links: [Link {
+                href: "https://www.nostr.info".to_string(),
+                rel: None,
+                media_type: None,
+                href_lang: None,
+                title: None,
+                length: None,
+            }]
+            .to_vec(),
             ..Default::default()
         };
+
         let hashmap = TemplateProcessor::parse_entry_to_hashmap(entry);
 
-        assert_eq!(hashmap["title"], "test template")
+        assert_eq!(hashmap["title"], "Test content");
+        assert_eq!(hashmap["url"], "https://www.nostr.info");
     }
 
-    fn test_template_loading() {}
+    #[test]
+    fn test_template_loading() {
+        let path = "./src/fixtures/default.template".to_string();
+        let result = TemplateProcessor::load_template(Some(path));
+        assert_eq!(result.is_ok(), true);
+
+        let result = result.unwrap();
+        let expected =
+            "test nostrss template file\nFeed: {name}\nUrl:{url}\nTags:{tags}".to_string();
+        assert_eq!(result, expected);
+
+        let bad_path = "./src/fixture/nonexistant.template".to_string();
+        let result = TemplateProcessor::load_template(Some(bad_path));
+        assert_eq!(result.is_err(), true);
+
+        from_filename(".env.test").ok();
+        let result = TemplateProcessor::load_template(None);
+        assert_eq!(result.is_ok(), true);
+
+        let result = result.unwrap();
+        let expected = "test nostrss template\nFeed: {name}\nUrl:{url}\nTags:{tags}".to_string();
+        assert_eq!(result, expected);
+    }
 }
