@@ -126,6 +126,13 @@ mod tests {
         let result = TemplateProcessor::parse(feed, entry);
 
         assert_eq!(result.is_ok(), true);
+
+        let expected =
+            "test nostrss template\nFeed: Generic feed\nUrl:https://www.nostr.info\nTags:"
+                .to_string();
+        let result = result.unwrap();
+
+        assert_eq!(result, expected);
     }
 
     #[test]
@@ -157,6 +164,7 @@ mod tests {
         let tags = ["Test".to_string(), "nostrss".to_string()].to_vec();
         let feed = Feed {
             tags: Some(tags),
+            template: Some("./src/fixtures/default.template".to_string()),
             ..Default::default()
         };
 
@@ -165,7 +173,7 @@ mod tests {
         assert_eq!(result.is_ok(), true);
 
         let result = result.unwrap();
-        let expected = "test nostrss template\nFeed: Generic feed\nUrl:https://www.nostr.info\nTags: #Test #nostrss".to_string();
+        let expected = "test nostrss template file\nFeed: Generic feed\nUrl:https://www.nostr.info\nTags: #Test #nostrss".to_string();
 
         assert_eq!(result, expected);
     }
