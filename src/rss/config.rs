@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::path::Path;
+use std::{path::Path, str::FromStr};
 
 use log::{error, info};
 use reqwest::Url;
@@ -31,6 +31,8 @@ pub struct Feed {
     pub profiles: Option<Vec<String>>,
     // The tags to be applied with the feed messages
     pub tags: Option<Vec<String>>,
+    // The template path for publication
+    pub template: Option<String>,
 }
 
 impl Feed {
@@ -62,6 +64,19 @@ impl Feed {
     }
 }
 
+impl Default for Feed {
+    fn default() -> Self {
+        Self {
+            id: "default".to_string(),
+            name: "Generic feed".to_string(),
+            url: Url::from_str("https://www.nostr.info").unwrap(),
+            schedule: "0/10 * * * * *".to_string(),
+            profiles: None,
+            tags: Some(Vec::new()),
+            template: None,
+        }
+    }
+}
 /// Builds a RSS config
 #[derive(Debug, Clone)]
 pub struct RssConfig {

@@ -1,14 +1,5 @@
 # Nostrss
-Nostrss is a CLI program that provides a bridge beetween RSS feeds and [Nostr protocol](https://nostr.com/).
-
-
-## Disclaimer 
-
-This project is in early stage and provides limited features. 
-
-The program in its current state does not support channel publishing and only hashtags on tag support.
-
-If you get any trouble running it, feel free to open an issue.
+Nostrss is a CLI program that provides a lightweight and flexible bridge beetween RSS feeds and [Nostr protocol](https://nostr.com/).
 
 ## Download
 
@@ -37,6 +28,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | schedule  | Cron pattern  | Yes      | The Cronjob rule                                           |
 | profile   | Array of strings | No       | The profiles to be used for this rss feed                   |
 | tags   | Array of strings        | No       | A list of tags to be used for messages                   |
+| template | String | No | An optional path to a template to use for feed publishing. |
 
 ##### Examples : 
 - [json file example](./src/fixtures/rss.json)       
@@ -71,6 +63,30 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 ##### Examples : 
 - [json file example](./src/fixtures/profiles.json)       
 - [yaml file example](./src/fixtures/profiles.yaml)
+
+
+### Templating
+
+Nostrss allows you to customize the message sent for each feed. Custom templates are optional. 
+See [RSS Feeds](#rss-feeds) section to see how to provide custom templates for feeds. 
+
+If no custom template path is provided, Nostrss will automatically fallback on the default template provided in [.env.dist](./.env.dist) config file.
+
+If no default template is either provided, the feed threaded-job will panic, but the application will keep running.
+This avoids a global panic and keeps all sane jobs running.
+
+If provided path for custom template is non-existant, the job will raise an error and publishing will be skipped.
+
+Below are the variables you can use for templating : 
+
+| Variable     | Description                       |
+| ------------ |---------------------------------- |
+| name         | The `feed` given name             |
+| content      | The `entry` content. Usually a description of the item |
+| url          | The URL to the `entry`            |
+| tags         | The tags of the `feed`            |
+
+An example template is provided in the [fixtures](./src/fixtures/default.template)
 
 ## Nostr identity
 

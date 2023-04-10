@@ -974,9 +974,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "mime"
-version = "0.3.16"
+version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
+checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
 name = "minimal-lexical"
@@ -1046,6 +1046,16 @@ name = "never"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c96aba5aa877601bb3f6dd6a63a969e1f82e60646e81e71b14496995e9853c91"
+
+[[package]]
+name = "new_string_template"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7359c5bee6fe9218ccd4988120a23dc79d291e95486756969112d45efdc97d1"
+dependencies = [
+ "lazy_static",
+ "regex",
+]
 
 [[package]]
 name = "nom"
@@ -1138,7 +1148,9 @@ dependencies = [
  "feed-rs",
  "log",
  "md5",
+ "mime",
  "mockall",
+ "new_string_template",
  "nostr-sdk",
  "openssl",
  "quick-xml 0.28.1",
