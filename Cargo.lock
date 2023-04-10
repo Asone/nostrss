@@ -1137,7 +1137,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss"
-version = "0.2.1-alpha"
+version = "0.3.0-alpha"
 dependencies = [
  "async-trait",
  "atom_syndication",
