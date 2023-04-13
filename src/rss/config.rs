@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{path::Path, str::FromStr};
+use std::{path::Path, str::FromStr, env};
 
 use log::{error, info};
 use reqwest::Url;
@@ -33,6 +33,8 @@ pub struct Feed {
     pub tags: Option<Vec<String>>,
     // The template path for publication
     pub template: Option<String>,
+    #[serde(default = "Feed::default_cache_size")]
+    pub cache_size: usize
 }
 
 impl Feed {
@@ -62,6 +64,16 @@ impl Feed {
         self.tags = Some(tags);
         self
     }
+
+    fn default_cache_size() -> usize {
+        match env::var("DEFAULT_CACHE_SIZE")
+            .unwrap_or("100".to_string())
+            .parse::<usize>()
+        {
+            Ok(result) => result,
+            Err(_) => 100,
+        }
+    }
 }
 
 impl Default for Feed {
@@ -74,6 +86,7 @@ impl Default for Feed {
             profiles: None,
             tags: Some(Vec::new()),
             template: None,
+            cache_size: Self::default_cache_size()
         }
     }
 }

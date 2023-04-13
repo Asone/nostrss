@@ -37,7 +37,7 @@ pub async fn schedule(
 
         Box::pin(async move {
             let mut map_lock = map_arc.lock().await;
-
+            let feed = feed.clone();
             let uuid = &uuid.to_string();
             let mut map = map_lock[uuid].clone();
 
@@ -103,7 +103,7 @@ pub async fn schedule(
                     // The limit of entries should be provided dynamicaly in further
                     // iterations.
                     // @todo: move to env config
-                    map.truncate(200);
+                    map.truncate(feed.cache_size);
                     _ = &map_lock.insert(uuid.to_string(), map);
                 }
                 Err(_) => {
