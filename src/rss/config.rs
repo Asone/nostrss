@@ -185,6 +185,8 @@ impl RssConfig {
 
 #[cfg(test)]
 pub mod tests {
+    use dotenv::from_filename;
+
     use super::*;
 
     #[test]
@@ -216,5 +218,28 @@ pub mod tests {
 
         let config = RssConfig::new(path);
         assert_eq!(config.feeds.len(), 0);
+    }
+
+    #[test]
+    fn test_cache_size_behaviour() {
+
+        let path = Some("./src/fixtures/rss.json".to_string());
+
+        let config = RssConfig::new(path);
+
+        // Test declared cache size
+        assert_eq!(config.feeds[0].cache_size,5);
+
+        // Test undeclared cache size that should fall back to hard-coded cache value
+        assert_eq!(config.feeds[1].cache_size,100);
+
+        // Test undeclared cache size that should fall back on env var value
+        from_filename(".env.test").ok();
+
+        let path = Some("./src/fixtures/rss.json".to_string());
+        let config = RssConfig::new(path);
+        assert_eq!(config.feeds[0].cache_size,5);
+        assert_eq!(config.feeds[1].cache_size,20);
+
     }
 }
