@@ -1,7 +1,8 @@
-use log::{error, info};
+use feed_rs::model::Entry;
+use log::{debug, error};
 use nostr_sdk::Tag;
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, MutexGuard};
 use tokio_cron_scheduler::Job;
 
 use crate::{
@@ -25,7 +26,7 @@ pub async fn schedule(
         // Copy feed for job execution
         let feed = job_feed.clone();
 
-        // Get the id of the feed for further use
+        // Get the profiles ids associated to the feed for further use
         let profile_ids = feed
             .profiles
             .clone()
@@ -45,64 +46,19 @@ pub async fn schedule(
                 Ok(entries) => {
                     let clients_lock = clients_arc.lock().await;
 
-                    for entry in entries {
-                        let entry_id = &entry.id;
-
-                        match &map.contains(entry_id) {
-                            true => {
-                                info!(
-                                    "Found entry for {} on feed with id {}, skipping publication.",
-                                    entry_id, &feed.id
-                                );
-                            }
-                            false => {
-                                info!(
-                                    "Entry not found for {} on feed with id {}, publishing...",
-                                    entry_id, &feed.id
-                                );
-
-                                let mut tags = Vec::new();
-
-                                if feed.clone().tags.is_some() {
-                                    for tag in feed.clone().tags.unwrap() {
-                                        tags.push(Tag::Hashtag(tag.clone()));
-                                    }
-                                }
-
-                                let message =
-                                    match TemplateProcessor::parse(feed.clone(), entry.clone()) {
-                                        Ok(message) => message,
-                                        Err(e) => {
-                                            // make tick fail in non-critical way
-                                            error!("{}", e);
-                                            return ();
-                                        }
-                                    };
-
-                                for profile_id in &profile_ids {
-                                    let client = clients_lock.get(profile_id);
-
-                                    if client.is_none() {
-                                        error!(
-                                            "No client found for this stream : {}. Job skipped.",
-                                            feed.name
-                                        );
-                                    }
-
-                                    if client.is_some() {
-                                        client.unwrap().send_message(&message, &tags).await;
-                                    }
-                                }
-
-                                map.insert(0, entry.id);
-                            }
-                        }
-                    }
+                    // Calls the method that
+                    RssNostrJob::process(
+                        feed.clone(),
+                        profile_ids,
+                        entries,
+                        &mut map,
+                        clients_lock,
+                    )
+                    .await;
 
                     // Remove old entries if the vec has over 200 elements
                     // The limit of entries should be provided dynamicaly in further
                     // iterations.
-                    // @todo: move to env config
                     map.truncate(feed.cache_size);
                     _ = &map_lock.insert(uuid.to_string(), map);
                 }
@@ -120,6 +76,7 @@ pub async fn schedule(
     let f = feed.clone();
 
     // Initialize the Vec that will store the retained entries of feed for current feed.
+    // This avoids to spam the network on first fetch
     let mut map_lock = map.lock().await;
     let initial_snapshot = feed_snapshot(f).await;
     map_lock.insert(job.guid().to_string(), initial_snapshot);
@@ -131,11 +88,11 @@ pub async fn schedule(
 // This method is used to provide initial snapshot of the rss feeds
 // In order to avoid to spam relays with initial rss feed fetch.
 pub async fn feed_snapshot(feed: Feed) -> Vec<String> {
-    let mut vec = Vec::new();
+    let mut entries_snapshot = Vec::new();
     match RssParser::get_items(feed.url.to_string()).await {
         Ok(entries) => {
             for entry in entries {
-                vec.push(entry.id)
+                entries_snapshot.push(entry.id)
             }
         }
         Err(_) => {
@@ -146,5 +103,83 @@ pub async fn feed_snapshot(feed: Feed) -> Vec<String> {
         }
     };
 
-    vec
+    entries_snapshot
+}
+
+pub struct RssNostrJob {}
+
+impl RssNostrJob {
+    pub async fn process(
+        feed: Feed,
+        profile_ids: Vec<String>,
+        entries: Vec<Entry>,
+        map: &mut Vec<String>,
+        clients_lock: MutexGuard<'_, HashMap<String, NostrInstance>>,
+    ) {
+        for entry in entries {
+            let entry_id = &entry.id;
+
+            match &map.contains(entry_id) {
+                true => {
+                    debug!(
+                        "Found entry for {} on feed with id {}, skipping publication.",
+                        entry_id, &feed.id
+                    );
+                }
+                false => {
+                    debug!(
+                        "Entry not found for {} on feed with id {}, publishing...",
+                        entry_id, &feed.id
+                    );
+
+                    let tags = Self::get_tags(&feed.tags);
+
+                    let message = match TemplateProcessor::parse(feed.clone(), entry.clone()) {
+                        Ok(message) => message,
+                        Err(e) => {
+                            // make tick fail in non-critical way
+                            error!("{}", e);
+                            return ();
+                        }
+                    };
+
+                    for profile_id in &profile_ids {
+                        let client = clients_lock.get(profile_id);
+
+                        if client.is_none() {
+                            error!(
+                                "No client found for this stream : {}. Job skipped.",
+                                feed.name
+                            );
+                        }
+
+                        if client.is_some() {
+                            let client = client.unwrap();
+                            match client.config.pow_level.clone() {
+                                0 => client.send_message(&message, &tags).await,
+                                _ => {
+                                    client
+                                        .send_pow_message(&message, &tags, client.config.pow_level)
+                                        .await
+                                }
+                            }
+                        }
+                    }
+
+                    map.insert(0, entry.id);
+                }
+            }
+        }
+    }
+
+    fn get_tags(feed_tags: &Option<Vec<String>>) -> Vec<Tag> {
+        let mut tags = Vec::new();
+
+        if feed_tags.is_some() {
+            for tag in feed_tags.clone().unwrap() {
+                tags.push(Tag::Hashtag(tag.clone()));
+            }
+        }
+        tags
+    }
 }

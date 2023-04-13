@@ -30,6 +30,8 @@ pub struct Profile {
     pub banner: Option<String>,
     pub nip05: Option<String>,
     pub lud16: Option<String>,
+    #[serde(default = "Profile::default_pow_level")]
+    pub pow_level: u8,
 }
 
 impl Default for Profile {
@@ -46,6 +48,7 @@ impl Default for Profile {
             banner: Self::get_env_banner(),
             nip05: Self::get_env_nip05(),
             lud16: Self::get_env_lud16(),
+            pow_level: Self::default_pow_level(),
         }
     }
 }
@@ -148,6 +151,16 @@ impl Profile {
                 false => None,
             },
             Err(_) => None,
+        }
+    }
+
+    fn default_pow_level() -> u8 {
+        match env::var("DEFAULT_POW_LEVEL")
+            .unwrap_or("0".to_string())
+            .parse::<u8>()
+        {
+            Ok(result) => result,
+            Err(_) => 0,
         }
     }
 
