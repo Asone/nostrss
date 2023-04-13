@@ -64,10 +64,11 @@ jobs:
 
       - name: Test
         uses: actions-rs/cargo@v1
+        env:
+          RUST_TEST_THREADS: 1
         with:
           command: test
-          args: ${{ matrix.features }}
-
+          args: ${{ matrix.features }} 
       - name: Test all benches
         if: matrix.benches
         uses: actions-rs/cargo@v1
