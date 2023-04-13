@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{path::Path, str::FromStr};
+use std::{env, path::Path, str::FromStr};
 
 use log::{error, info};
 use reqwest::Url;
@@ -33,6 +33,8 @@ pub struct Feed {
     pub tags: Option<Vec<String>>,
     // The template path for publication
     pub template: Option<String>,
+    #[serde(default = "Feed::default_cache_size")]
+    pub cache_size: usize,
 }
 
 impl Feed {
@@ -62,6 +64,19 @@ impl Feed {
         self.tags = Some(tags);
         self
     }
+
+    fn default_cache_size() -> usize {
+        match env::var("DEFAULT_CACHE_SIZE")
+            .unwrap_or("100".to_string())
+            .parse::<usize>()
+        {
+            Ok(result) => {
+                let r = result;
+                r
+            }
+            Err(_) => 100,
+        }
+    }
 }
 
 impl Default for Feed {
@@ -74,6 +89,7 @@ impl Default for Feed {
             profiles: None,
             tags: Some(Vec::new()),
             template: None,
+            cache_size: Self::default_cache_size(),
         }
     }
 }
@@ -172,6 +188,10 @@ impl RssConfig {
 
 #[cfg(test)]
 pub mod tests {
+    use std::env::remove_var;
+
+    use dotenv::from_filename;
+
     use super::*;
 
     #[test]
@@ -203,5 +223,30 @@ pub mod tests {
 
         let config = RssConfig::new(path);
         assert_eq!(config.feeds.len(), 0);
+    }
+
+    #[test]
+    fn test_cache_size_behaviour_without_env_fallback() {
+        remove_var("DEFAULT_CACHE_SIZE");
+        let path = Some("./src/fixtures/rss.json".to_string());
+        let config = RssConfig::new(path);
+
+        assert_eq!(config.feeds[0].cache_size, 5);
+
+        // Test undeclared cache size that should fall back to hard-coded cache value
+        assert_eq!(config.feeds[1].cache_size, 100);
+    }
+
+    #[test]
+    fn test_cache_size_behaviour_with_env_fallback() {
+        from_filename(".env.test").ok();
+        let path = Some("./src/fixtures/rss.json".to_string());
+        let config = RssConfig::new(path);
+
+        // Test declared cache size
+        assert_eq!(config.feeds[0].cache_size, 5);
+
+        // Test undeclared cache size that should fall back on env var value
+        assert_eq!(config.feeds[1].cache_size, 20);
     }
 }

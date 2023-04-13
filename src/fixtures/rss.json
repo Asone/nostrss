@@ -3,7 +3,8 @@
         "id": "stackernews",
         "name": "Stacker news",
         "url": "https://stacker.news/rss",
-        "schedule": "1/2 * * * * * *"
+        "schedule": "1/2 * * * * * *",
+        "cache_size": 5
     },
     {
         "id": "bitcoin-reddit",
