@@ -29,6 +29,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | profile   | Array of strings | No       | The profiles to be used for this rss feed                   |
 | tags   | Array of strings        | No       | A list of tags to be used for messages                   |
 | template | String | No | An optional path to a template to use for feed publishing. |
+| cache_size | Integer | No | The snapshot size made for feed job |
 
 ##### Examples : 
 - [json file example](./src/fixtures/rss.json)       
@@ -50,15 +51,16 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 
 | Key           | Type          | Required | Description                                                |
 |---------------|---------------|----------|------------------------------------------------------------|
-| id            | String        | Yes      | The relay name                                             |
-| private_key   | String        | Yes      | The url to the relay, must be a websocket service          |
-| about         | String        | No       | Not used yet, will be used to skip using relays            |
+| id            | String        | Yes      |                                             |
+| private_key   | String        | Yes      |           |
+| about         | String        | No       | 
 | name          | String        | No       | The handle name                                            |
 | display_name  | String        | No       | The name to be displayed                                   |
 | description   | String        | No       |                                                            |
 | picture       | String        | No       | A valid URL to an image for picture                        |
 | banner        | String        | No       | A valid URL to an image for banner                         |
-| lud16         | String        | No       |                                                            |
+| nip05 | String| No | Identity certificatioon
+| lud16         | String        |No       | LN Wallet |
 
 ##### Examples : 
 - [json file example](./src/fixtures/profiles.json)       
