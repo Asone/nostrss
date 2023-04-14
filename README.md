@@ -29,7 +29,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | profile   | Array of strings | No       | The profiles to be used for this rss feed                   |
 | tags   | Array of strings        | No       | A list of tags to be used for messages                   |
 | template | String | No | An optional path to a template to use for feed publishing. |
-| cache_size | Integer | No | The snapshot size made for feed job |
+| cache_size | Integer | No | The snapshot size made in job |
 
 ##### Examples : 
 - [json file example](./src/fixtures/rss.json)       
@@ -49,6 +49,20 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 
 ### Profiles
 
+
+#### Default
+
+You must configure your default Nostr identity through the environment variables. 
+
+You can use a .env file for that. Refer to  the [.env.dist](./.env.dist) as example.
+
+If no private key is provided, a random one will be generated. 
+
+If you have no private key already, you can go on [astral.ninja](https://astral.ninja/) to generate one. 
+
+
+#### Profile Values
+
 | Key           | Type          | Required | Description                                                |
 |---------------|---------------|----------|------------------------------------------------------------|
 | id            | String        | Yes      |                                             |
@@ -61,11 +75,11 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | banner        | String        | No       | A valid URL to an image for banner                         |
 | nip05 | String| No | Identity certificatioon
 | lud16         | String        |No       | LN Wallet |
+| pow_level         | String        |No       | The pow difficulty to use for publishing under the current profile |
 
 ##### Examples : 
 - [json file example](./src/fixtures/profiles.json)       
 - [yaml file example](./src/fixtures/profiles.yaml)
-
 
 ### Templating
 
@@ -91,22 +105,11 @@ Below are the variables you can use for templating :
 
 An example template is provided in the [fixtures](./src/fixtures/default.template)
 
-## Nostr identity
-
-You must configure your Nostr identity through the environment variables. 
-
-You can use a .env file for that. Refer to  the [.env.dist](./.env.dist) as example.
-
-If no private key is provided, a random one will be generated. 
-
-If you have no private key already, you can go on [astral.ninja](https://astral.ninja/) to generate one. 
-
 ## RSS broadcasting 
 
 Cronjob rules are defined in the [feeds config file](./src/fixtures/rss.json) following the [cron crate rules](https://crates.io/crates/cron).
 
 For each tick the remote feed will be matched with a local fingerprint, for which, any unmatching entry against of the feed will be broadcasted to relays. 
-
 
 ## Build from sources
 

@@ -1,9 +1,10 @@
 
 - id: "wikipedia"
-  name: "Latest changes on wikipedia"
-  url: "https://en.wikipedia.org/w/api.php?hidebots=1&hidecategorization=1&hideWikibase=1&urlversion=1&days=7&limit=50&action=feedrecentchanges&feedformat=atom"
-  schedule: "1/5 * * * * * *"
+  name: "New pages on French wikipedia"
+  url: "https://fr.wikipedia.org/w/index.php?title=Sp%C3%A9cial:Nouvelles_pages&feed=atom"
+  schedule: "1/15 * * * * * *"
   tags: ["wikipedia","changes"]
+  pow_level: 15
   profiles: null
   template: "./src/fixtures/default.template"
 - id: "stackernews"
