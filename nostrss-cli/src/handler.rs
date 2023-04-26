@@ -107,8 +107,7 @@ impl CliHandler {
                 let prefix_code = "P_".to_string();
                 let op_code = Self::profile_dispatcher(prefix_code, action);
                 op_code.to_string()
-            }
-            // _ => "OP_UNKNOWN".to_string(),
+            } // _ => "OP_UNKNOWN".to_string(),
         };
 
         response
