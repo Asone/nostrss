@@ -8,9 +8,7 @@ mod handler;
 
 use dotenv::dotenv;
 use handler::CliHandler;
-use tokio::{
-    net::{UnixStream}
-};
+use tokio::net::UnixStream;
 
 use clap::{Parser, Subcommand};
 

@@ -51,11 +51,9 @@ mod tests {
     use dotenv::from_filename;
 
     use super::*;
-    use crate::{
-        rss::{
-            config::{Feed, RssConfig},
-            rss::RssInstance,
-        },
+    use crate::rss::{
+        config::{Feed, RssConfig},
+        rss::RssInstance,
     };
     use tokio_cron_scheduler::JobScheduler;
 

@@ -11,7 +11,6 @@ impl CommandsHandler for RelayCommands {
 }
 
 impl RelayCommands {
-
     fn add() {}
 
     fn remove() {}
