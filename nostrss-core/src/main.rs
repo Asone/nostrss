@@ -4,17 +4,17 @@ mod nostr;
 mod profiles;
 mod rss;
 mod scheduler;
+mod socket;
 mod template;
-use std::sync::Arc;
-use std::thread::sleep;
-use std::time::Duration;
-
 use crate::app::app::{App, AppConfig};
 use crate::scheduler::scheduler::schedule;
 use clap::Parser;
 use dotenv::dotenv;
 use log::info;
 use nostr_sdk::Result;
+use socket::handler::SocketHandler;
+use std::sync::Arc;
+
 use tokio::sync::Mutex;
 
 /// Nostrss provides a bridge beetween rss feeds and [Nostr protocol](https://nostr.com/).
@@ -30,22 +30,26 @@ async fn main() -> Result<()> {
     // init env logger
     env_logger::init();
 
+    // Create Unix socket for CLI util
+    let socket_path = ".nostrss-socket.sock";
+    let socket_handler = Arc::new(Mutex::new(SocketHandler::new(socket_path)));
+
     // Create app instance
     let app = App::new(AppConfig::parse()).await;
 
-    // Arc the main app
+    // // Extract initial feeds list
+    let feeds = app.rss.feeds.clone();
+
+    // // Arc the main app
     let global_app_arc = Arc::new(Mutex::new(app));
-
-    // Lock the app mutex
-    let mut app_lock = global_app_arc.lock().await;
-
-    // Extract initial feeds list
-    let feeds = app_lock.rss.feeds.clone();
 
     /*
     Build job for each feed.
     */
     for feed in feeds {
+        // Lock the app mutex
+        let mut app_lock = global_app_arc.lock().await;
+
         // Local instance of feed
         let f = feed.clone();
 
@@ -70,15 +74,23 @@ async fn main() -> Result<()> {
         _ = &app_lock.rss.scheduler.add(job).await;
     }
 
-    // Start jobs
-    let _ = &app_lock.rss.scheduler.start().await;
-
-    // Input handler
-    // _ = CommandsHandler::new(shared_rss, shared_nostr, feed_fingerprints);
+    // Start jobs.
+    // We scope the instructions in a block to avoidd
+    // locking the app arc on the whole instance as we
+    // need to be able to lock it again later.
+    _ = {
+        let app_lock = global_app_arc.lock().await;
+        _ = &app_lock.rss.scheduler.start().await;
+    };
 
     // Loop to maintain program running
     loop {
         // Sleep to avoid useless high CPU usage
-        sleep(Duration::from_millis(100));
+        // sleep(Duration::from_millis(100));
+        let local_app = Arc::clone(&global_app_arc);
+
+        // Socket handler
+        let stream_lock = socket_handler.lock().await;
+        _ = stream_lock.listen(local_app).await;
     }
 }

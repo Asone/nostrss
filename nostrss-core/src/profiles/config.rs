@@ -447,6 +447,7 @@ mod tests {
             target: "wss://localhost".to_string(),
             active: true,
             proxy: None,
+            pow_level: 0,
         }];
         profile = profile.set_relays(relays);
         assert_eq!(profile.description, Some("Ad lorem ipsum".to_string()));

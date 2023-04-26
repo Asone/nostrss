@@ -5,10 +5,10 @@ use log::info;
 use std::error::Error;
 use std::fmt;
 
-pub struct Feed {
-    url: String,
-    delay: i32,
-}
+// pub struct Feed {
+//     url: String,
+//     delay: i32,
+// }
 
 /// RSS parsing processor
 pub struct RssParser {}

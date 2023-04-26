@@ -35,6 +35,8 @@ pub struct Feed {
     pub template: Option<String>,
     #[serde(default = "Feed::default_cache_size")]
     pub cache_size: usize,
+    #[serde(default = "Feed::default_pow_level")]
+    pub pow_level: u8,
 }
 
 impl Feed {
@@ -77,6 +79,16 @@ impl Feed {
             Err(_) => 100,
         }
     }
+
+    fn default_pow_level() -> u8 {
+        match env::var("DEFAULT_POW_LEVEL")
+            .unwrap_or("0".to_string())
+            .parse::<u8>()
+        {
+            Ok(result) => result,
+            Err(_) => 0,
+        }
+    }
 }
 
 impl Default for Feed {
@@ -90,6 +102,7 @@ impl Default for Feed {
             tags: Some(Vec::new()),
             template: None,
             cache_size: Self::default_cache_size(),
+            pow_level: 0,
         }
     }
 }

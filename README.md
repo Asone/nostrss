@@ -1,6 +1,7 @@
 # Nostrss
-Nostrss is a CLI program that provides a lightweight and flexible bridge beetween RSS feeds and [Nostr protocol](https://nostr.com/).
+Nostrss is a program that provides a lightweight and flexible bridge beetween RSS feeds and [Nostr protocol](https://nostr.com/).
 
+It also provides a CLI to manage your live instance. See more in the below sections. 
 ## Download
 
 You can download the application through the [releases page](https://github.com/Asone/nostrss/releases).
@@ -48,8 +49,6 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 - [yaml file example](./src/fixtures/relays.yaml)
 
 ### Profiles
-
-
 #### Default
 
 You must configure your default Nostr identity through the environment variables. 
@@ -59,7 +58,6 @@ You can use a .env file for that. Refer to  the [.env.dist](./.env.dist) as exam
 If no private key is provided, a random one will be generated. 
 
 If you have no private key already, you can go on [astral.ninja](https://astral.ninja/) to generate one. 
-
 
 #### Profile Values
 
@@ -110,6 +108,10 @@ An example template is provided in the [fixtures](./src/fixtures/default.templat
 Cronjob rules are defined in the [feeds config file](./src/fixtures/rss.json) following the [cron crate rules](https://crates.io/crates/cron).
 
 For each tick the remote feed will be matched with a local fingerprint, for which, any unmatching entry against of the feed will be broadcasted to relays. 
+
+## CLI 
+
+Nostrss comes with a CLI to perform live operations. 
 
 ## Build from sources
 
