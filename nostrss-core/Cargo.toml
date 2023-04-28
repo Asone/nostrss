@@ -7,7 +7,7 @@ edition = "2021"
 serde = "1.0.160"
 serde_json = "1.0.96"
 tokio = { version = "1.27.0", features = ["full"] }
-nostr-sdk = "0.20.0"
+nostr-sdk = "0.21.0"
 tungstenite = { version = "0.19", features = ["rustls-tls-webpki-roots"]}
 clap = { version = "4.2.2", features = ["derive"] }
 tokio-cron-scheduler = "0.9.4"

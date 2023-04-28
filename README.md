@@ -74,6 +74,7 @@ If you have no private key already, you can go on [astral.ninja](https://astral.
 | nip05 | String| No | Identity certificatioon
 | lud16         | String        |No       | LN Wallet |
 | pow_level         | String        |No       | The pow difficulty to use for publishing under the current profile |
+| recommended_relays         | Array of relays ids        |No       | The relays that should be recommended to clients for the published notes |
 
 ##### Examples : 
 - [json file example](./src/fixtures/profiles.json)       

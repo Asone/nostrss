@@ -64,19 +64,6 @@ impl NostrInstance {
         }
     }
 
-    pub async fn send_pow_message(&self, message: &str, tags: &[Tag], pow: u8) {
-        let response = &self.client.publish_pow_text_note(message, tags, pow).await;
-
-        match response {
-            Ok(event_id) => {
-                info!("Message sent successfully. Event Id : {:?}", event_id)
-            }
-            Err(e) => {
-                error!("Error on messsaging : {:?}", e);
-            }
-        }
-    }
-
     // Broadcasts profile metadata (NIP-01) to relays using a
     pub async fn update_profile(&self) -> Result<EventId> {
         let mut metadata = Metadata::new();

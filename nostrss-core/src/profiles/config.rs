@@ -32,6 +32,8 @@ pub struct Profile {
     pub lud16: Option<String>,
     #[serde(default = "Profile::default_pow_level")]
     pub pow_level: u8,
+    #[serde(default)]
+    pub recommended_relays: Option<Vec<String>>,
 }
 
 impl Default for Profile {
@@ -49,6 +51,7 @@ impl Default for Profile {
             nip05: Self::get_env_nip05(),
             lud16: Self::get_env_lud16(),
             pow_level: Self::default_pow_level(),
+            recommended_relays: None,
         }
     }
 }
@@ -280,6 +283,11 @@ impl Profile {
         }
     }
 
+    pub fn set_recommended_relays(mut self, relays: Vec<String>) -> Self {
+        self.recommended_relays = Some(relays);
+        self
+    }
+
     fn get_env_var(var_name: &str) -> Option<String> {
         match env::var(format!("NOSTR_{}", var_name.to_uppercase())) {
             Ok(val) => Some(val),
@@ -303,22 +311,6 @@ impl Profile {
             }
         }
     }
-
-    // pub fn load_keys() -> Keys {
-    //     match env::var("NOSTR_PK") {
-    //         Ok(val) => match Keys::from_sk_str(&val) {
-    //             Ok(val) => val,
-    //             Err(_) => {
-    //                 warn!("Invalid private key found for Nostr. Generating random keys...");
-    //                 Keys::generate()
-    //             }
-    //         },
-    //         Err(_) => {
-    //             warn!("No private key found for Nostr. Generating random keys...");
-    //             Keys::generate()
-    //         }
-    //     }
-    // }
 
     pub fn load_json_relays(mut self, path: &Path) -> Self {
         let file = match std::fs::File::open(path) {
