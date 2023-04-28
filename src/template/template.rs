@@ -52,7 +52,8 @@ impl TemplateProcessor {
         map.insert("name", data.name.clone());
 
         let mut tags_string = "".to_string();
-        for tag in data.clone().tags.unwrap() {
+
+        for tag in data.clone().tags.unwrap_or(Vec::new()) {
             // tags.push(Tag::Hashtag(tag.clone()));
             tags_string = format!("{} #{}", tags_string, tag);
         }
