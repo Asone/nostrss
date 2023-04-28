@@ -234,14 +234,14 @@ mod tests {
                 target: "wss://nostr.up".to_string(),
                 active: true,
                 proxy: None,
-                pow_level: 0
+                pow_level: 0,
             },
             Relay {
                 name: "mushroom".to_string(),
                 target: "wss://mushroom.dev".to_string(),
                 active: true,
                 proxy: None,
-                pow_level: 0
+                pow_level: 0,
             },
         ]
         .to_vec();
