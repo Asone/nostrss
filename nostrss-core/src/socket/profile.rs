@@ -1,5 +1,9 @@
 use std::sync::Arc;
 
+use nostr_sdk::{
+    prelude::{FromSkStr, ToBech32},
+    Keys,
+};
 use tokio::sync::Mutex;
 
 use crate::app::app::App;
@@ -37,7 +41,18 @@ impl ProfileCommandHandler {
         };
         let mut res = "Profiles list:".to_string();
         for (key, value) in app_lock.profiles.iter() {
-            res = format!("{}\n* {} : {}", res, key, value.private_key);
+            let keys = match Keys::from_sk_str(&value.private_key) {
+                Ok(keys) => keys,
+                Err(_) => {
+                    continue;
+                }
+            };
+            res = format!(
+                "{}\n* {} : {}",
+                res,
+                key,
+                keys.public_key().to_bech32().unwrap()
+            );
         }
         res
     }

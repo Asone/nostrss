@@ -1,2 +1,2 @@
 [workspace]
-members = ["nostrss-core","nostrss-cli"]
+members = ["nostrss-core","nostrss-cli","nostrss-grpc"]

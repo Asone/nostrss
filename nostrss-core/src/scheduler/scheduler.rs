@@ -70,8 +70,15 @@ pub async fn schedule(
                 }
             };
         })
-    })
-    .unwrap();
+    });
+
+    let job = match job {
+        Ok(j) => j,
+        Err(e) => {
+            println!("{:?}", e);
+            panic!()
+        }
+    };
 
     let f = feed.clone();
 

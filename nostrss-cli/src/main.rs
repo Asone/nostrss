@@ -6,32 +6,49 @@ mod commands;
 //: The application is based on async cronjobs.
 mod handler;
 
+use std::process::exit;
+
 use dotenv::dotenv;
 use handler::CliHandler;
-use tokio::net::UnixStream;
 
-use clap::{Parser, Subcommand};
+use clap::{command, Parser, Subcommand, ValueEnum};
 
+use nostrss_grpc::grpc::nostrss_grpc_client::NostrssGrpcClient;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    subcommand: Subcommands,
 }
 
-#[derive(Subcommand)]
-pub enum Relay {
+#[derive(Clone, PartialEq, Parser, Debug, ValueEnum)]
+pub enum RelayActions {
+    #[clap(name = "add")]
     Add,
     Delete,
     List,
 }
 
-#[derive(Subcommand)]
-pub enum Commands {
-    /// Provides commands for relay management
-    Relay { action: String },
-    /// Provides commands for feed management
+#[derive(Debug, PartialEq, Parser)]
+pub enum Subcommands {
+    #[clap(
+        name = "relay",
+        about = "Provides commands for relay management",
+        long_about = r#"
+            Available actions for relays: 
+            * add : Add a relay
+            * delete : Removes a relay
+            * list : List the active relays
+            * info : Get info on a relay
+"#
+    )]
+    Relay {
+        #[clap(name = "action", long = "The action to be done")]
+        action: String,
+    },
+
+    #[clap(name = "feed", about = "Provides commands for feed mcanagement")]
     Feed { action: String },
     /// Provides commands for Profile management
     Profile { action: String },
@@ -43,24 +60,21 @@ pub enum Commands {
 async fn main() {
     dotenv().ok();
 
-    let socket_path = ".nostrss-socket.sock";
+    // Creates the gRPC client
+    let client = match NostrssGrpcClient::connect("http://[::1]:9999").await {
+        Ok(c) => c,
+        Err(e) => {
+            log::error!("Could not connect to core service. Are you sure it is up ?");
+            panic!("{}", e);
+        }
+    };
 
     // Get CLI arguments and parameters
     let cli = Cli::parse();
 
-    // Create unix socket connection
-    let unix_stream = UnixStream::connect(socket_path).await;
+    let mut handler = CliHandler { client };
+    _ = handler.dispatcher(cli.subcommand).await;
 
-    // In case we fail connecting
-    if unix_stream.is_err() {
-        panic!("Could not connect to socket. Exiting...");
-    }
-
-    let mut stream = unix_stream.unwrap();
-
-    let result = CliHandler::dispatcher(cli.command);
-    _ = CliHandler::send(&mut stream, result).await;
-    let response = CliHandler::response(&mut stream).await;
-
-    println!("{}", response);
+    // If we reach this point we close the program gracefully
+    exit(1);
 }

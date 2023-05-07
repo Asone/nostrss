@@ -1,5 +1,6 @@
 // mod commands;
 mod app;
+mod grpc;
 mod nostr;
 mod profiles;
 mod rss;
@@ -10,10 +11,13 @@ use crate::app::app::{App, AppConfig};
 use crate::scheduler::scheduler::schedule;
 use clap::Parser;
 use dotenv::dotenv;
+use grpc::grpc_service::NostrssServerService;
 use log::info;
 use nostr_sdk::Result;
+use nostrss_grpc::grpc::nostrss_grpc_server::NostrssGrpcServer;
 use socket::handler::SocketHandler;
 use std::sync::Arc;
+use tonic::transport::Server;
 
 use tokio::sync::Mutex;
 
@@ -80,11 +84,26 @@ async fn main() -> Result<()> {
     // need to be able to lock it again later.
     _ = {
         let app_lock = global_app_arc.lock().await;
-        _ = &app_lock.rss.scheduler.start().await;
+        //  _ = &app_lock.rss.scheduler.start().await;
+    };
+
+    _ = {
+        let local_app = Arc::clone(&global_app_arc);
+        let nostrss_grpc = NostrssServerService { app: local_app };
+        let address = "[::1]:9999".parse().unwrap();
+        match Server::builder()
+            .add_service(NostrssGrpcServer::new(nostrss_grpc))
+            .serve(address)
+            .await
+        {
+            Ok(r) => println!("{:?}", r),
+            Err(e) => panic!("{:?}", e),
+        };
     };
 
     // Loop to maintain program running
     loop {
+        println!("loop");
         // Sleep to avoid useless high CPU usage
         // sleep(Duration::from_millis(100));
         let local_app = Arc::clone(&global_app_arc);

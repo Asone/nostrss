@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package nostrss;
+
+// import "protos/feed.proto";
+// import "protos/profile.proto";
+// import "relay.proto";
+
+
+service NostrssGRPC {
+    // rpc ProfileList (ProfileListRequest) returns (ProfileItems);
+        rpc State (StateRequest) returns (StateResponse);
+        
+        rpc ProfilesList (ProfilesListRequest) returns (ProfilesListResponse);
+        rpc ProfileInfo (ProfileInfoRequest) returns (ProfileInfoResponse);
+
+        rpc FeedsList (FeedsListRequest) returns (FeedsListResponse);
+        rpc FeedInfo (FeedInfoRequest) returns (FeedInfoResponse);
+        rpc DeleteFeed (DeleteFeedRequest) returns (DeleteFeedResponse);
+        rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
+        
+        rpc StartJob (StartJobRequest) returns (StartJobResponse);
+        rpc StopJob (StopJobRequest) returns (StopJobResponse);
+        
+        // rpc StartStream (StartStreamRequest) returns (StartStreamResponse);
+        // rpc StopStream (StopStreamRequest) returns (StopStreamResponse);
+}
+
+// message StopStreamRequest {}
+// message StopStreamResponse {}
+
+message StartJobRequest {
+    string feed_id = 1;
+}
+message StartJobResponse {}
+
+message StopJobRequest {
+    string feed_id = 1;
+}
+message StopJobResponse {}
+
+message StartStreamRequest {}
+message StartStreamResponse {}
+
+message StateRequest {}
+message StateResponse {
+    string state = 1;
+}
+
+message FeedItem {
+    string id = 1;
+    string name = 2;
+    string url = 3;
+    string schedule = 4;
+    repeated string profiles = 5;
+    repeated string tags = 6;
+    optional string template = 7;
+    uint64 cache_size = 8;
+    uint64 pow_level = 9;
+}
+
+
+// === Feeds ===
+message FeedsListRequest{}
+message FeedsListResponse {
+    repeated FeedItem feeds = 1;
+}
+
+message AddFeedRequest {
+    
+}
+
+message AddFeedResponse {
+
+}
+
+message DeleteFeedRequest {
+    string id = 1;
+}
+
+message DeleteFeedResponse {
+    
+}
+
+message FeedInfoRequest {
+    string id = 1;
+}
+
+message FeedInfoResponse {
+    FeedItem feed = 1;
+}
+
+// === Profiles ===
+
+message ProfilesListRequest {}
+message ProfilesListResponse {
+    repeated ProfileItem profiles = 1; 
+}
+
+message ProfileItem {
+    string id = 1;
+    string public_key = 2;
+    optional string name = 3;
+    repeated string relays = 4;
+    optional string display_name = 5;
+    optional string description = 6;
+    optional string picture = 7;
+    optional string banner = 8;
+    optional string nip05 = 9;
+    optional string lud16 = 10;
+    optional int32 pow_level = 11;
+    repeated string recommended_relays = 12;
+}
+
+message NewProfileItem {
+    string id = 1;
+    string private_key = 2;
+    optional string name = 3;
+    repeated string relays = 4;
+    optional string display_name = 5;
+    optional string description = 6;
+    optional string picture = 7;
+    optional string banner = 8;
+    optional string nip05 = 9;
+    optional string lud16 = 10;
+    optional int32 pow_level = 11;
+    repeated string recommended_relays = 12;
+}
+
+message AddProfileRequest {
+    NewProfileItem profile = 1;
+}
+
+message AddProfileResponse {
+    
+}
+
+message DeleteProfileRequest {
+    string id = 1;
+}
+
+message DeleteProfileResponse {
+}
+
+message ProfileInfoRequest {
+    string id = 1;
+}
+
+message ProfileInfoResponse {
+    ProfileItem profile = 1;
+}

@@ -1,0 +1,36 @@
+syntax = "proto3";
+package nostrss.feed;
+
+message FeedItem {
+    string id = 1;
+    string name = 2;
+    string url = 3;
+    string schedule = 4;
+    repeated string profiles = 5;
+    repeated string tags = 6;
+    optional string template = 7;
+    uint64 cache_size = 8;
+    uint64 pow_level = 9;
+}
+
+
+message FeedsListRequest{}
+message FeedsListResponse {
+    repeated FeedItem feeds = 1;
+}
+
+message AddFeedRequest {
+    
+}
+
+message AddFeedResponse {
+
+}
+
+message DeleteFeedRequest {
+    string id = 1;
+}
+
+message DeleteFeedResponse {
+    
+}

@@ -27,14 +27,21 @@ openssl = { version = "0.10.50", features = ["vendored"] }
 new_string_template = "1.4.0"
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 regex = "1.7.3"
+tonic = "0.9.2"
 
 [dev-dependencies]
 tempfile = "3.4.0"
 mockall = "0.11.3"
 mime = "0.3.17"
 
+[dependencies.nostrss_grpc]
+path = "../nostrss-grpc"
+
 [profile.release]
 strip = true  # Automatically strip symbols from the binary.
 opt-level = "z"  # Optimize for size.
 lto = true
 panic = "abort"
+
+[build-dependencies]
+tonic-build = "0.9.2"
