@@ -11,7 +11,7 @@ use std::process::exit;
 use dotenv::dotenv;
 use handler::CliHandler;
 
-use clap::{command, Parser, Subcommand, ValueEnum};
+use clap::{command, Parser, ValueEnum};
 
 use nostrss_grpc::grpc::nostrss_grpc_client::NostrssGrpcClient;
 #[derive(Parser)]

@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-use crate::RelayActions;
-
 use super::CommandsHandler;
 use nostrss_grpc::grpc::nostrss_grpc_client::NostrssGrpcClient;
 use tonic::async_trait;
