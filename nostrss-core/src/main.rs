@@ -16,7 +16,10 @@ use log::info;
 use nostr_sdk::Result;
 use nostrss_grpc::grpc::nostrss_grpc_server::NostrssGrpcServer;
 use socket::handler::SocketHandler;
+use std::env;
 use std::sync::Arc;
+use std::thread::sleep;
+use std::time::Duration;
 use tonic::transport::Server;
 
 use tokio::sync::Mutex;
@@ -84,13 +87,14 @@ async fn main() -> Result<()> {
     // need to be able to lock it again later.
     _ = {
         let app_lock = global_app_arc.lock().await;
-        //  _ = &app_lock.rss.scheduler.start().await;
+        // _ = &app_lock.rss.scheduler.start().await;
     };
 
     _ = {
+        let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());
         let local_app = Arc::clone(&global_app_arc);
         let nostrss_grpc = NostrssServerService { app: local_app };
-        let address = "[::1]:9999".parse().unwrap();
+        let address = grpc_address.parse().unwrap();
         match Server::builder()
             .add_service(NostrssGrpcServer::new(nostrss_grpc))
             .serve(address)
@@ -105,11 +109,6 @@ async fn main() -> Result<()> {
     loop {
         println!("loop");
         // Sleep to avoid useless high CPU usage
-        // sleep(Duration::from_millis(100));
-        let local_app = Arc::clone(&global_app_arc);
-
-        // Socket handler
-        let stream_lock = socket_handler.lock().await;
-        _ = stream_lock.listen(local_app).await;
+        sleep(Duration::from_millis(100));
     }
 }

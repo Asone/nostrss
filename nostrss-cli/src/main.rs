@@ -6,7 +6,7 @@ mod commands;
 //: The application is based on async cronjobs.
 mod handler;
 
-use std::process::exit;
+use std::{env, process::exit};
 
 use dotenv::dotenv;
 use handler::CliHandler;
@@ -60,8 +60,11 @@ pub enum Subcommands {
 async fn main() {
     dotenv().ok();
 
+    let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());
+
+    let grpc_full_address = format!("{}{}", "http://", grpc_address);
     // Creates the gRPC client
-    let client = match NostrssGrpcClient::connect("http://[::1]:9999").await {
+    let client = match NostrssGrpcClient::connect(grpc_full_address).await {
         Ok(c) => c,
         Err(e) => {
             log::error!("Could not connect to core service. Are you sure it is up ?");
