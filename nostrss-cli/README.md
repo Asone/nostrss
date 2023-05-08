@@ -4,34 +4,27 @@ Nostrss-cli is a CLI program that provides helpers to manage live instance of No
 
 Please, do note that any operation performed through CLI will be currently lost on instance restart. 
 
-## State
+## State commands
 
-> nostrss-cli state
+| Command | Description |
+|-|-|
+| nostrss-cli state | Ensures the core can be reached | 
 
-Will check 
 
 ## Profiles
 
-### List 
+| Command | Description | 
+|-|-|
+| nostrss-cli profile list | Lists the profiles |
+| nostrss-cli profile add | Add a new profile (not implemented yet) | 
+| nostrss-cli profile delete | Remove a profile | 
+| nostrss-cli profile info | Get info of a specific profile | 
 
-> nostrss-cli profile list
+### Feeds
 
-Will retrieve the list of the loaded profiles 
-
-> nostrss-cli profile info 
-
-Will ask for an Id to retrieve the full information regarding a loaded profile
-
-## Feeds
-
-### List
-
-> nostrss-cli feed list
-
-### Info
-
-> nostrss-cli feed info
-
-### Delete
-
-> nostrss-cli feed delete
+| Command | Description | 
+|-|-|
+| nostrss-cli feed list | Lists the feeds |
+| nostrss-cli feed add | Add a new feed (not implemented yet) | 
+| nostrss-cli feed delete | Remove a feed | 
+| nostrss-cli feed info | Get info of a specific feed | 

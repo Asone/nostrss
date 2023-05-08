@@ -3,19 +3,18 @@ syntax = "proto3";
 package nostrss;
 
 service NostrssGRPC {
-    // rpc ProfileList (ProfileListRequest) returns (ProfileItems);
-        rpc State (StateRequest) returns (StateResponse);
-        
-        rpc ProfilesList (ProfilesListRequest) returns (ProfilesListResponse);
-        rpc ProfileInfo (ProfileInfoRequest) returns (ProfileInfoResponse);
+    rpc State (StateRequest) returns (StateResponse);
+    
+    rpc ProfilesList (ProfilesListRequest) returns (ProfilesListResponse);
+    rpc ProfileInfo (ProfileInfoRequest) returns (ProfileInfoResponse);
 
-        rpc FeedsList (FeedsListRequest) returns (FeedsListResponse);
-        rpc FeedInfo (FeedInfoRequest) returns (FeedInfoResponse);
-        rpc DeleteFeed (DeleteFeedRequest) returns (DeleteFeedResponse);
-        rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
-        
-        rpc StartJob (StartJobRequest) returns (StartJobResponse);
-        rpc StopJob (StopJobRequest) returns (StopJobResponse);
+    rpc FeedsList (FeedsListRequest) returns (FeedsListResponse);
+    rpc FeedInfo (FeedInfoRequest) returns (FeedInfoResponse);
+    rpc DeleteFeed (DeleteFeedRequest) returns (DeleteFeedResponse);
+    rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
+    
+    rpc StartJob (StartJobRequest) returns (StartJobResponse);
+    rpc StopJob (StopJobRequest) returns (StopJobResponse);
 
 }
 

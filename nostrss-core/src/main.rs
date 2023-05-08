@@ -5,7 +5,6 @@ mod nostr;
 mod profiles;
 mod rss;
 mod scheduler;
-mod socket;
 mod template;
 use crate::app::app::{App, AppConfig};
 use crate::scheduler::scheduler::schedule;
@@ -15,7 +14,6 @@ use grpc::grpc_service::NostrssServerService;
 use log::info;
 use nostr_sdk::Result;
 use nostrss_grpc::grpc::nostrss_grpc_server::NostrssGrpcServer;
-use socket::handler::SocketHandler;
 use std::env;
 use std::sync::Arc;
 use std::thread::sleep;
@@ -36,10 +34,6 @@ async fn main() -> Result<()> {
 
     // init env logger
     env_logger::init();
-
-    // Create Unix socket for CLI util
-    let socket_path = ".nostrss-socket.sock";
-    let socket_handler = Arc::new(Mutex::new(SocketHandler::new(socket_path)));
 
     // Create app instance
     let app = App::new(AppConfig::parse()).await;
@@ -87,14 +81,18 @@ async fn main() -> Result<()> {
     // need to be able to lock it again later.
     _ = {
         let app_lock = global_app_arc.lock().await;
-        // _ = &app_lock.rss.scheduler.start().await;
+        _ = &app_lock.rss.scheduler.start().await;
     };
 
+    // GRPC server
     _ = {
-        let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());
         let local_app = Arc::clone(&global_app_arc);
-        let nostrss_grpc = NostrssServerService { app: local_app };
+
+        let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());
         let address = grpc_address.parse().unwrap();
+
+        let nostrss_grpc = NostrssServerService { app: local_app };
+
         match Server::builder()
             .add_service(NostrssGrpcServer::new(nostrss_grpc))
             .serve(address)

@@ -270,7 +270,6 @@ pub mod nostrss_grpc_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        /// rpc ProfileList (ProfileListRequest) returns (ProfileItems);
         pub async fn state(
             &mut self,
             request: impl tonic::IntoRequest<super::StateRequest>,
@@ -501,7 +500,6 @@ pub mod nostrss_grpc_server {
     /// Generated trait containing gRPC methods that should be implemented for use with NostrssGrpcServer.
     #[async_trait]
     pub trait NostrssGrpc: Send + Sync + 'static {
-        /// rpc ProfileList (ProfileListRequest) returns (ProfileItems);
         async fn state(
             &self,
             request: tonic::Request<super::StateRequest>,
