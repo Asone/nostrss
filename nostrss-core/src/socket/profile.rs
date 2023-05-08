@@ -105,7 +105,7 @@ mod tests {
         };
 
         let result = ProfileCommandHandler::list(Arc::new(Mutex::new(app))).await;
-        let expected = "Profiles list:\n* test : 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        let expected = "Profiles list:\n* test : npub1ger2u5z8x945yvxsppkg4nkxslcqk8xe68wxxnmvkdv2cz563lls9fwehy";
         assert_eq!(result, expected);
     }
 }
