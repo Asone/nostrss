@@ -2,11 +2,6 @@ syntax = "proto3";
 
 package nostrss;
 
-// import "protos/feed.proto";
-// import "protos/profile.proto";
-// import "relay.proto";
-
-
 service NostrssGRPC {
     // rpc ProfileList (ProfileListRequest) returns (ProfileItems);
         rpc State (StateRequest) returns (StateResponse);
@@ -21,13 +16,8 @@ service NostrssGRPC {
         
         rpc StartJob (StartJobRequest) returns (StartJobResponse);
         rpc StopJob (StopJobRequest) returns (StopJobResponse);
-        
-        // rpc StartStream (StartStreamRequest) returns (StartStreamResponse);
-        // rpc StopStream (StopStreamRequest) returns (StopStreamResponse);
-}
 
-// message StopStreamRequest {}
-// message StopStreamResponse {}
+}
 
 message StartJobRequest {
     string feed_id = 1;
