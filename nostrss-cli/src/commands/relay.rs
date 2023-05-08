@@ -1,29 +1,43 @@
 #![allow(dead_code)]
+
 use super::CommandsHandler;
+use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::nostrss_grpc_client::NostrssGrpcClient;
 use tonic::async_trait;
 use tonic::transport::Channel;
+
+#[derive(Clone, PartialEq, Parser, Debug, ValueEnum)]
+pub enum RelayActions {
+    Add,
+    Delete,
+    List,
+}
 
 pub struct RelayCommandsHandler {
     pub client: NostrssGrpcClient<Channel>,
 }
 
 #[async_trait]
-impl CommandsHandler for RelayCommandsHandler {
-    async fn handle(&mut self, action: String) {
-        match action.as_str() {
-            "add" => self.add(),
-            "delete" => self.delete(),
-            "list" => self.list(),
+impl CommandsHandler for RelayCommandsHandler {}
+
+impl RelayCommandsHandler {
+    pub async fn handle(&mut self, action: RelayActions) {
+        match action {
+            RelayActions::Add => self.add(),
+            RelayActions::Delete => self.delete(),
+            RelayActions::List => self.list(),
             _ => {}
         }
     }
-}
+    fn list(&self) {
+        println!("List relays");
+    }
 
-impl RelayCommandsHandler {
-    fn list(&self) {}
+    fn add(&self) {
+        println!("add relay");
+    }
 
-    fn add(&self) {}
-
-    fn delete(&mut self) {}
+    fn delete(&mut self) {
+        println!("add relay");
+    }
 }

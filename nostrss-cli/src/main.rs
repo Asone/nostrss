@@ -8,26 +8,20 @@ mod handler;
 
 use std::{env, process::exit};
 
+use commands::{feed::FeedActions, profile::ProfileActions, relay::RelayActions};
 use dotenv::dotenv;
 use handler::CliHandler;
 
-use clap::{command, Parser, ValueEnum};
+use clap::{command, Parser};
 
 use nostrss_grpc::grpc::nostrss_grpc_client::NostrssGrpcClient;
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
     subcommand: Subcommands,
-}
-
-#[derive(Clone, PartialEq, Parser, Debug, ValueEnum)]
-pub enum RelayActions {
-    #[clap(name = "add")]
-    Add,
-    Delete,
-    List,
 }
 
 #[derive(Debug, PartialEq, Parser)]
@@ -44,14 +38,14 @@ pub enum Subcommands {
 "#
     )]
     Relay {
-        #[clap(name = "action", long = "The action to be done")]
-        action: String,
+        #[clap(name = "action")]
+        action: RelayActions,
     },
 
     #[clap(name = "feed", about = "Provides commands for feed mcanagement")]
-    Feed { action: String },
+    Feed { action: FeedActions },
     /// Provides commands for Profile management
-    Profile { action: String },
+    Profile { action: ProfileActions },
     /// Checks health of core
     State,
 }

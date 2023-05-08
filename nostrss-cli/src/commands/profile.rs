@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
     nostrss_grpc_client::NostrssGrpcClient, DeleteProfileRequest, ProfileInfoRequest, ProfileItem,
     ProfilesListRequest,
@@ -8,6 +9,14 @@ use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
 
 use super::CommandsHandler;
+
+#[derive(Clone, PartialEq, Parser, Debug, ValueEnum)]
+pub enum ProfileActions {
+    Add,
+    Delete,
+    List,
+    Info,
+}
 
 pub struct ProfileCommandsHandler {
     pub client: NostrssGrpcClient<Channel>,
@@ -134,19 +143,19 @@ impl FullProfileTemplate {
     }
 }
 #[async_trait]
-impl CommandsHandler for ProfileCommandsHandler {
-    async fn handle(&mut self, action: String) {
-        match action.as_str() {
-            "add" => self.add(),
-            "delete" => self.delete().await,
-            "list" => self.list().await,
-            "info" => self.info().await,
+impl CommandsHandler for ProfileCommandsHandler {}
+
+impl ProfileCommandsHandler {
+    pub async fn handle(&mut self, action: ProfileActions) {
+        match action {
+            ProfileActions::Add => self.add(),
+            ProfileActions::Delete => self.delete().await,
+            ProfileActions::List => self.list().await,
+            ProfileActions::Info => self.info().await,
             _ => {}
         }
     }
-}
 
-impl ProfileCommandsHandler {
     async fn list(&mut self) {
         // Case logic should come here
         let request = tonic::Request::new(ProfilesListRequest {});

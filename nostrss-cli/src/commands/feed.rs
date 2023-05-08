@@ -1,10 +1,19 @@
 #![allow(dead_code)]
 
+use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{nostrss_grpc_client::NostrssGrpcClient, FeedsListRequest};
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
 
 use super::CommandsHandler;
+
+#[derive(Clone, PartialEq, Parser, Debug, ValueEnum)]
+pub enum FeedActions {
+    Add,
+    Delete,
+    List,
+    Info,
+}
 
 pub struct FeedCommandsHandler {
     pub client: NostrssGrpcClient<Channel>,
@@ -28,18 +37,18 @@ impl FeedsTemplate {
 }
 
 #[async_trait]
-impl CommandsHandler for FeedCommandsHandler {
-    async fn handle(&mut self, action: String) {
-        match action.as_str() {
-            "add" => self.add(),
-            "delete" => self.delete(),
-            "list" => self.list().await,
+impl CommandsHandler for FeedCommandsHandler {}
+
+impl FeedCommandsHandler {
+    pub async fn handle(&mut self, action: FeedActions) {
+        match action {
+            FeedActions::Add => self.add(),
+            FeedActions::Delete => self.delete(),
+            FeedActions::List => self.list().await,
             _ => {}
         }
     }
-}
 
-impl FeedCommandsHandler {
     async fn list(&mut self) {
         // Case logic should come here
         let request = tonic::Request::new(FeedsListRequest {});

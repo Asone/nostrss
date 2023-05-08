@@ -5,10 +5,6 @@ use tonic::async_trait;
 /// Common trait for sub-handlers.
 #[async_trait]
 pub trait CommandsHandler {
-    // All sub-handlers should have a unique entrypoint
-    // to dispatch the actions.
-    async fn handle(&mut self, command: String);
-
     // A default helper to get input data from user.
     fn get_input(&self, label: &str) -> String {
         let mut data = String::new();
