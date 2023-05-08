@@ -30,9 +30,9 @@ jobs:
           ~/.cargo/git
           target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: 🏗 Build core
-      run: cargo build --manifest-path nostrss-core/Cargo.toml --verbose
+    - name: 🏗 Build
+      run: cargo build --verbose
     - name: 🎯 Run tests
       env:
         RUST_TEST_THREADS: 1
-      run: cargo test --manifest-path nostrss-core/Cargo.toml --verbose
+      run: cargo test --verbose
