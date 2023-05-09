@@ -1,6 +1,6 @@
 [package]
 name = "nostrss"
-version = "0.3.1-alpha"
+version = "0.4.0-alpha"
 edition = "2021"
 
 [dependencies]
@@ -35,7 +35,6 @@ mockall = "0.11.3"
 mime = "0.3.17"
 
 [dependencies.nostrss_grpc]
-version = "0.1.0"
 path = "../nostrss-grpc"
 
 [profile.release]

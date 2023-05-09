@@ -1537,7 +1537,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss"
-version = "0.3.1-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "async-std",
  "async-trait",
@@ -1572,7 +1572,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss-cli"
-version = "0.1.0-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "clap",
  "dotenv",

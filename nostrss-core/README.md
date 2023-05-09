@@ -1,7 +1,5 @@
 # nostrss (Core)
 
-
-
 ## Run 
 
 To run the program you will have to provide two arguments : 
