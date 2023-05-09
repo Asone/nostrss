@@ -152,7 +152,6 @@ impl ProfileCommandsHandler {
             ProfileActions::Delete => self.delete().await,
             ProfileActions::List => self.list().await,
             ProfileActions::Info => self.info().await,
-            _ => {}
         }
     }
 

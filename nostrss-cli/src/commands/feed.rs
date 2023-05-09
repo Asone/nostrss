@@ -111,7 +111,6 @@ impl FeedCommandsHandler {
             FeedActions::Delete => self.delete(),
             FeedActions::List => self.list().await,
             FeedActions::Info => self.info().await,
-            _ => {}
         }
     }
 

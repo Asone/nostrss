@@ -26,7 +26,6 @@ impl RelayCommandsHandler {
             RelayActions::Add => self.add(),
             RelayActions::Delete => self.delete(),
             RelayActions::List => self.list(),
-            _ => {}
         }
     }
     fn list(&self) {
