@@ -210,6 +210,7 @@ mod tests {
             target: "ws://umbrel.local".to_string(),
             proxy: None,
             active: true,
+            pow_level: 0,
         });
 
         let profile = Profile {
@@ -268,6 +269,7 @@ mod tests {
             target: "ws://umbrel.local".to_string(),
             proxy: None,
             active: true,
+            pow_level: 0,
         });
 
         let profile = Profile {

@@ -56,6 +56,9 @@ jobs:
           profile: minimal
           override: true
 
+      - name: Install protobuf dependency
+        run: sudo apt-get -y install protobuf-compiler
+        
       - name: Build debug
         uses: actions-rs/cargo@v1
         with:

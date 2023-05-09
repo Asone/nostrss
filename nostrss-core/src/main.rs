@@ -1,20 +1,25 @@
 // mod commands;
 mod app;
+mod grpc;
 mod nostr;
 mod profiles;
 mod rss;
 mod scheduler;
 mod template;
-use std::sync::Arc;
-use std::thread::sleep;
-use std::time::Duration;
-
 use crate::app::app::{App, AppConfig};
 use crate::scheduler::scheduler::schedule;
 use clap::Parser;
 use dotenv::dotenv;
+use grpc::grpc_service::NostrssServerService;
 use log::info;
 use nostr_sdk::Result;
+use nostrss_grpc::grpc::nostrss_grpc_server::NostrssGrpcServer;
+use std::env;
+use std::sync::Arc;
+use std::thread::sleep;
+use std::time::Duration;
+use tonic::transport::Server;
+
 use tokio::sync::Mutex;
 
 /// Nostrss provides a bridge beetween rss feeds and [Nostr protocol](https://nostr.com/).
@@ -33,19 +38,19 @@ async fn main() -> Result<()> {
     // Create app instance
     let app = App::new(AppConfig::parse()).await;
 
-    // Arc the main app
+    // // Extract initial feeds list
+    let feeds = app.rss.feeds.clone();
+
+    // // Arc the main app
     let global_app_arc = Arc::new(Mutex::new(app));
-
-    // Lock the app mutex
-    let mut app_lock = global_app_arc.lock().await;
-
-    // Extract initial feeds list
-    let feeds = app_lock.rss.feeds.clone();
 
     /*
     Build job for each feed.
     */
     for feed in feeds {
+        // Lock the app mutex
+        let mut app_lock = global_app_arc.lock().await;
+
         // Local instance of feed
         let f = feed.clone();
 
@@ -70,14 +75,37 @@ async fn main() -> Result<()> {
         _ = &app_lock.rss.scheduler.add(job).await;
     }
 
-    // Start jobs
-    let _ = &app_lock.rss.scheduler.start().await;
+    // Start jobs.
+    // We scope the instructions in a block to avoidd
+    // locking the app arc on the whole instance as we
+    // need to be able to lock it again later.
+    _ = {
+        let app_lock = global_app_arc.lock().await;
+        _ = &app_lock.rss.scheduler.start().await;
+    };
 
-    // Input handler
-    // _ = CommandsHandler::new(shared_rss, shared_nostr, feed_fingerprints);
+    // GRPC server
+    _ = {
+        let local_app = Arc::clone(&global_app_arc);
+
+        let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());
+        let address = grpc_address.parse().unwrap();
+
+        let nostrss_grpc = NostrssServerService { app: local_app };
+
+        match Server::builder()
+            .add_service(NostrssGrpcServer::new(nostrss_grpc))
+            .serve(address)
+            .await
+        {
+            Ok(r) => println!("{:?}", r),
+            Err(e) => panic!("{:?}", e),
+        };
+    };
 
     // Loop to maintain program running
     loop {
+        println!("loop");
         // Sleep to avoid useless high CPU usage
         sleep(Duration::from_millis(100));
     }

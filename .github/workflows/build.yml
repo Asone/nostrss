@@ -22,6 +22,8 @@ jobs:
           toolchain: 1.66
           override: true
           components: rustc
+    - name: Install protobuf dependency
+      run: sudo apt-get -y install protobuf-compiler
     - name: ⚡ Cache
       uses: actions/cache@v3
       with:

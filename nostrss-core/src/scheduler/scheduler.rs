@@ -70,8 +70,15 @@ pub async fn schedule(
                 }
             };
         })
-    })
-    .unwrap();
+    });
+
+    let job = match job {
+        Ok(j) => j,
+        Err(e) => {
+            println!("{:?}", e);
+            panic!()
+        }
+    };
 
     let f = feed.clone();
 
@@ -234,12 +241,14 @@ mod tests {
                 target: "wss://nostr.up".to_string(),
                 active: true,
                 proxy: None,
+                pow_level: 0,
             },
             Relay {
                 name: "mushroom".to_string(),
                 target: "wss://mushroom.dev".to_string(),
                 active: true,
                 proxy: None,
+                pow_level: 0,
             },
         ]
         .to_vec();
