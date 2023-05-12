@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "proto2";
 
 package nostrss;
 
@@ -19,12 +19,12 @@ service NostrssGRPC {
 }
 
 message StartJobRequest {
-    string feed_id = 1;
+    required string feed_id = 1;
 }
 message StartJobResponse {}
 
 message StopJobRequest {
-    string feed_id = 1;
+    required string feed_id = 1;
 }
 message StopJobResponse {}
 
@@ -33,19 +33,19 @@ message StartStreamResponse {}
 
 message StateRequest {}
 message StateResponse {
-    string state = 1;
+    required string state = 1;
 }
 
 message FeedItem {
-    string id = 1;
-    string name = 2;
-    string url = 3;
-    string schedule = 4;
+    required string id = 1;
+    required string name = 2;
+    required string url = 3;
+    required string schedule = 4;
     repeated string profiles = 5;
     repeated string tags = 6;
     optional string template = 7;
-    uint64 cache_size = 8;
-    uint64 pow_level = 9;
+    required uint64 cache_size = 8;
+    required uint64 pow_level = 9;
 }
 
 
@@ -64,7 +64,7 @@ message AddFeedResponse {
 }
 
 message DeleteFeedRequest {
-    string id = 1;
+    required string id = 1;
 }
 
 message DeleteFeedResponse {
@@ -72,11 +72,11 @@ message DeleteFeedResponse {
 }
 
 message FeedInfoRequest {
-    string id = 1;
+    required string id = 1;
 }
 
 message FeedInfoResponse {
-    FeedItem feed = 1;
+    required FeedItem feed = 1;
 }
 
 // === Profiles ===
@@ -87,8 +87,8 @@ message ProfilesListResponse {
 }
 
 message ProfileItem {
-    string id = 1;
-    string public_key = 2;
+    required string id = 1;
+    required string public_key = 2;
     optional string name = 3;
     repeated string relays = 4;
     optional string display_name = 5;
@@ -102,8 +102,8 @@ message ProfileItem {
 }
 
 message NewProfileItem {
-    string id = 1;
-    string private_key = 2;
+    required string id = 1;
+    required string private_key = 2;
     optional string name = 3;
     repeated string relays = 4;
     optional string display_name = 5;
@@ -117,7 +117,7 @@ message NewProfileItem {
 }
 
 message AddProfileRequest {
-    NewProfileItem profile = 1;
+    required NewProfileItem profile = 1;
 }
 
 message AddProfileResponse {
@@ -125,16 +125,16 @@ message AddProfileResponse {
 }
 
 message DeleteProfileRequest {
-    string id = 1;
+    required string id = 1;
 }
 
 message DeleteProfileResponse {
 }
 
 message ProfileInfoRequest {
-    string id = 1;
+    required string id = 1;
 }
 
 message ProfileInfoResponse {
-    ProfileItem profile = 1;
+    required ProfileItem profile = 1;
 }

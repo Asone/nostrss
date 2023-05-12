@@ -207,17 +207,13 @@ impl ProfileCommandsHandler {
 
         match response {
             Ok(response) => {
-                match response.into_inner().profile {
-                    Some(profile) => {
-                        let profile = FullProfileTemplate::from(profile);
-                        // profile.fields()
-                        let table = Table::new(profile.properties_to_vec());
-                        println!("{}", table.to_string());
-                    }
-                    None => {
-                        println!("No profile found for this id");
-                    }
-                }
+                let profile = response.into_inner().profile;
+
+                let profile = FullProfileTemplate::from(profile);
+                // profile.fields()
+                let table = Table::new(profile.properties_to_vec());
+                println!("{}", table.to_string());
+                // println!("No profile found for this id");
             }
             Err(e) => {
                 println!(

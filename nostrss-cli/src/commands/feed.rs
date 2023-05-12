@@ -168,15 +168,16 @@ impl FeedCommandsHandler {
         let response = self.client.feed_info(request).await;
 
         match response {
-            Ok(response) => match response.into_inner().feed {
-                Some(feed) => {
-                    let feed = FullFeedTemplate::from(feed);
+            Ok(response) => {
+                let feed = response.into_inner().feed;
 
-                    let table = Table::new(feed.properties_to_vec());
-                    println!("{}", table.to_string());
-                }
-                None => println!("No feed found for this id"),
-            },
+                let feed = FullFeedTemplate::from(feed);
+
+                let table = Table::new(feed.properties_to_vec());
+                println!("{}", table.to_string());
+
+                // println!("No feed found for this id");
+            }
             Err(e) => {
                 println!("Error {}: {}", e.code(), e.message());
             }

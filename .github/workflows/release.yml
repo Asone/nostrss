@@ -28,8 +28,6 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
-
-
   test:
     name: Test
     needs: [style]
@@ -55,16 +53,15 @@ jobs:
           toolchain: ${{ matrix.rust || 'stable' }}
           profile: minimal
           override: true
-
-      - name: Install protobuf dependency
-        run: sudo apt-get -y install protobuf-compiler
-        
+      - name: Install ssl, musl & protobuf
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev musl-tools protobuf-compiler
       - name: Build debug
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: ${{ matrix.features }}
-
       - name: Test
         uses: actions-rs/cargo@v1
         env:
@@ -105,11 +102,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y pkg-config libssl-dev musl-tools protobuf-compiler
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -117,28 +109,12 @@ jobs:
           profile: minimal
           override: true
           target: ${{ matrix.target }}
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install ssl, musl & protobuf
-        run: sudo apt-get install -y protobuf-compiler
-      - name: get protoc location
-        run: | 
-          PROTOC=$(which protoc)
-      - name: Build core target
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: false
-          command: build
-          args: --bin nostrss --release --target ${{ matrix.target }}
-      - name: Build cli target
+      - name: Build target
         uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
-          args: --bin nostrss-cli --release --target ${{ matrix.target }}
+          args: --release --target ${{ matrix.target }}
       - name: Package
         shell: bash
         run: |

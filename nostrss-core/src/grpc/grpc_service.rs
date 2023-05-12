@@ -190,7 +190,7 @@ impl NostrssGrpc for NostrssServerService {
         let id = &request.into_inner().id;
         match app_lock.rss.feeds.clone().into_iter().find(|f| &f.id == id) {
             Some(feed) => Ok(Response::new(FeedInfoResponse {
-                feed: Some(FeedItem::from(feed)),
+                feed: FeedItem::from(feed),
             })),
             None => {
                 return Err(Status::new(Code::NotFound, "Feed not found"));
@@ -207,7 +207,7 @@ impl NostrssGrpc for NostrssServerService {
         let id = &request.into_inner().id;
         match app_lock.clients.get(id.trim()) {
             Some(client) => Ok(Response::new(ProfileInfoResponse {
-                profile: Some(ProfileItem::from(client.config.clone())),
+                profile: ProfileItem::from(client.config.clone()),
             })),
             None => {
                 return Err(Status::new(Code::NotFound, "Profile not found"));

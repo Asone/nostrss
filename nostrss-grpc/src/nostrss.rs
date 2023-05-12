@@ -1,7 +1,7 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StartJobRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub feed_id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -10,7 +10,7 @@ pub struct StartJobResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StopJobRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub feed_id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -28,19 +28,19 @@ pub struct StateRequest {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StateResponse {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub state: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FeedItem {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, required, tag = "2")]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, required, tag = "3")]
     pub url: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, required, tag = "4")]
     pub schedule: ::prost::alloc::string::String,
     #[prost(string, repeated, tag = "5")]
     pub profiles: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
@@ -48,9 +48,9 @@ pub struct FeedItem {
     pub tags: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     #[prost(string, optional, tag = "7")]
     pub template: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(uint64, tag = "8")]
+    #[prost(uint64, required, tag = "8")]
     pub cache_size: u64,
-    #[prost(uint64, tag = "9")]
+    #[prost(uint64, required, tag = "9")]
     pub pow_level: u64,
 }
 /// === Feeds ===
@@ -72,7 +72,7 @@ pub struct AddFeedResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteFeedRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -81,14 +81,14 @@ pub struct DeleteFeedResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FeedInfoRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FeedInfoResponse {
-    #[prost(message, optional, tag = "1")]
-    pub feed: ::core::option::Option<FeedItem>,
+    #[prost(message, required, tag = "1")]
+    pub feed: FeedItem,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -102,9 +102,9 @@ pub struct ProfilesListResponse {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ProfileItem {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, required, tag = "2")]
     pub public_key: ::prost::alloc::string::String,
     #[prost(string, optional, tag = "3")]
     pub name: ::core::option::Option<::prost::alloc::string::String>,
@@ -130,9 +130,9 @@ pub struct ProfileItem {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct NewProfileItem {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, required, tag = "2")]
     pub private_key: ::prost::alloc::string::String,
     #[prost(string, optional, tag = "3")]
     pub name: ::core::option::Option<::prost::alloc::string::String>,
@@ -158,8 +158,8 @@ pub struct NewProfileItem {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AddProfileRequest {
-    #[prost(message, optional, tag = "1")]
-    pub profile: ::core::option::Option<NewProfileItem>,
+    #[prost(message, required, tag = "1")]
+    pub profile: NewProfileItem,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -167,7 +167,7 @@ pub struct AddProfileResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteProfileRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -176,14 +176,14 @@ pub struct DeleteProfileResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ProfileInfoRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ProfileInfoResponse {
-    #[prost(message, optional, tag = "1")]
-    pub profile: ::core::option::Option<ProfileItem>,
+    #[prost(message, required, tag = "1")]
+    pub profile: ProfileItem,
 }
 /// Generated client implementations.
 pub mod nostrss_grpc_client {
