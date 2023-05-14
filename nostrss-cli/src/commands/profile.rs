@@ -181,7 +181,7 @@ impl ProfileCommandsHandler {
     fn add(&self) {}
 
     async fn delete(&mut self) {
-        let id = self.get_input("Id: ",None);
+        let id = self.get_input("Id: ", None);
         let request = tonic::Request::new(DeleteProfileRequest { id });
         let response = self.client.delete_profile(request).await;
 

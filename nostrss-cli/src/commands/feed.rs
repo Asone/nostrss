@@ -4,7 +4,8 @@ use std::str::FromStr;
 
 use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
-    nostrss_grpc_client::NostrssGrpcClient, FeedInfoRequest, FeedItem, FeedsListRequest, AddFeedRequest,
+    nostrss_grpc_client::NostrssGrpcClient, AddFeedRequest, FeedInfoRequest, FeedItem,
+    FeedsListRequest,
 };
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
@@ -141,14 +142,24 @@ impl FeedCommandsHandler {
 
     async fn add(&mut self) {
         println!("=== Add a new feed ===");
-        let id = self.get_input("Id: ",Some(Self::required_input_validator));
-        let name = self.get_input("Name: ",Some(Self::required_input_validator));
-        let url = self.get_input("Url: ",Some(Self::url_validator));
-        let schedule = self.get_input("scheduler pattern: ",Some(Self::cron_pattern_validator));
-        let profiles: Vec<String> = self.get_input("profiles ids (separated with coma): ",None).split(",").into_iter().map(|e| e.trim().to_string()).collect();
-        let tags: Vec<String> = self.get_input("Tags (separated with coma):",None).split(",").into_iter().map(|e| e.trim().to_string()).collect();
-        let template = self.get_input("Template path: ",None);
-        let cache_size = self.get_input("Cache size:",None).parse().unwrap_or(100);
+        let id = self.get_input("Id: ", Some(Self::required_input_validator));
+        let name = self.get_input("Name: ", Some(Self::required_input_validator));
+        let url = self.get_input("Url: ", Some(Self::url_validator));
+        let schedule = self.get_input("scheduler pattern: ", Some(Self::cron_pattern_validator));
+        let profiles: Vec<String> = self
+            .get_input("profiles ids (separated with coma): ", None)
+            .split(",")
+            .into_iter()
+            .map(|e| e.trim().to_string())
+            .collect();
+        let tags: Vec<String> = self
+            .get_input("Tags (separated with coma):", None)
+            .split(",")
+            .into_iter()
+            .map(|e| e.trim().to_string())
+            .collect();
+        let template = self.get_input("Template path: ", None);
+        let cache_size = self.get_input("Cache size:", None).parse().unwrap_or(100);
         let pow_level = self.get_input("Pow Level", None).parse().unwrap_or(0);
 
         let request = tonic::Request::new(AddFeedRequest {
@@ -160,7 +171,7 @@ impl FeedCommandsHandler {
             template: Some(template),
             tags,
             cache_size,
-            pow_level
+            pow_level,
         });
 
         let response = self.client.add_feed(request).await;
@@ -168,9 +179,9 @@ impl FeedCommandsHandler {
         match response {
             Ok(response) => {
                 println!("Feed successfuly added");
-            },
+            }
             Err(e) => {
-                println!("Error: {}: {}",e.code(),e.message());
+                println!("Error: {}: {}", e.code(), e.message());
             }
         }
     }
@@ -212,12 +223,12 @@ impl FeedCommandsHandler {
         return true;
     }
 
-    fn url_validator(value:  String) -> bool {
+    fn url_validator(value: String) -> bool {
         let r = Url::parse(&value);
 
         match r {
             Ok(_) => true,
-            Err(_) => false
+            Err(_) => false,
         }
     }
 
@@ -226,7 +237,7 @@ impl FeedCommandsHandler {
 
         match r {
             Ok(_) => true,
-            Err(_) => false
+            Err(_) => false,
         }
     }
 }

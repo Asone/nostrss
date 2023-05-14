@@ -9,11 +9,11 @@ use nostr_sdk::{
 
 use crate::{rss::config::Feed, scheduler::scheduler::schedule};
 use nostrss_grpc::grpc::{
-    self, nostrss_grpc_server::NostrssGrpc, DeleteFeedRequest, DeleteFeedResponse,
-    DeleteProfileRequest, DeleteProfileResponse, FeedInfoRequest, FeedInfoResponse, FeedItem,
-    FeedsListRequest, FeedsListResponse, ProfileInfoRequest, ProfileInfoResponse, ProfileItem,
-    ProfilesListRequest, ProfilesListResponse, StartJobRequest, StartJobResponse, StateRequest,
-    StateResponse, StopJobRequest, StopJobResponse, AddFeedRequest, AddFeedResponse,
+    self, nostrss_grpc_server::NostrssGrpc, AddFeedRequest, AddFeedResponse, DeleteFeedRequest,
+    DeleteFeedResponse, DeleteProfileRequest, DeleteProfileResponse, FeedInfoRequest,
+    FeedInfoResponse, FeedItem, FeedsListRequest, FeedsListResponse, ProfileInfoRequest,
+    ProfileInfoResponse, ProfileItem, ProfilesListRequest, ProfilesListResponse, StartJobRequest,
+    StartJobResponse, StateRequest, StateResponse, StopJobRequest, StopJobResponse,
 };
 use reqwest::Url;
 use tokio::sync::Mutex;
@@ -29,20 +29,15 @@ pub struct NostrssServerService {
 
 impl From<AddFeedRequest> for Feed {
     fn from(value: AddFeedRequest) -> Self {
-
         let url = value.url.as_str();
         let cache_size = match usize::try_from(value.cache_size) {
             Ok(result) => result,
-            Err(_) => { 
-                Self::default_cache_size()
-            } 
+            Err(_) => Self::default_cache_size(),
         };
 
         let pow_level = match u8::try_from(value.pow_level) {
             Ok(result) => result,
-            Err(_) => { 
-                Self::default_pow_level().into()
-            } 
+            Err(_) => Self::default_pow_level().into(),
         };
 
         Self {
@@ -54,7 +49,7 @@ impl From<AddFeedRequest> for Feed {
             tags: Some(value.tags),
             template: value.template,
             cache_size: cache_size,
-            pow_level: pow_level
+            pow_level: pow_level,
         }
     }
 }
@@ -251,7 +246,10 @@ impl NostrssGrpc for NostrssServerService {
         }
     }
 
-    async fn add_feed(&self,request: Request<AddFeedRequest>) -> Result<Response<AddFeedResponse>, Status> {
+    async fn add_feed(
+        &self,
+        request: Request<AddFeedRequest>,
+    ) -> Result<Response<AddFeedResponse>, Status> {
         let mut app = self.app.lock().await;
         let data = request.into_inner();
         let feed = Feed::from(data);
@@ -260,18 +258,11 @@ impl NostrssGrpc for NostrssServerService {
 
         app.rss.feeds.push(feed.clone());
 
-        let job = schedule(
-            feed.schedule.clone().as_str(),
-            feed.clone(),
-            map,
-            clients
-        ).await;
+        let job = schedule(feed.schedule.clone().as_str(), feed.clone(), map, clients).await;
 
-        _ = app.rss.feeds_jobs.insert(feed.id.clone(),job.guid());
+        _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
         _ = app.rss.scheduler.add(job).await;
 
         Ok(Response::new(AddFeedResponse {}))
     }
-
-    
 }

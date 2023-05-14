@@ -11,22 +11,16 @@ pub trait CommandsHandler {
         print!("{}", label);
         _ = io::stdout().flush();
         _ = stdin().read_line(&mut data);
-        
+
         match validator {
-            Some(validator) => {
-                match validator(data.clone()) {
-                    true => {
-                        data
-                    },
-                    false => {
-                        println!("Invalid value provided.");
-                        self.get_input(label, Some(validator))
-                    }
+            Some(validator) => match validator(data.clone()) {
+                true => data,
+                false => {
+                    println!("Invalid value provided.");
+                    self.get_input(label, Some(validator))
                 }
             },
-            None => {
-                data
-            }
+            None => data,
         }
     }
 }
