@@ -181,7 +181,7 @@ impl ProfileCommandsHandler {
     fn add(&self) {}
 
     async fn delete(&mut self) {
-        let id = self.get_input("Id: ");
+        let id = self.get_input("Id: ",None);
         let request = tonic::Request::new(DeleteProfileRequest { id });
         let response = self.client.delete_profile(request).await;
 
@@ -200,7 +200,7 @@ impl ProfileCommandsHandler {
     }
 
     async fn info(&mut self) {
-        let id = self.get_input("Id: ");
+        let id = self.get_input("Id: ", None);
 
         let request = tonic::Request::new(ProfileInfoRequest { id });
         let response = self.client.profile_info(request).await;

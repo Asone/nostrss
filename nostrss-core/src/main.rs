@@ -81,7 +81,7 @@ async fn main() -> Result<()> {
     // need to be able to lock it again later.
     _ = {
         let app_lock = global_app_arc.lock().await;
-        _ = &app_lock.rss.scheduler.start().await;
+        // _ = &app_lock.rss.scheduler.start().await;
     };
 
     // GRPC server
@@ -105,7 +105,6 @@ async fn main() -> Result<()> {
 
     // Loop to maintain program running
     loop {
-        println!("loop");
         // Sleep to avoid useless high CPU usage
         sleep(Duration::from_millis(100));
     }

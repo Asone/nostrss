@@ -7,12 +7,13 @@ service NostrssGRPC {
     
     rpc ProfilesList (ProfilesListRequest) returns (ProfilesListResponse);
     rpc ProfileInfo (ProfileInfoRequest) returns (ProfileInfoResponse);
+    rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
 
     rpc FeedsList (FeedsListRequest) returns (FeedsListResponse);
     rpc FeedInfo (FeedInfoRequest) returns (FeedInfoResponse);
     rpc DeleteFeed (DeleteFeedRequest) returns (DeleteFeedResponse);
-    rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
-    
+    rpc AddFeed (AddFeedRequest) returns (AddFeedResponse);
+
     rpc StartJob (StartJobRequest) returns (StartJobResponse);
     rpc StopJob (StopJobRequest) returns (StopJobResponse);
 
@@ -56,11 +57,19 @@ message FeedsListResponse {
 }
 
 message AddFeedRequest {
-    
+    required string id = 1;
+    required string name = 2;
+    required string url = 3;
+    required string schedule = 4;
+    repeated string profiles = 5;
+    repeated string tags = 6;
+    optional string template = 7;
+    required uint64 cache_size = 8;
+    required uint64 pow_level = 9;
 }
 
 message AddFeedResponse {
-
+    
 }
 
 message DeleteFeedRequest {

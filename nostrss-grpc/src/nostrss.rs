@@ -65,7 +65,26 @@ pub struct FeedsListResponse {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct AddFeedRequest {}
+pub struct AddFeedRequest {
+    #[prost(string, required, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    #[prost(string, required, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(string, required, tag = "3")]
+    pub url: ::prost::alloc::string::String,
+    #[prost(string, required, tag = "4")]
+    pub schedule: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "5")]
+    pub profiles: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(string, repeated, tag = "6")]
+    pub tags: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(string, optional, tag = "7")]
+    pub template: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(uint64, required, tag = "8")]
+    pub cache_size: u64,
+    #[prost(uint64, required, tag = "9")]
+    pub pow_level: u64,
+}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AddFeedResponse {}
@@ -341,6 +360,31 @@ pub mod nostrss_grpc_client {
                 .insert(GrpcMethod::new("nostrss.NostrssGRPC", "ProfileInfo"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn delete_profile(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteProfileRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteProfileResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/nostrss.NostrssGRPC/DeleteProfile",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("nostrss.NostrssGRPC", "DeleteProfile"));
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn feeds_list(
             &mut self,
             request: impl tonic::IntoRequest<super::FeedsListRequest>,
@@ -416,11 +460,11 @@ pub mod nostrss_grpc_client {
                 .insert(GrpcMethod::new("nostrss.NostrssGRPC", "DeleteFeed"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn delete_profile(
+        pub async fn add_feed(
             &mut self,
-            request: impl tonic::IntoRequest<super::DeleteProfileRequest>,
+            request: impl tonic::IntoRequest<super::AddFeedRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::DeleteProfileResponse>,
+            tonic::Response<super::AddFeedResponse>,
             tonic::Status,
         > {
             self.inner
@@ -434,11 +478,11 @@ pub mod nostrss_grpc_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/nostrss.NostrssGRPC/DeleteProfile",
+                "/nostrss.NostrssGRPC/AddFeed",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("nostrss.NostrssGRPC", "DeleteProfile"));
+                .insert(GrpcMethod::new("nostrss.NostrssGRPC", "AddFeed"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn start_job(
@@ -518,6 +562,13 @@ pub mod nostrss_grpc_server {
             tonic::Response<super::ProfileInfoResponse>,
             tonic::Status,
         >;
+        async fn delete_profile(
+            &self,
+            request: tonic::Request<super::DeleteProfileRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteProfileResponse>,
+            tonic::Status,
+        >;
         async fn feeds_list(
             &self,
             request: tonic::Request<super::FeedsListRequest>,
@@ -539,13 +590,10 @@ pub mod nostrss_grpc_server {
             tonic::Response<super::DeleteFeedResponse>,
             tonic::Status,
         >;
-        async fn delete_profile(
+        async fn add_feed(
             &self,
-            request: tonic::Request<super::DeleteProfileRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::DeleteProfileResponse>,
-            tonic::Status,
-        >;
+            request: tonic::Request<super::AddFeedRequest>,
+        ) -> std::result::Result<tonic::Response<super::AddFeedResponse>, tonic::Status>;
         async fn start_job(
             &self,
             request: tonic::Request<super::StartJobRequest>,
@@ -771,6 +819,52 @@ pub mod nostrss_grpc_server {
                     };
                     Box::pin(fut)
                 }
+                "/nostrss.NostrssGRPC/DeleteProfile" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteProfileSvc<T: NostrssGrpc>(pub Arc<T>);
+                    impl<
+                        T: NostrssGrpc,
+                    > tonic::server::UnaryService<super::DeleteProfileRequest>
+                    for DeleteProfileSvc<T> {
+                        type Response = super::DeleteProfileResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteProfileRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).delete_profile(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = DeleteProfileSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/nostrss.NostrssGRPC/FeedsList" => {
                     #[allow(non_camel_case_types)]
                     struct FeedsListSvc<T: NostrssGrpc>(pub Arc<T>);
@@ -903,26 +997,24 @@ pub mod nostrss_grpc_server {
                     };
                     Box::pin(fut)
                 }
-                "/nostrss.NostrssGRPC/DeleteProfile" => {
+                "/nostrss.NostrssGRPC/AddFeed" => {
                     #[allow(non_camel_case_types)]
-                    struct DeleteProfileSvc<T: NostrssGrpc>(pub Arc<T>);
+                    struct AddFeedSvc<T: NostrssGrpc>(pub Arc<T>);
                     impl<
                         T: NostrssGrpc,
-                    > tonic::server::UnaryService<super::DeleteProfileRequest>
-                    for DeleteProfileSvc<T> {
-                        type Response = super::DeleteProfileResponse;
+                    > tonic::server::UnaryService<super::AddFeedRequest>
+                    for AddFeedSvc<T> {
+                        type Response = super::AddFeedResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::DeleteProfileRequest>,
+                            request: tonic::Request<super::AddFeedRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                (*inner).delete_profile(request).await
-                            };
+                            let fut = async move { (*inner).add_feed(request).await };
                             Box::pin(fut)
                         }
                     }
@@ -933,7 +1025,7 @@ pub mod nostrss_grpc_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = DeleteProfileSvc(inner);
+                        let method = AddFeedSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

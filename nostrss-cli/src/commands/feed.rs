@@ -1,11 +1,14 @@
 #![allow(dead_code)]
 
+use std::str::FromStr;
+
 use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
-    nostrss_grpc_client::NostrssGrpcClient, FeedInfoRequest, FeedItem, FeedsListRequest,
+    nostrss_grpc_client::NostrssGrpcClient, FeedInfoRequest, FeedItem, FeedsListRequest, AddFeedRequest,
 };
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
+use url::Url;
 
 use super::CommandsHandler;
 
@@ -107,7 +110,7 @@ impl CommandsHandler for FeedCommandsHandler {}
 impl FeedCommandsHandler {
     pub async fn handle(&mut self, action: FeedActions) {
         match action {
-            FeedActions::Add => self.add(),
+            FeedActions::Add => self.add().await,
             FeedActions::Delete => self.delete(),
             FeedActions::List => self.list().await,
             FeedActions::Info => self.info().await,
@@ -115,7 +118,6 @@ impl FeedCommandsHandler {
     }
 
     async fn list(&mut self) {
-        // Case logic should come here
         let request = tonic::Request::new(FeedsListRequest {});
         let response = self.client.feeds_list(request).await;
         match response {
@@ -137,22 +139,40 @@ impl FeedCommandsHandler {
         }
     }
 
-    fn add(&self) {
+    async fn add(&mut self) {
         println!("=== Add a new feed ===");
-        let id = self.get_input("Id: ");
-        let name = self.get_input("Name: ");
-        let url = self.get_input("Url: ");
-        let profiles = self.get_input("profiles ids (separated with coma): ");
-        let schedule = self.get_input("scheduler pattern: ");
+        let id = self.get_input("Id: ",Some(Self::required_input_validator));
+        let name = self.get_input("Name: ",Some(Self::required_input_validator));
+        let url = self.get_input("Url: ",Some(Self::url_validator));
+        let schedule = self.get_input("scheduler pattern: ",Some(Self::cron_pattern_validator));
+        let profiles: Vec<String> = self.get_input("profiles ids (separated with coma): ",None).split(",").into_iter().map(|e| e.trim().to_string()).collect();
+        let tags: Vec<String> = self.get_input("Tags (separated with coma):",None).split(",").into_iter().map(|e| e.trim().to_string()).collect();
+        let template = self.get_input("Template path: ",None);
+        let cache_size = self.get_input("Cache size:",None).parse().unwrap_or(100);
+        let pow_level = self.get_input("Pow Level", None).parse().unwrap_or(0);
 
-        println!(
-            "{},{},{},{},{}",
-            id.trim(),
-            name.trim(),
-            url.trim(),
-            profiles.trim(),
-            schedule.trim()
-        );
+        let request = tonic::Request::new(AddFeedRequest {
+            id,
+            name,
+            url,
+            schedule,
+            profiles: profiles,
+            template: Some(template),
+            tags,
+            cache_size,
+            pow_level
+        });
+
+        let response = self.client.add_feed(request).await;
+
+        match response {
+            Ok(response) => {
+                println!("Feed successfuly added");
+            },
+            Err(e) => {
+                println!("Error: {}: {}",e.code(),e.message());
+            }
+        }
     }
 
     fn delete(&self) {
@@ -160,7 +180,7 @@ impl FeedCommandsHandler {
     }
 
     async fn info(&mut self) {
-        let id = self.get_input("Id: ");
+        let id = self.get_input("Id: ", None);
 
         let request = tonic::Request::new(FeedInfoRequest {
             id: id.trim().to_string(),
@@ -181,6 +201,32 @@ impl FeedCommandsHandler {
             Err(e) => {
                 println!("Error {}: {}", e.code(), e.message());
             }
+        }
+    }
+
+    fn required_input_validator(value: String) -> bool {
+        if value.len() == 0 {
+            return false;
+        }
+
+        return true;
+    }
+
+    fn url_validator(value:  String) -> bool {
+        let r = Url::parse(&value);
+
+        match r {
+            Ok(_) => true,
+            Err(_) => false
+        }
+    }
+
+    fn cron_pattern_validator(value: String) -> bool {
+        let r = cron::Schedule::from_str(&value);
+
+        match r {
+            Ok(_) => true,
+            Err(_) => false
         }
     }
 }

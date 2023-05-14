@@ -1,3 +1,4 @@
+use std::str::FromStr;
 #[allow(implied_bounds_entailment)]
 use std::sync::Arc;
 
@@ -5,22 +6,57 @@ use nostr_sdk::{
     prelude::{FromSkStr, ToBech32},
     Keys,
 };
+
+use crate::{rss::config::Feed, scheduler::scheduler::schedule};
 use nostrss_grpc::grpc::{
     self, nostrss_grpc_server::NostrssGrpc, DeleteFeedRequest, DeleteFeedResponse,
     DeleteProfileRequest, DeleteProfileResponse, FeedInfoRequest, FeedInfoResponse, FeedItem,
     FeedsListRequest, FeedsListResponse, ProfileInfoRequest, ProfileInfoResponse, ProfileItem,
     ProfilesListRequest, ProfilesListResponse, StartJobRequest, StartJobResponse, StateRequest,
-    StateResponse, StopJobRequest, StopJobResponse,
+    StateResponse, StopJobRequest, StopJobResponse, AddFeedRequest, AddFeedResponse,
 };
+use reqwest::Url;
 use tokio::sync::Mutex;
 use tonic::{Code, Request, Response, Status};
 
-use crate::{app::app::App, profiles::config::Profile, rss::config::Feed};
+use crate::{app::app::App, profiles::config::Profile};
 
 /// Provides the gRPC service handling that allows
 /// remote operations.
 pub struct NostrssServerService {
     pub app: Arc<Mutex<App>>,
+}
+
+impl From<AddFeedRequest> for Feed {
+    fn from(value: AddFeedRequest) -> Self {
+
+        let url = value.url.as_str();
+        let cache_size = match usize::try_from(value.cache_size) {
+            Ok(result) => result,
+            Err(_) => { 
+                Self::default_cache_size()
+            } 
+        };
+
+        let pow_level = match u8::try_from(value.pow_level) {
+            Ok(result) => result,
+            Err(_) => { 
+                Self::default_pow_level().into()
+            } 
+        };
+
+        Self {
+            id: value.id,
+            name: value.name,
+            url: Url::from_str(url).unwrap(),
+            schedule: value.schedule,
+            profiles: Some(value.profiles),
+            tags: Some(value.tags),
+            template: value.template,
+            cache_size: cache_size,
+            pow_level: pow_level
+        }
+    }
 }
 
 impl From<Profile> for ProfileItem {
@@ -214,4 +250,28 @@ impl NostrssGrpc for NostrssServerService {
             }
         }
     }
+
+    async fn add_feed(&self,request: Request<AddFeedRequest>) -> Result<Response<AddFeedResponse>, Status> {
+        let mut app = self.app.lock().await;
+        let data = request.into_inner();
+        let feed = Feed::from(data);
+        let map = Arc::new(Mutex::new(app.feeds_map.clone()));
+        let clients = Arc::new(Mutex::new(app.clients.clone()));
+
+        app.rss.feeds.push(feed.clone());
+
+        let job = schedule(
+            feed.schedule.clone().as_str(),
+            feed.clone(),
+            map,
+            clients
+        ).await;
+
+        _ = app.rss.feeds_jobs.insert(feed.id.clone(),job.guid());
+        _ = app.rss.scheduler.add(job).await;
+
+        Ok(Response::new(AddFeedResponse {}))
+    }
+
+    
 }
