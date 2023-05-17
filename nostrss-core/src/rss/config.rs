@@ -1,10 +1,9 @@
 #![allow(dead_code)]
 
-use std::{env, path::Path, str::FromStr};
-
 use log::{error, info};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
+use std::{env, path::Path, str::FromStr};
 
 #[derive(Debug)]
 pub enum RssConfigErrors {
@@ -110,6 +109,12 @@ impl Default for Feed {
 #[derive(Debug, Clone)]
 pub struct RssConfig {
     pub feeds: Vec<Feed>,
+}
+
+impl Default for RssConfig {
+    fn default() -> Self {
+        Self { feeds: Vec::new() }
+    }
 }
 
 impl RssConfig {

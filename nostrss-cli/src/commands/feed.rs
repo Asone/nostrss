@@ -11,6 +11,8 @@ use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
 use url::Url;
 
+use crate::input::{formatter::InputFormatter, input::InputValidators};
+
 use super::CommandsHandler;
 
 #[derive(Clone, PartialEq, Parser, Debug, ValueEnum)]
@@ -142,25 +144,21 @@ impl FeedCommandsHandler {
 
     async fn add(&mut self) {
         println!("=== Add a new feed ===");
-        let id = self.get_input("Id: ", Some(Self::required_input_validator));
-        let name = self.get_input("Name: ", Some(Self::required_input_validator));
-        let url = self.get_input("Url: ", Some(Self::url_validator));
-        let schedule = self.get_input("scheduler pattern: ", Some(Self::cron_pattern_validator));
-        let profiles: Vec<String> = self
-            .get_input("profiles ids (separated with coma): ", None)
-            .split(",")
-            .into_iter()
-            .map(|e| e.trim().to_string())
-            .collect();
-        let tags: Vec<String> = self
-            .get_input("Tags (separated with coma):", None)
-            .split(",")
-            .into_iter()
-            .map(|e| e.trim().to_string())
-            .collect();
+        let id = self.get_input("Id: ", Some(InputValidators::required_input_validator));
+        let name = self.get_input("Name: ", Some(InputValidators::required_input_validator));
+        let url = self.get_input("Url: ", Some(InputValidators::url_validator));
+        let schedule = self.get_input(
+            "scheduler pattern: ",
+            Some(InputValidators::cron_pattern_validator),
+        );
+        let profiles: Vec<String> = InputFormatter::input_to_vec(
+            self.get_input("profiles ids (separated with coma): ", None),
+        );
+        let tags: Vec<String> =
+            InputFormatter::input_to_vec(self.get_input("Tags (separated with coma):", None));
         let template = self.get_input("Template path: ", None);
-        let cache_size = self.get_input("Cache size:", None).parse().unwrap_or(100);
-        let pow_level = self.get_input("Pow Level", None).parse().unwrap_or(0);
+        let cache_size = self.get_input("Cache size: ", None).parse().unwrap_or(100);
+        let pow_level = self.get_input("Pow Level: ", None).parse().unwrap_or(0);
 
         let request = tonic::Request::new(AddFeedRequest {
             id,
@@ -177,7 +175,7 @@ impl FeedCommandsHandler {
         let response = self.client.add_feed(request).await;
 
         match response {
-            Ok(response) => {
+            Ok(_) => {
                 println!("Feed successfuly added");
             }
             Err(e) => {
@@ -206,38 +204,17 @@ impl FeedCommandsHandler {
 
                 let table = Table::new(feed.properties_to_vec());
                 println!("{}", table.to_string());
-
-                // println!("No feed found for this id");
             }
             Err(e) => {
                 println!("Error {}: {}", e.code(), e.message());
             }
         }
     }
+}
 
-    fn required_input_validator(value: String) -> bool {
-        if value.len() == 0 {
-            return false;
-        }
+#[cfg(tests)]
+mod tests {
 
-        return true;
-    }
-
-    fn url_validator(value: String) -> bool {
-        let r = Url::parse(&value);
-
-        match r {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    }
-
-    fn cron_pattern_validator(value: String) -> bool {
-        let r = cron::Schedule::from_str(&value);
-
-        match r {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    }
+    #[test]
+    fn cli_feed_info_command_test() {}
 }

@@ -5,7 +5,7 @@ mod commands;
 /// the [README.md](https://github.com/Asone/nostrss/blob/main/README.md) file..
 //: The application is based on async cronjobs.
 mod handler;
-
+mod input;
 use std::{env, process::exit};
 
 use commands::{feed::FeedActions, profile::ProfileActions, relay::RelayActions};

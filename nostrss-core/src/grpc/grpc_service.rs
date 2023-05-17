@@ -7,7 +7,7 @@ use nostr_sdk::{
     Keys,
 };
 
-use crate::{rss::config::Feed, scheduler::scheduler::schedule};
+use crate::rss::config::Feed;
 use nostrss_grpc::grpc::{
     self, nostrss_grpc_server::NostrssGrpc, AddFeedRequest, AddFeedResponse, DeleteFeedRequest,
     DeleteFeedResponse, DeleteProfileRequest, DeleteProfileResponse, FeedInfoRequest,
@@ -16,10 +16,12 @@ use nostrss_grpc::grpc::{
     StartJobResponse, StateRequest, StateResponse, StopJobRequest, StopJobResponse,
 };
 use reqwest::Url;
-use tokio::sync::Mutex;
-use tonic::{Code, Request, Response, Status};
+use tokio::sync::{Mutex, MutexGuard};
+use tonic::{Request, Response, Status};
 
 use crate::{app::app::App, profiles::config::Profile};
+
+use super::{feed_request::FeedRequestHandler, profile_request::ProfileRequestHandler};
 
 /// Provides the gRPC service handling that allows
 /// remote operations.
@@ -72,7 +74,7 @@ impl From<Profile> for ProfileItem {
             banner: value.banner,
             nip05: value.nip05,
             lud16: value.lud16,
-            pow_level: Some(0),
+            pow_level: Some(value.pow_level.into()),
             recommended_relays: Vec::new(),
         }
     }
@@ -107,6 +109,12 @@ impl From<Feed> for FeedItem {
     }
 }
 
+impl NostrssServerService {
+    async fn get_app_lock(&self) -> MutexGuard<App> {
+        self.app.lock().await
+    }
+}
+
 #[tonic::async_trait]
 impl NostrssGrpc for NostrssServerService {
     // Retrieves state of the core nostrss application
@@ -125,32 +133,17 @@ impl NostrssGrpc for NostrssServerService {
     // Interface to retrieve the list of profiles on instance
     async fn profiles_list(
         &self,
-        _: Request<ProfilesListRequest>,
+        request: Request<ProfilesListRequest>,
     ) -> Result<Response<ProfilesListResponse>, Status> {
-        let app_lock = self.app.lock().await;
-        let mut profiles = Vec::new();
-
-        for profile in app_lock.profiles.clone() {
-            profiles.push(ProfileItem::from(profile.1));
-        }
-
-        Ok(Response::new(grpc::ProfilesListResponse { profiles }))
+        ProfileRequestHandler::profiles_list(self.get_app_lock().await, request).await
     }
 
     // Interface to retrieve the list of feed on instance
     async fn feeds_list(
         &self,
-        _: Request<FeedsListRequest>,
+        request: Request<FeedsListRequest>,
     ) -> Result<Response<FeedsListResponse>, Status> {
-        let app_lock = self.app.lock().await;
-        let mut feeds = Vec::new();
-
-        for feed in app_lock.rss.feeds.clone() {
-            let f = FeedItem::from(feed);
-            feeds.push(f);
-        }
-
-        Ok(Response::new(grpc::FeedsListResponse { feeds }))
+        FeedRequestHandler::feeds_list(self.get_app_lock().await, request).await
     }
 
     // Interface to delete a feed on instance
@@ -158,19 +151,7 @@ impl NostrssGrpc for NostrssServerService {
         &self,
         request: Request<DeleteFeedRequest>,
     ) -> Result<Response<DeleteFeedResponse>, Status> {
-        let app_lock = self.app.lock().await;
-        let feed_id = &request.into_inner().id;
-        let job_uuid = app_lock.feeds_jobs.get(feed_id.trim());
-
-        if job_uuid.is_none() {
-            return Err(Status::new(
-                Code::NotFound,
-                "Job associated to feed not found",
-            ));
-        }
-
-        _ = app_lock.scheduler.remove(job_uuid.unwrap());
-        Ok(Response::new(grpc::DeleteFeedResponse {}))
+        FeedRequestHandler::delete_feed(self.get_app_lock().await, request).await
     }
 
     // Interface to delete a profile on instance
@@ -178,15 +159,7 @@ impl NostrssGrpc for NostrssServerService {
         &self,
         request: Request<DeleteProfileRequest>,
     ) -> Result<Response<DeleteProfileResponse>, Status> {
-        let mut app_lock = self.app.lock().await;
-        let profile_id = &request.into_inner().id;
-        let client = app_lock.clients.remove(profile_id.trim());
-
-        if client.is_none() {
-            return Err(Status::new(Code::NotFound, "No profile with that id found"));
-        }
-
-        Ok(Response::new(grpc::DeleteProfileResponse {}))
+        ProfileRequestHandler::delete_profile(self.get_app_lock().await, request).await
     }
 
     // Interface to start a job on instance
@@ -217,16 +190,7 @@ impl NostrssGrpc for NostrssServerService {
         &self,
         request: Request<FeedInfoRequest>,
     ) -> Result<Response<FeedInfoResponse>, Status> {
-        let app_lock = self.app.lock().await;
-        let id = &request.into_inner().id;
-        match app_lock.rss.feeds.clone().into_iter().find(|f| &f.id == id) {
-            Some(feed) => Ok(Response::new(FeedInfoResponse {
-                feed: FeedItem::from(feed),
-            })),
-            None => {
-                return Err(Status::new(Code::NotFound, "Feed not found"));
-            }
-        }
+        FeedRequestHandler::feed_info(self.get_app_lock().await, request).await
     }
 
     // Interface to retrieve the detailed configuration of a single profile on instance
@@ -234,35 +198,291 @@ impl NostrssGrpc for NostrssServerService {
         &self,
         request: Request<ProfileInfoRequest>,
     ) -> Result<Response<ProfileInfoResponse>, Status> {
-        let app_lock = self.app.lock().await;
-        let id = &request.into_inner().id;
-        match app_lock.clients.get(id.trim()) {
-            Some(client) => Ok(Response::new(ProfileInfoResponse {
-                profile: ProfileItem::from(client.config.clone()),
-            })),
-            None => {
-                return Err(Status::new(Code::NotFound, "Profile not found"));
-            }
-        }
+        ProfileRequestHandler::profile_info(self.get_app_lock().await, request).await
     }
 
     async fn add_feed(
         &self,
         request: Request<AddFeedRequest>,
     ) -> Result<Response<AddFeedResponse>, Status> {
-        let mut app = self.app.lock().await;
-        let data = request.into_inner();
-        let feed = Feed::from(data);
-        let map = Arc::new(Mutex::new(app.feeds_map.clone()));
-        let clients = Arc::new(Mutex::new(app.clients.clone()));
+        FeedRequestHandler::add_feed(self.get_app_lock().await, request).await
+    }
+}
 
-        app.rss.feeds.push(feed.clone());
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
 
-        let job = schedule(feed.schedule.clone().as_str(), feed.clone(), map, clients).await;
+    use super::*;
+    use crate::{
+        app::app::AppConfig,
+        nostr::nostr::NostrInstance,
+        rss::{
+            config::{Feed, RssConfig},
+            rss::RssInstance,
+        },
+        scheduler::scheduler::schedule,
+    };
+    use dotenv::from_filename;
+    use nostrss_grpc::grpc::AddFeedRequest;
 
-        _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
-        _ = app.rss.scheduler.add(job).await;
+    async fn another_mock_app() -> App {
+        from_filename(".env.test").ok();
+        let app_config = AppConfig {
+            relays: "./src/fixtures/relays.json".to_string(),
+            feeds: Some("./src/fixtures/rss.yaml".to_string()),
+            profiles: Some("./src/fixtures/profiles.json".to_string()),
+            private_key: None,
+        };
 
-        Ok(Response::new(AddFeedResponse {}))
+        let app = App::new(app_config).await;
+
+        app
+    }
+
+    async fn mock_app() -> App {
+        from_filename(".env.test").ok();
+        let rss_path = Some("./src/fixtures/rss.yaml".to_string());
+        let rss_config = RssConfig::new(rss_path);
+
+        let rss = RssInstance::new(rss_config).await;
+
+        let default_profile = Profile {
+            ..Default::default()
+        };
+
+        let test_profile = Profile {
+            id: "test".to_string(),
+            ..Default::default()
+        };
+
+        let mut profiles = HashMap::new();
+
+        profiles.insert(default_profile.id.clone(), default_profile);
+        profiles.insert(test_profile.id.clone(), test_profile);
+
+        let mut clients = HashMap::new();
+
+        for profile in profiles.clone() {
+            let client = NostrInstance::new(profile.1).await;
+            clients.insert(profile.0.clone(), client);
+        }
+
+        let scheduler = tokio_cron_scheduler::JobScheduler::new().await.unwrap();
+        let mut app = App {
+            rss,
+            scheduler: Arc::new(scheduler),
+            clients,
+            profiles: profiles,
+            feeds_jobs: HashMap::new(),
+            feeds_map: HashMap::new(),
+        };
+
+        for feed in app.rss.feeds.clone() {
+            let job = schedule(
+                feed.clone().schedule.as_str(),
+                feed.clone(),
+                Arc::new(Mutex::new(app.feeds_map.clone())),
+                Arc::new(Mutex::new(app.clients.clone())),
+            )
+            .await;
+
+            _ = &app.rss.feeds_jobs.insert(feed.id, job.guid());
+        }
+
+        app
+    }
+
+    #[tokio::test]
+    async fn add_feed_test() {
+        let app = mock_app().await;
+
+        let service = NostrssServerService {
+            app: Arc::new(Mutex::new(app)),
+        };
+
+        let add_feed_request = AddFeedRequest {
+            id: "test".to_string(),
+            name: "my test feed".to_string(),
+            url: "http://myrss.rs".to_string(),
+            schedule: "1/10 * * * * *".to_string(),
+            profiles: Vec::new(),
+            tags: Vec::new(),
+            template: None,
+            cache_size: 50,
+            pow_level: 50,
+        };
+
+        let request = Request::new(add_feed_request);
+
+        let add_feed_result = service.add_feed(request).await;
+
+        assert_eq!(add_feed_result.is_ok(), true);
+    }
+
+    #[tokio::test]
+    async fn add_profile_test() {}
+
+    #[tokio::test]
+    async fn list_profiles_test() {
+        let app = mock_app().await;
+
+        let service = NostrssServerService {
+            app: Arc::new(Mutex::new(app)),
+        };
+
+        let profiles_list_request = ProfilesListRequest {};
+        let request = Request::new(profiles_list_request);
+
+        let profiles_list_request_result = service.profiles_list(request).await;
+
+        assert_eq!(profiles_list_request_result.is_ok(), true);
+
+        let response = profiles_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.profiles.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn delete_feed_test() {
+        let app = mock_app().await;
+
+        let service = NostrssServerService {
+            app: Arc::new(Mutex::new(app)),
+        };
+
+        let delete_feed_request = DeleteFeedRequest {
+            id: "stackernews".to_string(),
+        };
+
+        let request = Request::new(delete_feed_request);
+
+        let delete_feed_request_result = service.delete_feed(request).await;
+
+        assert_eq!(delete_feed_request_result.is_ok(), true);
+
+        let feeds_list_request = FeedsListRequest {};
+        let request = Request::new(feeds_list_request);
+
+        let feeds_list_request_result = service.feeds_list(request).await;
+
+        let response = feeds_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feeds.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn delete_profile_test() {
+        let app = mock_app().await;
+
+        let service = NostrssServerService {
+            app: Arc::new(Mutex::new(app)),
+        };
+
+        let delete_profile_request = DeleteProfileRequest {
+            id: "test".to_string(),
+        };
+        let request = Request::new(delete_profile_request);
+
+        let delete_profile_request_result = service.delete_profile(request).await;
+
+        assert_eq!(delete_profile_request_result.is_ok(), true);
+    }
+
+    #[tokio::test]
+    async fn feeds_list_test() {
+        let app = mock_app().await;
+
+        let service = NostrssServerService {
+            app: Arc::new(Mutex::new(app)),
+        };
+
+        let feeds_list_request = FeedsListRequest {};
+        let request = Request::new(feeds_list_request);
+
+        let feeds_list_request_result = service.feeds_list(request).await;
+
+        assert_eq!(feeds_list_request_result.is_ok(), true);
+
+        let response = feeds_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feeds.len(), 3);
+    }
+
+    #[test]
+    fn feed_from_add_feed_request_test() {
+        let request = AddFeedRequest {
+            id: "test".to_string(),
+            name: "test".to_string(),
+            url: "https://myrss.rs".to_string(),
+            schedule: "1/10 * * * * *".to_string(),
+            profiles: Vec::new(),
+            tags: Vec::new(),
+            template: None,
+            cache_size: 10,
+            pow_level: 20,
+        };
+
+        let feed = Feed::from(request);
+
+        let expected = "test";
+        assert_eq!(feed.id.as_str(), expected);
+
+        let expected = "test";
+        assert_eq!(feed.name.as_str(), expected);
+
+        let expected = "https://myrss.rs/";
+        let url = feed.url.as_str();
+        assert_eq!(url, expected);
+    }
+
+    #[test]
+    fn profile_item_from_profile_test() {
+        let profile = Profile {
+            id: "test".to_string(),
+            private_key: "6789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345"
+                .to_string(),
+            relays: Vec::new(),
+            about: Some("Ad lorem ipsum".to_string()),
+            name: Some("Some test account".to_string()),
+            display_name: Some("Some test account display name".to_string()),
+            description: Some("Ad lorem ipsum description".to_string()),
+            picture: Some("http://myimage.jpg".to_string()),
+            banner: None,
+            nip05: None,
+            lud16: None,
+            pow_level: 23,
+            recommended_relays: Some(Vec::new()),
+        };
+
+        let profile_item = ProfileItem::from(profile.clone());
+
+        assert_eq!(profile_item.id, profile.id);
+
+        let keys = Keys::from_sk_str(profile.private_key.as_str()).unwrap();
+
+        assert_eq!(
+            profile_item.public_key,
+            keys.public_key().to_bech32().unwrap()
+        );
+
+        assert_eq!(profile_item.banner, None);
+        assert_eq!(profile_item.pow_level, Some(23));
+    }
+
+    #[test]
+    fn feed_item_from_feed_test() {
+        let feed = Feed {
+            id: "test".to_string(),
+            name: "My test".to_string(),
+            url: Url::from_str("https://myrss.rss").unwrap(),
+            schedule: "1/10 * * * * *".to_string(),
+            ..Default::default()
+        };
+
+        let feed_item = FeedItem::from(feed.clone());
+
+        assert_eq!(feed_item.id, feed.id);
+        assert_eq!(feed_item.url.as_str(), feed.url.as_str());
     }
 }

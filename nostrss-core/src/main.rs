@@ -38,11 +38,21 @@ async fn main() -> Result<()> {
     // Create app instance
     let app = App::new(AppConfig::parse()).await;
 
-    // // Extract initial feeds list
+    // Extract initial feeds list
     let feeds = app.rss.feeds.clone();
 
-    // // Arc the main app
+    // Arc the main app
     let global_app_arc = Arc::new(Mutex::new(app));
+
+    // Update profile for each client
+    _ = {
+        let global_app_lock = global_app_arc.lock().await;
+        for client in global_app_lock.clients.clone().into_iter() {
+            let result = client.1.update_profile().await;
+
+            println!("result of profile update for {} : {:?}", client.0, result);
+        }
+    };
 
     /*
     Build job for each feed.
@@ -81,7 +91,7 @@ async fn main() -> Result<()> {
     // need to be able to lock it again later.
     _ = {
         let app_lock = global_app_arc.lock().await;
-        // _ = &app_lock.rss.scheduler.start().await;
+        _ = &app_lock.rss.scheduler.start().await;
     };
 
     // GRPC server
