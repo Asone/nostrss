@@ -1,10 +1,9 @@
 #![allow(dead_code)]
 
-use std::{env, path::Path, str::FromStr};
-
 use log::{error, info};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
+use std::{env, path::Path, str::FromStr};
 
 #[derive(Debug)]
 pub enum RssConfigErrors {
@@ -67,7 +66,7 @@ impl Feed {
         self
     }
 
-    fn default_cache_size() -> usize {
+    pub fn default_cache_size() -> usize {
         match env::var("DEFAULT_CACHE_SIZE")
             .unwrap_or("100".to_string())
             .parse::<usize>()
@@ -80,7 +79,7 @@ impl Feed {
         }
     }
 
-    fn default_pow_level() -> u8 {
+    pub fn default_pow_level() -> u8 {
         match env::var("DEFAULT_POW_LEVEL")
             .unwrap_or("0".to_string())
             .parse::<u8>()
@@ -110,6 +109,12 @@ impl Default for Feed {
 #[derive(Debug, Clone)]
 pub struct RssConfig {
     pub feeds: Vec<Feed>,
+}
+
+impl Default for RssConfig {
+    fn default() -> Self {
+        Self { feeds: Vec::new() }
+    }
 }
 
 impl RssConfig {

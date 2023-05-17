@@ -1,11 +1,17 @@
 #![allow(dead_code)]
 
+use std::str::FromStr;
+
 use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
-    nostrss_grpc_client::NostrssGrpcClient, FeedInfoRequest, FeedItem, FeedsListRequest,
+    nostrss_grpc_client::NostrssGrpcClient, AddFeedRequest, DeleteFeedRequest, FeedInfoRequest,
+    FeedItem, FeedsListRequest,
 };
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
+use url::Url;
+
+use crate::input::{formatter::InputFormatter, input::InputValidators};
 
 use super::CommandsHandler;
 
@@ -107,15 +113,14 @@ impl CommandsHandler for FeedCommandsHandler {}
 impl FeedCommandsHandler {
     pub async fn handle(&mut self, action: FeedActions) {
         match action {
-            FeedActions::Add => self.add(),
-            FeedActions::Delete => self.delete(),
+            FeedActions::Add => self.add().await,
+            FeedActions::Delete => self.delete().await,
             FeedActions::List => self.list().await,
             FeedActions::Info => self.info().await,
         }
     }
 
     async fn list(&mut self) {
-        // Case logic should come here
         let request = tonic::Request::new(FeedsListRequest {});
         let response = self.client.feeds_list(request).await;
         match response {
@@ -127,8 +132,7 @@ impl FeedCommandsHandler {
                     .map(|f| FeedsTemplate::new(&f.id, &f.url, &f.schedule))
                     .collect();
 
-                let table = Table::new(raws).to_string();
-                println!("{}", table);
+                self.print(raws);
             }
 
             Err(e) => {
@@ -137,30 +141,67 @@ impl FeedCommandsHandler {
         }
     }
 
-    fn add(&self) {
+    async fn add(&mut self) {
         println!("=== Add a new feed ===");
-        let id = self.get_input("Id: ");
-        let name = self.get_input("Name: ");
-        let url = self.get_input("Url: ");
-        let profiles = self.get_input("profiles ids (separated with coma): ");
-        let schedule = self.get_input("scheduler pattern: ");
-
-        println!(
-            "{},{},{},{},{}",
-            id.trim(),
-            name.trim(),
-            url.trim(),
-            profiles.trim(),
-            schedule.trim()
+        let id = self.get_input("Id: ", Some(InputValidators::required_input_validator));
+        let name = self.get_input("Name: ", Some(InputValidators::required_input_validator));
+        let url = self.get_input("Url: ", Some(InputValidators::url_validator));
+        let schedule = self.get_input(
+            "scheduler pattern: ",
+            Some(InputValidators::cron_pattern_validator),
         );
+        let profiles: Vec<String> = InputFormatter::input_to_vec(
+            self.get_input("profiles ids (separated with coma): ", None),
+        );
+        let tags: Vec<String> =
+            InputFormatter::input_to_vec(self.get_input("Tags (separated with coma):", None));
+        let template = self.get_input("Template path: ", None);
+        let cache_size = self.get_input("Cache size: ", None).parse().unwrap_or(100);
+        let pow_level = self.get_input("Pow Level: ", None).parse().unwrap_or(0);
+
+        let request = tonic::Request::new(AddFeedRequest {
+            id,
+            name,
+            url,
+            schedule,
+            profiles: profiles,
+            template: Some(template),
+            tags,
+            cache_size,
+            pow_level,
+        });
+
+        let response = self.client.add_feed(request).await;
+
+        match response {
+            Ok(_) => {
+                println!("Feed successfuly added");
+            }
+            Err(e) => {
+                println!("Error: {}: {}", e.code(), e.message());
+            }
+        }
     }
 
-    fn delete(&self) {
-        println!("=== Remove a new relay ===");
+    async fn delete(&mut self) {
+        let id = self.get_input("Id: ", None);
+
+        let request = tonic::Request::new(DeleteFeedRequest { id });
+
+        let response = self.client.delete_feed(request).await;
+
+        match response {
+            Ok(_) => {
+                println!("Feed successfully deleted");
+            }
+            Err(e) => {
+                println!("Error {}: {}", e.code(), e.message());
+            }
+        }
     }
 
     async fn info(&mut self) {
-        let id = self.get_input("Id: ");
+        let id = self.get_input("Id: ", None);
 
         let request = tonic::Request::new(FeedInfoRequest {
             id: id.trim().to_string(),
@@ -173,14 +214,18 @@ impl FeedCommandsHandler {
 
                 let feed = FullFeedTemplate::from(feed);
 
-                let table = Table::new(feed.properties_to_vec());
-                println!("{}", table.to_string());
-
-                // println!("No feed found for this id");
+                self.print(feed.properties_to_vec());
             }
             Err(e) => {
                 println!("Error {}: {}", e.code(), e.message());
             }
         }
     }
+}
+
+#[cfg(tests)]
+mod tests {
+
+    #[test]
+    fn cli_feed_info_command_test() {}
 }

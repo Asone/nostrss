@@ -1575,6 +1575,7 @@ name = "nostrss-cli"
 version = "0.4.0-alpha"
 dependencies = [
  "clap",
+ "cron",
  "dotenv",
  "log",
  "nostrss_grpc",
@@ -1582,6 +1583,7 @@ dependencies = [
  "tabled",
  "tokio",
  "tonic",
+ "url",
 ]
 
 [[package]]

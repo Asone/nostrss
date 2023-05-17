@@ -1,2 +1,8 @@
 [workspace]
 members = ["nostrss-core","nostrss-cli","nostrss-grpc"]
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true
+panic = "abort"

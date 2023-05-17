@@ -70,12 +70,6 @@ impl App {
             }
 
             let client = NostrInstance::new(profile).await;
-            let profile_result = &client.update_profile().await;
-
-            println!(
-                "result of profile update for {} : {:?}",
-                profile_id, profile_result
-            );
 
             let profile_keys = &client.client.keys().public_key();
             clients.insert(profile_id.clone(), client);
