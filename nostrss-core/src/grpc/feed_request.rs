@@ -104,6 +104,23 @@ mod tests {
     use tonic::Request;
 
     #[tokio::test]
+    async fn feeds_list_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let feeds_list_request = FeedsListRequest {};
+        let request = Request::new(feeds_list_request);
+
+        let feeds_list_request_result =
+            FeedRequestHandler::feeds_list(app.lock().await, request).await;
+
+        assert_eq!(feeds_list_request_result.is_ok(), true);
+
+        let response = feeds_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feeds.len(), 3);
+    }
+
+    #[tokio::test]
     async fn add_feed_test() {
         let app = Arc::new(Mutex::new(mock_app().await));
         let app_lock = app.lock().await;
@@ -173,22 +190,5 @@ mod tests {
         let response = feed_info_request_result.unwrap().into_inner();
 
         assert_eq!(response.feed.id, "stackernews");
-    }
-
-    #[tokio::test]
-    async fn feeds_list_test() {
-        let app = Arc::new(Mutex::new(mock_app().await));
-
-        let feeds_list_request = FeedsListRequest {};
-        let request = Request::new(feeds_list_request);
-
-        let feeds_list_request_result =
-            FeedRequestHandler::feeds_list(app.lock().await, request).await;
-
-        assert_eq!(feeds_list_request_result.is_ok(), true);
-
-        let response = feeds_list_request_result.unwrap().into_inner();
-
-        assert_eq!(response.feeds.len(), 3);
     }
 }

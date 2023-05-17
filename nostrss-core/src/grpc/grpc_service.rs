@@ -130,14 +130,6 @@ impl NostrssGrpc for NostrssServerService {
         }))
     }
 
-    // Interface to retrieve the list of profiles on instance
-    async fn profiles_list(
-        &self,
-        request: Request<ProfilesListRequest>,
-    ) -> Result<Response<ProfilesListResponse>, Status> {
-        ProfileRequestHandler::profiles_list(self.get_app_lock().await, request).await
-    }
-
     // Interface to retrieve the list of feed on instance
     async fn feeds_list(
         &self,
@@ -146,12 +138,41 @@ impl NostrssGrpc for NostrssServerService {
         FeedRequestHandler::feeds_list(self.get_app_lock().await, request).await
     }
 
+    async fn feed_info(
+        &self,
+        request: Request<FeedInfoRequest>,
+    ) -> Result<Response<FeedInfoResponse>, Status> {
+        FeedRequestHandler::feed_info(self.get_app_lock().await, request).await
+    }
+    async fn add_feed(
+        &self,
+        request: Request<AddFeedRequest>,
+    ) -> Result<Response<AddFeedResponse>, Status> {
+        FeedRequestHandler::add_feed(self.get_app_lock().await, request).await
+    }
+
     // Interface to delete a feed on instance
     async fn delete_feed(
         &self,
         request: Request<DeleteFeedRequest>,
     ) -> Result<Response<DeleteFeedResponse>, Status> {
         FeedRequestHandler::delete_feed(self.get_app_lock().await, request).await
+    }
+
+    // Interface to retrieve the list of profiles on instance
+    async fn profiles_list(
+        &self,
+        request: Request<ProfilesListRequest>,
+    ) -> Result<Response<ProfilesListResponse>, Status> {
+        ProfileRequestHandler::profiles_list(self.get_app_lock().await, request).await
+    }
+
+    // Interface to retrieve the detailed configuration of a single profile on instance
+    async fn profile_info(
+        &self,
+        request: Request<ProfileInfoRequest>,
+    ) -> Result<Response<ProfileInfoResponse>, Status> {
+        ProfileRequestHandler::profile_info(self.get_app_lock().await, request).await
     }
 
     // Interface to delete a profile on instance
@@ -184,28 +205,6 @@ impl NostrssGrpc for NostrssServerService {
         let _feed_id = &request.into_inner().feed_id;
 
         Ok(Response::new(grpc::StopJobResponse {}))
-    }
-
-    async fn feed_info(
-        &self,
-        request: Request<FeedInfoRequest>,
-    ) -> Result<Response<FeedInfoResponse>, Status> {
-        FeedRequestHandler::feed_info(self.get_app_lock().await, request).await
-    }
-
-    // Interface to retrieve the detailed configuration of a single profile on instance
-    async fn profile_info(
-        &self,
-        request: Request<ProfileInfoRequest>,
-    ) -> Result<Response<ProfileInfoResponse>, Status> {
-        ProfileRequestHandler::profile_info(self.get_app_lock().await, request).await
-    }
-
-    async fn add_feed(
-        &self,
-        request: Request<AddFeedRequest>,
-    ) -> Result<Response<AddFeedResponse>, Status> {
-        FeedRequestHandler::add_feed(self.get_app_lock().await, request).await
     }
 }
 
@@ -276,47 +275,6 @@ mod tests {
         }
 
         app
-    }
-
-    #[tokio::test]
-    async fn add_profile_test() {}
-
-    #[tokio::test]
-    async fn list_profiles_test() {
-        let app = mock_app().await;
-
-        let service = NostrssServerService {
-            app: Arc::new(Mutex::new(app)),
-        };
-
-        let profiles_list_request = ProfilesListRequest {};
-        let request = Request::new(profiles_list_request);
-
-        let profiles_list_request_result = service.profiles_list(request).await;
-
-        assert_eq!(profiles_list_request_result.is_ok(), true);
-
-        let response = profiles_list_request_result.unwrap().into_inner();
-
-        assert_eq!(response.profiles.len(), 2);
-    }
-
-    #[tokio::test]
-    async fn delete_profile_test() {
-        let app = mock_app().await;
-
-        let service = NostrssServerService {
-            app: Arc::new(Mutex::new(app)),
-        };
-
-        let delete_profile_request = DeleteProfileRequest {
-            id: "test".to_string(),
-        };
-        let request = Request::new(delete_profile_request);
-
-        let delete_profile_request_result = service.delete_profile(request).await;
-
-        assert_eq!(delete_profile_request_result.is_ok(), true);
     }
 
     #[test]

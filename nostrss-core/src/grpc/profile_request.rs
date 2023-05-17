@@ -63,11 +63,23 @@ mod tests {
     use std::sync::Arc;
 
     use crate::grpc::grpctest_utils::mock_app;
+    use nostrss_grpc::grpc::{AddProfileRequest, NewProfileItem};
     use tokio::sync::Mutex;
     use tonic::Request;
 
     #[tokio::test]
-    async fn add_profile_test() {}
+    async fn add_profile_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let add_profile_request = AddProfileRequest {
+            profile: NewProfileItem {
+                id: "added".to_string(),
+                ..Default::default()
+            },
+        };
+
+        let request = Request::new(add_profile_request);
+    }
 
     #[tokio::test]
     async fn list_profiles_test() {
@@ -112,5 +124,9 @@ mod tests {
             ProfileRequestHandler::profiles_list(app.lock().await, request).await;
 
         assert_eq!(profiles_list_request_result.is_ok(), true);
+
+        let response = profiles_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.profiles.len(), 2);
     }
 }
