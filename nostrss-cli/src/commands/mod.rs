@@ -1,5 +1,6 @@
 use std::io::{self, stdin, Write};
 
+use tabled::{Table, Tabled};
 use tonic::async_trait;
 
 /// Common trait for sub-handlers.
@@ -22,6 +23,11 @@ pub trait CommandsHandler {
             },
             None => data,
         }
+    }
+
+    fn print(&self, data: Vec<impl Tabled>) {
+        let table = Table::new(data).to_string();
+        println!("{}", table);
     }
 }
 

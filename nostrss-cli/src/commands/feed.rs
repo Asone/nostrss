@@ -4,8 +4,8 @@ use std::str::FromStr;
 
 use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
-    nostrss_grpc_client::NostrssGrpcClient, AddFeedRequest, FeedInfoRequest, FeedItem,
-    FeedsListRequest,
+    nostrss_grpc_client::NostrssGrpcClient, AddFeedRequest, DeleteFeedRequest, FeedInfoRequest,
+    FeedItem, FeedsListRequest,
 };
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
@@ -114,7 +114,7 @@ impl FeedCommandsHandler {
     pub async fn handle(&mut self, action: FeedActions) {
         match action {
             FeedActions::Add => self.add().await,
-            FeedActions::Delete => self.delete(),
+            FeedActions::Delete => self.delete().await,
             FeedActions::List => self.list().await,
             FeedActions::Info => self.info().await,
         }
@@ -132,8 +132,7 @@ impl FeedCommandsHandler {
                     .map(|f| FeedsTemplate::new(&f.id, &f.url, &f.schedule))
                     .collect();
 
-                let table = Table::new(raws).to_string();
-                println!("{}", table);
+                self.print(raws);
             }
 
             Err(e) => {
@@ -184,8 +183,21 @@ impl FeedCommandsHandler {
         }
     }
 
-    fn delete(&self) {
-        println!("=== Remove a new relay ===");
+    async fn delete(&mut self) {
+        let id = self.get_input("Id: ", None);
+
+        let request = tonic::Request::new(DeleteFeedRequest { id });
+
+        let response = self.client.delete_feed(request).await;
+
+        match response {
+            Ok(_) => {
+                println!("Feed successfully deleted");
+            }
+            Err(e) => {
+                println!("Error {}: {}", e.code(), e.message());
+            }
+        }
     }
 
     async fn info(&mut self) {
@@ -202,8 +214,7 @@ impl FeedCommandsHandler {
 
                 let feed = FullFeedTemplate::from(feed);
 
-                let table = Table::new(feed.properties_to_vec());
-                println!("{}", table.to_string());
+                self.print(feed.properties_to_vec());
             }
             Err(e) => {
                 println!("Error {}: {}", e.code(), e.message());

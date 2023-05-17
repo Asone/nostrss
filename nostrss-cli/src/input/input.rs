@@ -31,3 +31,52 @@ impl InputValidators {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::input::input::InputValidators;
+
+    #[test]
+    fn required_input_validator_test() {
+        let value = "abc".to_string();
+        let result = InputValidators::required_input_validator(value);
+
+        assert_eq!(result, true);
+
+        let value = "".to_string();
+        let result = InputValidators::required_input_validator(value);
+
+        assert_eq!(result, false);
+    }
+
+    #[test]
+    fn url_validator_test() {
+        let value = "https://www.domain.org".to_string();
+        let result = InputValidators::url_validator(value);
+
+        assert_eq!(result, true);
+
+        let value = "invalid_url".to_string();
+        let result = InputValidators::url_validator(value);
+
+        assert_eq!(result, false);
+    }
+
+    #[test]
+    fn cron_pattern_validator_test() {
+        let value = "1/10 * * * * *".to_string();
+        let result = InputValidators::cron_pattern_validator(value);
+
+        assert_eq!(result, true);
+
+        let value = "1/10 * * *".to_string();
+        let result = InputValidators::cron_pattern_validator(value);
+
+        assert_eq!(result, false);
+
+        let value = "1/10 * * * * * * * *".to_string();
+        let result = InputValidators::cron_pattern_validator(value);
+
+        assert_eq!(result, false);
+    }
+}
