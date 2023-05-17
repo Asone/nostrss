@@ -123,7 +123,6 @@ mod tests {
     #[tokio::test]
     async fn add_feed_test() {
         let app = Arc::new(Mutex::new(mock_app().await));
-        let app_lock = app.lock().await;
 
         let add_feed_request = AddFeedRequest {
             id: "test".to_string(),
@@ -139,9 +138,26 @@ mod tests {
 
         let request = Request::new(add_feed_request);
 
-        let add_feed_result = FeedRequestHandler::add_feed(app_lock, request).await;
+        let add_feed_result = {
+            let app_lock = app.lock().await;
+            FeedRequestHandler::add_feed(app_lock, request).await
+        };
 
         assert_eq!(add_feed_result.is_ok(), true);
+
+        let feeds_list_request = FeedsListRequest {};
+        let request = Request::new(feeds_list_request);
+
+        let feeds_list_request_result = {
+            let app_lock = app.lock().await;
+            FeedRequestHandler::feeds_list(app_lock, request).await
+        };
+
+        assert_eq!(feeds_list_request_result.is_ok(), true);
+
+        let response = feeds_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feeds.len(), 4);
     }
 
     #[tokio::test]
