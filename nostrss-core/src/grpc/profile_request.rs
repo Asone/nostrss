@@ -55,3 +55,62 @@ impl ProfileRequestHandler {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use std::sync::Arc;
+
+    use crate::grpc::grpctest_utils::mock_app;
+    use tokio::sync::Mutex;
+    use tonic::Request;
+
+    #[tokio::test]
+    async fn add_profile_test() {}
+
+    #[tokio::test]
+    async fn list_profiles_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let profiles_list_request = ProfilesListRequest {};
+        let request = Request::new(profiles_list_request);
+
+        let profiles_list_request_result =
+            ProfileRequestHandler::profiles_list(app.lock().await, request).await;
+
+        assert_eq!(profiles_list_request_result.is_ok(), true);
+
+        let response = profiles_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.profiles.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn delete_profile_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let delete_profile_request = DeleteProfileRequest {
+            id: "test".to_string(),
+        };
+        let request = Request::new(delete_profile_request);
+
+        let delete_profile_request_result =
+            ProfileRequestHandler::delete_profile(app.lock().await, request).await;
+
+        assert_eq!(delete_profile_request_result.is_ok(), true);
+    }
+
+    #[tokio::test]
+    async fn profile_info_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let profiles_list_request = ProfilesListRequest {};
+        let request = Request::new(profiles_list_request);
+
+        let profiles_list_request_result =
+            ProfileRequestHandler::profiles_list(app.lock().await, request).await;
+
+        assert_eq!(profiles_list_request_result.is_ok(), true);
+    }
+}

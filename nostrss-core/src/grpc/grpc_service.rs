@@ -225,21 +225,6 @@ mod tests {
     };
     use dotenv::from_filename;
     use nostrss_grpc::grpc::AddFeedRequest;
-
-    async fn another_mock_app() -> App {
-        from_filename(".env.test").ok();
-        let app_config = AppConfig {
-            relays: "./src/fixtures/relays.json".to_string(),
-            feeds: Some("./src/fixtures/rss.yaml".to_string()),
-            profiles: Some("./src/fixtures/profiles.json".to_string()),
-            private_key: None,
-        };
-
-        let app = App::new(app_config).await;
-
-        app
-    }
-
     async fn mock_app() -> App {
         from_filename(".env.test").ok();
         let rss_path = Some("./src/fixtures/rss.yaml".to_string());
@@ -294,33 +279,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn add_feed_test() {
-        let app = mock_app().await;
-
-        let service = NostrssServerService {
-            app: Arc::new(Mutex::new(app)),
-        };
-
-        let add_feed_request = AddFeedRequest {
-            id: "test".to_string(),
-            name: "my test feed".to_string(),
-            url: "http://myrss.rs".to_string(),
-            schedule: "1/10 * * * * *".to_string(),
-            profiles: Vec::new(),
-            tags: Vec::new(),
-            template: None,
-            cache_size: 50,
-            pow_level: 50,
-        };
-
-        let request = Request::new(add_feed_request);
-
-        let add_feed_result = service.add_feed(request).await;
-
-        assert_eq!(add_feed_result.is_ok(), true);
-    }
-
-    #[tokio::test]
     async fn add_profile_test() {}
 
     #[tokio::test]
@@ -344,34 +302,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_feed_test() {
-        let app = mock_app().await;
-
-        let service = NostrssServerService {
-            app: Arc::new(Mutex::new(app)),
-        };
-
-        let delete_feed_request = DeleteFeedRequest {
-            id: "stackernews".to_string(),
-        };
-
-        let request = Request::new(delete_feed_request);
-
-        let delete_feed_request_result = service.delete_feed(request).await;
-
-        assert_eq!(delete_feed_request_result.is_ok(), true);
-
-        let feeds_list_request = FeedsListRequest {};
-        let request = Request::new(feeds_list_request);
-
-        let feeds_list_request_result = service.feeds_list(request).await;
-
-        let response = feeds_list_request_result.unwrap().into_inner();
-
-        assert_eq!(response.feeds.len(), 2);
-    }
-
-    #[tokio::test]
     async fn delete_profile_test() {
         let app = mock_app().await;
 
@@ -387,26 +317,6 @@ mod tests {
         let delete_profile_request_result = service.delete_profile(request).await;
 
         assert_eq!(delete_profile_request_result.is_ok(), true);
-    }
-
-    #[tokio::test]
-    async fn feeds_list_test() {
-        let app = mock_app().await;
-
-        let service = NostrssServerService {
-            app: Arc::new(Mutex::new(app)),
-        };
-
-        let feeds_list_request = FeedsListRequest {};
-        let request = Request::new(feeds_list_request);
-
-        let feeds_list_request_result = service.feeds_list(request).await;
-
-        assert_eq!(feeds_list_request_result.is_ok(), true);
-
-        let response = feeds_list_request_result.unwrap().into_inner();
-
-        assert_eq!(response.feeds.len(), 3);
     }
 
     #[test]

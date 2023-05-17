@@ -91,3 +91,104 @@ impl FeedRequestHandler {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use std::sync::Arc;
+
+    use crate::grpc::grpctest_utils::mock_app;
+    use nostrss_grpc::grpc::AddFeedRequest;
+    use tokio::sync::Mutex;
+    use tonic::Request;
+
+    #[tokio::test]
+    async fn add_feed_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+        let app_lock = app.lock().await;
+
+        let add_feed_request = AddFeedRequest {
+            id: "test".to_string(),
+            name: "my test feed".to_string(),
+            url: "http://myrss.rs".to_string(),
+            schedule: "1/10 * * * * *".to_string(),
+            profiles: Vec::new(),
+            tags: Vec::new(),
+            template: None,
+            cache_size: 50,
+            pow_level: 50,
+        };
+
+        let request = Request::new(add_feed_request);
+
+        let add_feed_result = FeedRequestHandler::add_feed(app_lock, request).await;
+
+        assert_eq!(add_feed_result.is_ok(), true);
+    }
+
+    #[tokio::test]
+    async fn delete_feed_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let delete_feed_request = DeleteFeedRequest {
+            id: "stackernews".to_string(),
+        };
+
+        let request = Request::new(delete_feed_request);
+
+        let delete_feed_request_result = {
+            let app_lock = app.lock().await;
+            FeedRequestHandler::delete_feed(app_lock, request).await
+        };
+
+        assert_eq!(delete_feed_request_result.is_ok(), true);
+
+        let feeds_list_request = FeedsListRequest {};
+        let request = Request::new(feeds_list_request);
+
+        let feeds_list_request_result = {
+            let app_lock = app.lock().await;
+            FeedRequestHandler::feeds_list(app_lock, request).await
+        };
+        let response = feeds_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feeds.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn feed_info_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let feed_info_request = FeedInfoRequest {
+            id: "stackernews".to_string(),
+        };
+        let request = Request::new(feed_info_request);
+
+        let feed_info_request_result =
+            FeedRequestHandler::feed_info(app.lock().await, request).await;
+
+        assert_eq!(feed_info_request_result.is_ok(), true);
+
+        let response = feed_info_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feed.id, "stackernews");
+    }
+
+    #[tokio::test]
+    async fn feeds_list_test() {
+        let app = Arc::new(Mutex::new(mock_app().await));
+
+        let feeds_list_request = FeedsListRequest {};
+        let request = Request::new(feeds_list_request);
+
+        let feeds_list_request_result =
+            FeedRequestHandler::feeds_list(app.lock().await, request).await;
+
+        assert_eq!(feeds_list_request_result.is_ok(), true);
+
+        let response = feeds_list_request_result.unwrap().into_inner();
+
+        assert_eq!(response.feeds.len(), 3);
+    }
+}
