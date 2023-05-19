@@ -2,7 +2,7 @@ use nostrss_grpc::grpc::{
     self, AddFeedRequest, AddFeedResponse, DeleteFeedRequest, DeleteFeedResponse, FeedInfoRequest,
     FeedInfoResponse, FeedItem, FeedsListRequest, FeedsListResponse,
 };
-use std::{ops::Index, sync::Arc};
+use std::sync::Arc;
 use tokio::sync::{Mutex, MutexGuard};
 use tonic::{Code, Request, Response, Status};
 
@@ -23,6 +23,40 @@ impl FeedRequestHandler {
         }
 
         Ok(Response::new(grpc::FeedsListResponse { feeds }))
+    }
+
+    pub async fn feed_info(
+        app: MutexGuard<'_, App>,
+        request: Request<FeedInfoRequest>,
+    ) -> Result<Response<FeedInfoResponse>, Status> {
+        let id = &request.into_inner().id;
+        match app.rss.feeds.clone().into_iter().find(|f| &f.id == id) {
+            Some(feed) => Ok(Response::new(FeedInfoResponse {
+                feed: FeedItem::from(feed),
+            })),
+            None => {
+                return Err(Status::new(Code::NotFound, "Feed not found"));
+            }
+        }
+    }
+
+    pub async fn add_feed(
+        mut app: MutexGuard<'_, App>,
+        request: Request<AddFeedRequest>,
+    ) -> Result<Response<AddFeedResponse>, Status> {
+        let data = request.into_inner();
+        let feed = Feed::from(data);
+        let map = Arc::new(Mutex::new(app.feeds_map.clone()));
+        let clients = Arc::new(Mutex::new(app.clients.clone()));
+
+        app.rss.feeds.push(feed.clone());
+
+        let job = schedule(feed.schedule.clone().as_str(), feed.clone(), map, clients).await;
+
+        _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
+        _ = app.rss.scheduler.add(job).await;
+
+        Ok(Response::new(AddFeedResponse {}))
     }
 
     // Interface to delete a feed on instance
@@ -55,40 +89,6 @@ impl FeedRequestHandler {
         _ = &app.rss.feeds.remove(idx);
         _ = app.scheduler.remove(job_uuid.unwrap()).await;
         Ok(Response::new(grpc::DeleteFeedResponse {}))
-    }
-
-    pub async fn add_feed(
-        mut app: MutexGuard<'_, App>,
-        request: Request<AddFeedRequest>,
-    ) -> Result<Response<AddFeedResponse>, Status> {
-        let data = request.into_inner();
-        let feed = Feed::from(data);
-        let map = Arc::new(Mutex::new(app.feeds_map.clone()));
-        let clients = Arc::new(Mutex::new(app.clients.clone()));
-
-        app.rss.feeds.push(feed.clone());
-
-        let job = schedule(feed.schedule.clone().as_str(), feed.clone(), map, clients).await;
-
-        _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
-        _ = app.rss.scheduler.add(job).await;
-
-        Ok(Response::new(AddFeedResponse {}))
-    }
-
-    pub async fn feed_info(
-        app: MutexGuard<'_, App>,
-        request: Request<FeedInfoRequest>,
-    ) -> Result<Response<FeedInfoResponse>, Status> {
-        let id = &request.into_inner().id;
-        match app.rss.feeds.clone().into_iter().find(|f| &f.id == id) {
-            Some(feed) => Ok(Response::new(FeedInfoResponse {
-                feed: FeedItem::from(feed),
-            })),
-            None => {
-                return Err(Status::new(Code::NotFound, "Feed not found"));
-            }
-        }
     }
 }
 

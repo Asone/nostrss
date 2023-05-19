@@ -91,7 +91,7 @@ async fn main() -> Result<()> {
     // need to be able to lock it again later.
     _ = {
         let app_lock = global_app_arc.lock().await;
-        _ = &app_lock.rss.scheduler.start().await;
+        // _ = &app_lock.rss.scheduler.start().await;
     };
 
     // GRPC server

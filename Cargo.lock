@@ -1574,11 +1574,13 @@ dependencies = [
 name = "nostrss-cli"
 version = "0.4.0-alpha"
 dependencies = [
+ "bech32",
  "clap",
  "cron",
  "dotenv",
  "log",
  "nostrss_grpc",
+ "secp256k1",
  "serde",
  "tabled",
  "tokio",

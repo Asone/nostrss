@@ -2,11 +2,13 @@
 
 use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
-    nostrss_grpc_client::NostrssGrpcClient, DeleteProfileRequest, ProfileInfoRequest, ProfileItem,
-    ProfilesListRequest,
+    nostrss_grpc_client::NostrssGrpcClient, AddProfileRequest, DeleteProfileRequest,
+    NewProfileItem, ProfileInfoRequest, ProfileItem, ProfilesListRequest,
 };
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
+
+use crate::input::{formatter::InputFormatter, input::InputValidators};
 
 use super::CommandsHandler;
 
@@ -148,7 +150,7 @@ impl CommandsHandler for ProfileCommandsHandler {}
 impl ProfileCommandsHandler {
     pub async fn handle(&mut self, action: ProfileActions) {
         match action {
-            ProfileActions::Add => self.add(),
+            ProfileActions::Add => self.add().await,
             ProfileActions::Delete => self.delete().await,
             ProfileActions::List => self.list().await,
             ProfileActions::Info => self.info().await,
@@ -178,7 +180,71 @@ impl ProfileCommandsHandler {
         }
     }
 
-    fn add(&self) {}
+    async fn add(&mut self) {
+        println!("=== Add a profile ===");
+        let id = self.get_input("Id: ", Some(InputValidators::required_input_validator));
+        let private_key: String = self
+            .get_input(
+                "Private key (hex or bech32): ",
+                Some(InputValidators::key_validator),
+            )
+            .trim()
+            .to_string();
+        let name: Option<String> =
+            InputFormatter::string_nullifier(self.get_input("(optional) Name: ", None));
+        let relays = InputFormatter::input_to_vec(
+            self.get_input("(optional) Relays ids (separated with coma):", None),
+        );
+        let display_name: Option<String> =
+            InputFormatter::string_nullifier(self.get_input("(optional) Display name: ", None));
+        let description: Option<String> =
+            InputFormatter::string_nullifier(self.get_input("(optional) Description: ", None));
+        let picture: Option<String> = InputFormatter::string_nullifier(
+            self.get_input("(optional) Profile picture URL: ", None),
+        );
+        let banner: Option<String> = InputFormatter::string_nullifier(
+            self.get_input("(optional) Banner picture URL: ", None),
+        );
+        let nip05: Option<String> =
+            InputFormatter::string_nullifier(self.get_input("(optional) NIP-05: ", None));
+        let lud16: Option<String> =
+            InputFormatter::string_nullifier(self.get_input("(optional) Lud16: ", None));
+        let pow_level: String = self.get_input("(optional) Publishing PoW level: ", None);
+        let pow_level = pow_level.parse().unwrap_or(0);
+
+        let recommended_relays: Vec<String> = InputFormatter::input_to_vec(self.get_input(
+            "(optional) Recommended relays ids (seperated with coma): ",
+            None,
+        ));
+
+        let request = tonic::Request::new(AddProfileRequest {
+            profile: NewProfileItem {
+                id,
+                private_key,
+                name,
+                relays,
+                display_name,
+                description,
+                picture,
+                banner,
+                nip05,
+                lud16,
+                pow_level: Some(pow_level),
+                recommended_relays,
+            },
+        });
+
+        let response = self.client.add_profile(request).await;
+
+        match response {
+            Ok(_) => {
+                println!("Profile successfuly added");
+            }
+            Err(e) => {
+                println!("Error: {}: {}", e.code(), e.message());
+            }
+        }
+    }
 
     async fn delete(&mut self) {
         let id = self.get_input("Id: ", None);
