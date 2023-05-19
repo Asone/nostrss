@@ -4,6 +4,13 @@ impl InputFormatter {
     pub fn input_to_vec(value: String) -> Vec<String> {
         value.split(',').map(|e| e.trim().to_string()).collect()
     }
+
+    pub fn string_nullifier(value: String) -> Option<String> {
+        match value.len() > 0 {
+            true => Some(value.trim().to_string()),
+            false => None,
+        }
+    }
 }
 
 #[cfg(test)]

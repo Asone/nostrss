@@ -8,6 +8,7 @@ service NostrssGRPC {
     rpc ProfilesList (ProfilesListRequest) returns (ProfilesListResponse);
     rpc ProfileInfo (ProfileInfoRequest) returns (ProfileInfoResponse);
     rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
+    rpc AddProfile (AddProfileRequest) returns (AddProfileResponse);
 
     rpc FeedsList (FeedsListRequest) returns (FeedsListResponse);
     rpc FeedInfo (FeedInfoRequest) returns (FeedInfoResponse);

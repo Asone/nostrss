@@ -1,15 +1,12 @@
 #![allow(dead_code)]
 
-use std::str::FromStr;
-
 use clap::{Parser, ValueEnum};
 use nostrss_grpc::grpc::{
     nostrss_grpc_client::NostrssGrpcClient, AddFeedRequest, DeleteFeedRequest, FeedInfoRequest,
     FeedItem, FeedsListRequest,
 };
-use tabled::{Table, Tabled};
+use tabled::Tabled;
 use tonic::{async_trait, transport::Channel};
-use url::Url;
 
 use crate::input::{formatter::InputFormatter, input::InputValidators};
 

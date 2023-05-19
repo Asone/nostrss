@@ -14,14 +14,14 @@ pub trait CommandsHandler {
         _ = stdin().read_line(&mut data);
 
         match validator {
-            Some(validator) => match validator(data.clone()) {
-                true => data,
+            Some(validator) => match validator(data.clone().trim().to_string()) {
+                true => data.trim().to_string(),
                 false => {
                     println!("Invalid value provided.");
                     self.get_input(label, Some(validator))
                 }
             },
-            None => data,
+            None => data.trim().to_string(),
         }
     }
 
