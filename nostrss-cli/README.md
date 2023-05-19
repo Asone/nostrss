@@ -16,7 +16,7 @@ Please, do note that any operation performed through CLI will be currently lost 
 | Command | Description | 
 |-|-|
 | nostrss-cli profile list | Lists the profiles |
-| nostrss-cli profile add | Add a new profile (not implemented yet) | 
+| nostrss-cli profile add | Add a new profile | 
 | nostrss-cli profile delete | Remove a profile | 
 | nostrss-cli profile info | Get info of a specific profile | 
 
@@ -25,6 +25,6 @@ Please, do note that any operation performed through CLI will be currently lost 
 | Command | Description | 
 |-|-|
 | nostrss-cli feed list | Lists the feeds |
-| nostrss-cli feed add | Add a new feed (not implemented yet) | 
+| nostrss-cli feed add | Add a new feed  | 
 | nostrss-cli feed delete | Remove a feed | 
 | nostrss-cli feed info | Get info of a specific feed | 
