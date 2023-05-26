@@ -6,7 +6,7 @@ use nostr_sdk::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{env, path::Path};
 
-use crate::nostr::{nostr::NostrProfile, relay::Relay};
+use crate::nostr::{relay::Relay, NostrProfile};
 
 #[derive(Debug)]
 pub enum ConfigErrors {
@@ -373,8 +373,8 @@ impl Profile {
         self
     }
 
-    pub fn set_relays_from_file(self, path: String) -> Self {
-        self.load_relays(&path)
+    pub fn set_relays_from_file(self, path: &String) -> Self {
+        self.load_relays(path)
     }
 }
 

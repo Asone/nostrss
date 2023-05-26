@@ -5,23 +5,13 @@ use std::net::SocketAddr;
 
 use nostr_sdk::client::Error as NostrError;
 use nostr_sdk::prelude::{EventId, Metadata, Url};
-use nostr_sdk::{Client, Keys, Result, Tag};
+use nostr_sdk::{Client, EventBuilder, Keys, Result, Tag};
 
 use crate::profiles::config::Profile;
 
 use crate::nostr::relay::Relay;
 
-// Helper trait.
-pub trait NostrProfile {
-    fn get_keys(&self) -> Keys;
-    fn get_display_name(self) -> Option<String>;
-    fn get_description(self) -> Option<String>;
-    fn get_picture(self) -> Option<String>;
-    fn get_banner(self) -> Option<String>;
-    fn get_nip05(self) -> Option<String>;
-    fn get_lud16(self) -> Option<String>;
-    fn get_relays(&self) -> Vec<Relay>;
-}
+
 /// Nostr connection instance.
 ///
 /// NostrInstance provides a nostr client instance with a loaded configuration.
@@ -64,6 +54,52 @@ impl NostrInstance {
         }
     }
 
+    pub async fn new_update_profile(&self, profile: Profile) -> Result<EventId> {
+        let mut metadata = Metadata::new();
+
+        if profile.clone().get_display_name().is_some() {
+            // metadata.name(self.config.display_name.clone().unwrap());
+            metadata = metadata.display_name(profile.clone().get_display_name().unwrap());
+            metadata = metadata.name(profile.clone().get_name().unwrap());
+        };
+
+        if profile.clone().get_description().is_some() {
+            metadata = metadata.about(profile.clone().get_description().unwrap());
+        };
+
+        if profile.clone().get_picture().is_some() {
+            let parsed_url = Url::parse(profile.clone().get_picture().unwrap().as_str());
+
+            if parsed_url.is_ok() {
+                metadata = metadata.picture(parsed_url.unwrap());
+            }
+        };
+
+        if profile.clone().get_banner().is_some() {
+            let parsed_url = Url::parse(profile.clone().get_banner().unwrap().as_str());
+
+            if parsed_url.is_ok() {
+                metadata = metadata.banner(parsed_url.unwrap());
+            }
+        };
+
+        if profile.clone().get_nip05().is_some() {
+            metadata = metadata.nip05(profile.clone().get_nip05().unwrap());
+        };
+
+        if profile.clone().get_lud16().is_some() {
+            metadata = metadata.lud16(profile.clone().get_lud16().unwrap());
+        };
+
+        debug!("{:?}", metadata);
+
+        let event = EventBuilder::set_metadata(metadata)
+            .to_event(&profile.get_keys())
+            .unwrap();
+        // Broadcast metadata (NIP-01) to relays
+        let result = self.get_client().send_event(event).await.unwrap();
+        Ok(result)
+    }
     // Broadcasts profile metadata (NIP-01) to relays using a
     pub async fn update_profile(&self) -> Result<EventId> {
         let mut metadata = Metadata::new();

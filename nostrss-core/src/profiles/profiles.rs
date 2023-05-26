@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, str::FromStr};
 
 use log::error;
+use reqwest::Url;
 
 use crate::nostr::relay::Relay;
 
@@ -12,7 +13,7 @@ use super::config::Profile;
 pub struct ProfileHandler(pub HashMap<String, Profile>);
 
 impl ProfileHandler {
-    pub fn new(path: Option<String>, default_relays: String) -> Self {
+    pub fn new(path: &Option<String>, default_relays: &String) -> Self {
         // Init profile instances index
         let mut profiles = Self(HashMap::new());
 
@@ -111,8 +112,8 @@ impl ProfileHandler {
         profiles_hashmap
     }
 
-    pub fn get_profiles(self) -> HashMap<String, Profile> {
-        self.0
+    pub fn get_profiles(&self) -> HashMap<String, Profile> {
+        self.0.clone()
     }
 
     pub fn get_default(self) -> Profile {
@@ -131,6 +132,17 @@ impl ProfileHandler {
         let default_profile = self.0["default"].clone();
         default_profile.relays
     }
+
+    pub fn new_get_default_relays(&self) -> HashMap<Url, Relay> {
+        let relays = self.0["default"]
+            .clone()
+            .relays
+            .into_iter()
+            .map(|r| (Url::from_str(r.target.as_str()).unwrap(), r))
+            .collect();
+
+        relays
+    }
 }
 
 #[cfg(test)]
@@ -146,7 +158,7 @@ mod tests {
 
         let relays_path = "src/fixtures/relays.json".to_string();
 
-        let profile_handler = ProfileHandler::new(None, relays_path);
+        let profile_handler = ProfileHandler::new(&None, &relays_path);
 
         assert_eq!(profile_handler.0.keys().len(), 1);
     }
@@ -157,7 +169,7 @@ mod tests {
         let relays_path = "src/fixtures/relays.json".to_string();
         let profiles_path = "src/fixtures/profiles.yaml".to_string();
 
-        let profile_handler = ProfileHandler::new(Some(profiles_path), relays_path);
+        let profile_handler = ProfileHandler::new(&Some(profiles_path), &relays_path);
 
         let profiles_size = profile_handler.0.keys().len();
         assert_eq!(profiles_size, 3);
@@ -170,7 +182,7 @@ mod tests {
         let relays_path = "src/fixtures/relays.json".to_string();
         let profiles_path = "src/fixtures/profiles.json".to_string();
 
-        let profile_handler = ProfileHandler::new(Some(profiles_path), relays_path);
+        let profile_handler = ProfileHandler::new(&Some(profiles_path), &relays_path);
 
         let profiles_size = profile_handler.0.keys().len();
         assert_eq!(profiles_size, 3);
@@ -182,7 +194,7 @@ mod tests {
 
         let relays_path = "src/fixtures/relays.json".to_string();
 
-        let profile_handler = ProfileHandler::new(None, relays_path);
+        let profile_handler = ProfileHandler::new(&None, &relays_path);
         let profile = profile_handler.get(&"default".to_string());
 
         assert_eq!(&profile.is_some(), &true);

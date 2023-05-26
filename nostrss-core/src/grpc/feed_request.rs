@@ -47,11 +47,18 @@ impl FeedRequestHandler {
         let data = request.into_inner();
         let feed = Feed::from(data);
         let map = Arc::new(Mutex::new(app.feeds_map.clone()));
-        let clients = Arc::new(Mutex::new(app.clients.clone()));
-
+        let profiles = app.get_profiles().await;
+        let client = app.nostr_service.get_client().await;
         app.rss.feeds.push(feed.clone());
 
-        let job = schedule(feed.schedule.clone().as_str(), feed.clone(), map, clients).await;
+        let job = schedule(
+            feed.schedule.clone().as_str(),
+            feed.clone(),
+            map,
+            client,
+            profiles,
+        )
+        .await;
 
         _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
         _ = app.rss.scheduler.add(job).await;

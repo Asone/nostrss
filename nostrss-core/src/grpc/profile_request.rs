@@ -6,7 +6,7 @@ use nostrss_grpc::grpc::{
 use tokio::sync::MutexGuard;
 use tonic::{Code, Request, Response, Status};
 
-use crate::{app::app::App, nostr::nostr::NostrInstance, profiles::config::Profile};
+use crate::{app::app::App, profiles::config::Profile};
 
 impl From<NewProfileItem> for Profile {
     fn from(value: NewProfileItem) -> Self {
@@ -43,7 +43,7 @@ impl ProfileRequestHandler {
     ) -> Result<Response<ProfilesListResponse>, Status> {
         let mut profiles = Vec::new();
 
-        for profile in app.profiles.clone() {
+        for profile in app.nostr_service.profiles.clone() {
             profiles.push(ProfileItem::from(profile.1));
         }
 
@@ -56,9 +56,9 @@ impl ProfileRequestHandler {
         request: Request<ProfileInfoRequest>,
     ) -> Result<Response<ProfileInfoResponse>, Status> {
         let id = &request.into_inner().id;
-        match app.clients.get(id.trim()) {
-            Some(client) => Ok(Response::new(ProfileInfoResponse {
-                profile: ProfileItem::from(client.config.clone()),
+        match app.nostr_service.profiles.get(id.trim()) {
+            Some(_) => Ok(Response::new(ProfileInfoResponse {
+                profile: ProfileItem::from(app.nostr_service.profiles[id.trim()].clone()),
             })),
             None => {
                 return Err(Status::new(Code::NotFound, "Profile not found"));
@@ -74,9 +74,9 @@ impl ProfileRequestHandler {
 
         let profile = Profile::from(new_profile_item);
 
-        let client = NostrInstance::new(profile.clone()).await;
-        app.profiles.insert(profile.id.clone(), profile.clone());
-        app.clients.insert(profile.id.clone(), client);
+        app.nostr_service
+            .profiles
+            .insert(profile.id.clone(), profile.clone());
 
         Ok(Response::new(grpc::AddProfileResponse {}))
     }
@@ -87,9 +87,9 @@ impl ProfileRequestHandler {
         request: Request<DeleteProfileRequest>,
     ) -> Result<Response<DeleteProfileResponse>, Status> {
         let profile_id = &request.into_inner().id;
-        let client = app.clients.remove(profile_id.trim());
+        let profile = app.nostr_service.profiles.remove(profile_id.trim());
 
-        if client.is_none() {
+        if profile.is_none() {
             return Err(Status::new(Code::NotFound, "No profile with that id found"));
         }
 
@@ -104,7 +104,6 @@ mod tests {
     use std::sync::Arc;
 
     use crate::grpc::grpctest_utils::mock_app;
-    use dotenv::from_filename;
     use nostrss_grpc::grpc::{AddProfileRequest, NewProfileItem};
     use tokio::sync::Mutex;
     use tonic::Request;

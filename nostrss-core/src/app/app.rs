@@ -1,15 +1,18 @@
 use std::{collections::HashMap, sync::Arc};
 
-use log::info;
-use nostr_sdk::prelude::ToBech32;
-use tokio_cron_scheduler::JobScheduler;
-
 use crate::{
-    nostr::nostr::NostrInstance,
+    nostr::service::NostrService,
     profiles::{config::Profile, profiles::ProfileHandler},
     rss::{config::RssConfig, rss::RssInstance},
 };
 use clap::Parser;
+use log::info;
+use nostr_sdk::{
+    prelude::{FromSkStr, ToBech32},
+    Client, Keys,
+};
+use tokio::sync::Mutex;
+use tokio_cron_scheduler::JobScheduler;
 use uuid::Uuid;
 
 #[derive(Parser, Debug)]
@@ -35,15 +38,15 @@ pub struct AppConfig {
 pub struct App {
     pub rss: RssInstance,
     pub scheduler: Arc<JobScheduler>,
-    pub clients: HashMap<String, NostrInstance>,
-    pub profiles: HashMap<String, Profile>,
+    // pub clients: HashMap<String, NostrInstance>,
     pub feeds_jobs: HashMap<String, Uuid>,
     pub feeds_map: HashMap<String, Vec<String>>,
+    pub nostr_service: NostrService,
 }
 
 impl App {
     pub async fn new(config: AppConfig) -> Self {
-        let profile_handler = ProfileHandler::new(config.profiles, config.relays);
+        let profile_handler = ProfileHandler::new(&config.profiles, &config.relays);
 
         let scheduler = match JobScheduler::new().await {
             Ok(result) => Arc::new(result),
@@ -53,26 +56,27 @@ impl App {
             }
         };
 
+        let mut relays_map = HashMap::new();
+
+        for relay in profile_handler.clone().get_default_relays() {
+            relays_map.insert(relay.clone().name, relay);
+        }
+
         let rss = RssInstance::new(RssConfig::new(config.feeds)).await;
-
-        let mut clients: HashMap<String, NostrInstance> = HashMap::new();
-
-        // Create nostr clients based on profiles
 
         let profiles = profile_handler.clone().get_profiles();
 
+        let default_relays = profile_handler.clone().get_default_relays();
         for profile_entry in profiles {
             let profile_id = profile_entry.0.clone();
             let mut profile = profile_entry.1.clone();
 
             if profile.relays.is_empty() {
-                profile.relays = profile_handler.clone().get_default_relays();
+                profile.relays = default_relays.clone();
             }
 
-            let client = NostrInstance::new(profile).await;
-
-            let profile_keys = &client.client.keys().public_key();
-            clients.insert(profile_id.clone(), client);
+            let keys = Keys::from_sk_str(&profile.private_key.as_str()).unwrap();
+            let profile_keys = &keys.public_key();
 
             info!(
                 "public key for profile {}: {:?}",
@@ -86,14 +90,27 @@ impl App {
         }
 
         let feeds_jobs = HashMap::new();
+        let client = Client::new(&Keys::generate());
+
+        for relay in default_relays.into_iter() {
+            _ = &client.add_relay(relay.target, relay.proxy).await;
+        }
+
+        _ = &client.connect().await;
+
+        let nostr_service =
+            NostrService::new(client, config.relays.clone(), config.profiles.clone()).await;
 
         Self {
             rss,
             scheduler,
-            clients,
-            profiles: profile_handler.get_profiles(),
             feeds_jobs,
             feeds_map: HashMap::new(),
+            nostr_service,
         }
+    }
+
+    pub async fn get_profiles(&self) -> Arc<Mutex<HashMap<String, Profile>>> {
+        Arc::new(Mutex::new(self.nostr_service.profiles.clone()))
     }
 }

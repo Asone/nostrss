@@ -124,7 +124,7 @@ impl NostrssGrpc for NostrssServerService {
         request: Request<StateRequest>,
     ) -> Result<Response<StateResponse>, Status> {
         let app_lock = self.app.lock().await;
-        let n = app_lock.profiles.keys().len();
+        let n = app_lock.nostr_service.profiles.keys().len();
         let _ = request.into_inner();
         Ok(Response::new(grpc::StateResponse {
             state: format!("App is alive. Number of profiles : {}", n),
