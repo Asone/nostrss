@@ -35,13 +35,14 @@ jobs:
 
     strategy:
       matrix:
-        build: [stable, beta, nightly]
+        # build: [stable, beta, nightly]
+        build: [stable, beta]
         include:
           - build: beta
             rust: beta
-          - build: nightly
-            rust: nightly
-            benches: true
+          # - build: nightly
+          #   rust: nightly
+          #   benches: true
 
     steps:
       - name: Checkout
