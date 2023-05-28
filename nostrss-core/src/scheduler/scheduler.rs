@@ -160,7 +160,7 @@ impl RssNostrJob {
                         Err(e) => {
                             // make tick fail in non-critical way
                             error!("{}", e);
-                            return ();
+                            return;
                         }
                     };
 
@@ -172,8 +172,9 @@ impl RssNostrJob {
                                 "Profile {} for stream {} not found. Job skipped.",
                                 profile_id, feed.name
                             );
-                            ()
+                            return;
                         }
+
                         let profile = profile.unwrap();
 
                         let keys = match Keys::from_sk_str(profile.private_key.as_str()) {
@@ -199,7 +200,7 @@ impl RssNostrJob {
                         let event = EventBuilder::new(nostr_sdk::Kind::TextNote, &message, &tags)
                             .to_pow_event(&keys, profile.pow_level);
 
-                        _ = match event {
+                        match event {
                             Ok(e) => match client.send_event(e).await {
                                 Ok(event_id) => log::info!("Entry published with id {}", event_id),
                                 Err(e) => log::error!("Error publishing entry : {}", e),
@@ -225,18 +226,15 @@ impl RssNostrJob {
         }
         tags
     }
-    fn get_recommended_relays(
-        recommended_relays_ids: Vec<String>,
-        relays: &Vec<Relay>,
-    ) -> Vec<Tag> {
+    fn get_recommended_relays(recommended_relays_ids: Vec<String>, relays: &[Relay]) -> Vec<Tag> {
         let mut relay_tags = Vec::new();
         for relay_name in recommended_relays_ids {
-            let r = relays.into_iter().find(|relay| relay.name == relay_name);
+            let r = relays.iter().find(|relay| relay.name == relay_name);
             if r.clone().is_none() {
                 continue;
             }
 
-            let tag = Tag::RelayMetadata(r.clone().unwrap().target.clone().into(), None);
+            let tag = Tag::RelayMetadata(r.unwrap().target.clone().into(), None);
             relay_tags.push(tag);
         }
 

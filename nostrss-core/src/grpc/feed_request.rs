@@ -34,9 +34,7 @@ impl FeedRequestHandler {
             Some(feed) => Ok(Response::new(FeedInfoResponse {
                 feed: FeedItem::from(feed),
             })),
-            None => {
-                return Err(Status::new(Code::NotFound, "Feed not found"));
-            }
+            None => Err(Status::new(Code::NotFound, "Feed not found")),
         }
     }
 

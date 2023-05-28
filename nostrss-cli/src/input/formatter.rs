@@ -6,7 +6,7 @@ impl InputFormatter {
     }
 
     pub fn string_nullifier(value: String) -> Option<String> {
-        match value.len() > 0 {
+        match !value.is_empty() {
             true => Some(value.trim().to_string()),
             false => None,
         }

@@ -40,7 +40,7 @@ impl From<AddFeedRequest> for Feed {
 
         let pow_level = match u8::try_from(value.pow_level) {
             Ok(result) => result,
-            Err(_) => Self::default_pow_level().into(),
+            Err(_) => Self::default_pow_level(),
         };
 
         Self {
@@ -51,8 +51,8 @@ impl From<AddFeedRequest> for Feed {
             profiles: Some(value.profiles),
             tags: Some(value.tags),
             template: value.template,
-            cache_size: cache_size,
-            pow_level: pow_level,
+            cache_size,
+            pow_level,
         }
     }
 }
@@ -66,7 +66,7 @@ impl From<Profile> for ProfileItem {
 
         Self {
             id: value.id,
-            public_key: public_key,
+            public_key,
             name: value.name,
             relays: Vec::new(),
             display_name: value.display_name,

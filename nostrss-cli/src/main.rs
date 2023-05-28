@@ -70,7 +70,7 @@ async fn main() {
     let cli = Cli::parse();
 
     let mut handler = CliHandler { client };
-    _ = handler.dispatcher(cli.subcommand).await;
+    handler.dispatcher(cli.subcommand).await;
 
     // If we reach this point we close the program gracefully
     exit(1);

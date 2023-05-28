@@ -7,29 +7,19 @@ pub struct InputValidators {}
 
 impl InputValidators {
     pub fn required_input_validator(value: String) -> bool {
-        if value.len() == 0 {
+        if value.is_empty() {
             return false;
         }
 
-        return true;
+        true
     }
 
     pub fn url_validator(value: String) -> bool {
-        let r = Url::parse(&value);
-
-        match r {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        Url::parse(&value).is_ok()
     }
 
     pub fn cron_pattern_validator(value: String) -> bool {
-        let r = cron::Schedule::from_str(&value);
-
-        match r {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        cron::Schedule::from_str(&value).is_ok()
     }
 
     pub fn key_validator(value: String) -> bool {

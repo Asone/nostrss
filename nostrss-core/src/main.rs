@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
     let global_app_arc = Arc::new(Mutex::new(app));
 
     // Update profile for each profile
-    _ = {
+    {
         let global_app_lock = global_app_arc.lock().await;
         let profiles_arc = global_app_lock.get_profiles().await;
 
@@ -69,15 +69,6 @@ async fn main() -> Result<()> {
             }
         }
     };
-
-    // _ = {
-    //     let global_app_lock = global_app_arc.lock().await;
-    //     for client in global_app_lock.clients.clone().into_iter() {
-    //         let result = client.1.update_profile().await;
-
-    //         println!("result of profile update for {} : {:?}", client.0, result);
-    //     }
-    // };
 
     /*
     Build job for each feed.
@@ -112,13 +103,13 @@ async fn main() -> Result<()> {
     // We scope the instructions in a block to avoidd
     // locking the app arc on the whole instance as we
     // need to be able to lock it again later.
-    _ = {
+    {
         let app_lock = global_app_arc.lock().await;
         _ = &app_lock.rss.scheduler.start().await;
     };
 
     // GRPC server
-    _ = {
+    {
         let local_app = Arc::clone(&global_app_arc);
 
         let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());

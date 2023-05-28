@@ -27,7 +27,7 @@ impl From<NewProfileItem> for Profile {
             banner: value.banner,
             nip05: value.nip05,
             lud16: value.lud16,
-            pow_level: pow_level,
+            pow_level,
             recommended_relays: Some(value.recommended_relays),
         }
     }
@@ -60,9 +60,7 @@ impl ProfileRequestHandler {
             Some(_) => Ok(Response::new(ProfileInfoResponse {
                 profile: ProfileItem::from(app.nostr_service.profiles[id.trim()].clone()),
             })),
-            None => {
-                return Err(Status::new(Code::NotFound, "Profile not found"));
-            }
+            None => Err(Status::new(Code::NotFound, "Profile not found")),
         }
     }
 
@@ -76,7 +74,7 @@ impl ProfileRequestHandler {
 
         app.nostr_service
             .profiles
-            .insert(profile.id.clone(), profile.clone());
+            .insert(profile.id.clone(), profile);
 
         Ok(Response::new(grpc::AddProfileResponse {}))
     }

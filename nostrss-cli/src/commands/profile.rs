@@ -42,7 +42,7 @@ impl From<ProfileItem> for ListProfileTemplate {
         Self {
             id: data.id,
             public_key: data.public_key,
-            name: data.name.unwrap_or_else(|| "".to_string()),
+            name: data.name.unwrap_or_default(),
         }
     }
 }
@@ -99,15 +99,15 @@ impl From<ProfileItem> for FullProfileTemplate {
         Self {
             id: data.id,
             public_key: data.public_key,
-            name: data.name.unwrap_or_else(|| "".to_string()),
+            name: data.name.unwrap_or_default(),
             relays: data.relays.join(","),
-            display_name: data.display_name.unwrap_or_else(|| "".to_string()),
-            description: data.description.unwrap_or_else(|| "".to_string()),
-            picture: data.picture.unwrap_or_else(|| "".to_string()),
-            banner: data.banner.unwrap_or_else(|| "".to_string()),
-            nip05: data.nip05.unwrap_or_else(|| "".to_string()),
-            lud16: data.lud16.unwrap_or_else(|| "".to_string()),
-            pow_level: data.pow_level.unwrap_or_else(|| 0),
+            display_name: data.display_name.unwrap_or_default(),
+            description: data.description.unwrap_or_default(),
+            picture: data.picture.unwrap_or_default(),
+            banner: data.banner.unwrap_or_default(),
+            nip05: data.nip05.unwrap_or_default(),
+            lud16: data.lud16.unwrap_or_default(),
+            pow_level: data.pow_level.unwrap_or(0),
             recommended_relays: data.recommended_relays.join(","),
         }
     }
@@ -133,13 +133,13 @@ impl FullProfileTemplate {
             public_key,
             name,
             relays: relays.join(","),
-            display_name: display_name.unwrap_or_else(|| "".to_string()),
-            description: description.unwrap_or_else(|| "".to_string()),
-            picture: picture.unwrap_or_else(|| "".to_string()),
-            banner: banner.unwrap_or_else(|| "".to_string()),
-            nip05: nip05.unwrap_or_else(|| "".to_string()),
-            lud16: lud16.unwrap_or_else(|| "".to_string()),
-            pow_level: pow_level.unwrap_or_else(|| 0),
+            display_name: display_name.unwrap_or_default(),
+            description: description.unwrap_or_default(),
+            picture: picture.unwrap_or_default(),
+            banner: banner.unwrap_or_default(),
+            nip05: nip05.unwrap_or_default(),
+            lud16: lud16.unwrap_or_default(),
+            pow_level: pow_level.unwrap_or(0),
             recommended_relays: recommended_relays.join(","),
         }
     }
@@ -167,12 +167,12 @@ impl ProfileCommandsHandler {
                     .into_inner()
                     .profiles
                     .into_iter()
-                    .map(|p| ListProfileTemplate::from(p))
+                    .map(ListProfileTemplate::from)
                     .collect();
 
                 let table = Table::new(raws);
                 println!("=== Profiles list ===");
-                println!("{}", table.to_string());
+                println!("{}", table);
             }
             Err(e) => {
                 println!("Error {}: {}", e.code(), e.message());
@@ -278,7 +278,7 @@ impl ProfileCommandsHandler {
                 let profile = FullProfileTemplate::from(profile);
                 // profile.fields()
                 let table = Table::new(profile.properties_to_vec());
-                println!("{}", table.to_string());
+                println!("{}", table);
                 // println!("No profile found for this id");
             }
             Err(e) => {

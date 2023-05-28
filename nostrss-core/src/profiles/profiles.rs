@@ -13,7 +13,7 @@ use super::config::Profile;
 pub struct ProfileHandler(pub HashMap<String, Profile>);
 
 impl ProfileHandler {
-    pub fn new(path: &Option<String>, default_relays: &String) -> Self {
+    pub fn new(path: &Option<String>, default_relays: &str) -> Self {
         // Init profile instances index
         let mut profiles = Self(HashMap::new());
 
@@ -26,7 +26,7 @@ impl ProfileHandler {
             .insert(default_profile.clone().id, default_profile);
 
         if let Some(path) = path {
-            profiles = profiles.load_profiles(&path);
+            profiles = profiles.load_profiles(path);
         };
 
         profiles
@@ -134,14 +134,12 @@ impl ProfileHandler {
     }
 
     pub fn new_get_default_relays(&self) -> HashMap<Url, Relay> {
-        let relays = self.0["default"]
+        self.0["default"]
             .clone()
             .relays
             .into_iter()
             .map(|r| (Url::from_str(r.target.as_str()).unwrap(), r))
-            .collect();
-
-        relays
+            .collect()
     }
 }
 

@@ -22,12 +22,9 @@ impl Into<String> for Relay {
 
 impl Relay {
     fn default_pow_level() -> u8 {
-        match env::var("DEFAULT_POW_LEVEL")
+        env::var("DEFAULT_POW_LEVEL")
             .unwrap_or("0".to_string())
             .parse::<u8>()
-        {
-            Ok(result) => result,
-            Err(_) => 0,
-        }
+            .unwrap_or(0)
     }
 }

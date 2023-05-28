@@ -56,12 +56,13 @@ impl App {
             }
         };
 
-        let mut relays_map = HashMap::new();
+        // let mut relays_map = HashMap::new();
 
-        for relay in profile_handler.clone().get_default_relays() {
-            relays_map.insert(relay.clone().name, relay);
-        }
+        // for relay in profile_handler.clone().get_default_relays() {
+        //     relays_map.insert(relay.clone().name, relay);
+        // }
 
+        // RSS feed handler
         let rss = RssInstance::new(RssConfig::new(config.feeds)).await;
 
         let profiles = profile_handler.clone().get_profiles();
@@ -75,7 +76,7 @@ impl App {
                 profile.relays = default_relays.clone();
             }
 
-            let keys = Keys::from_sk_str(&profile.private_key.as_str()).unwrap();
+            let keys = Keys::from_sk_str(profile.private_key.as_str()).unwrap();
             let profile_keys = &keys.public_key();
 
             info!(
