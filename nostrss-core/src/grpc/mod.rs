@@ -11,7 +11,7 @@ mod grpctest_utils {
 
     use crate::{
         app::app::App,
-        nostr::nostr::NostrInstance,
+        nostr::service::NostrService,
         profiles::config::Profile,
         rss::{config::RssConfig, rss::RssInstance},
         scheduler::scheduler::schedule,
@@ -38,21 +38,17 @@ mod grpctest_utils {
         profiles.insert(default_profile.id.clone(), default_profile);
         profiles.insert(test_profile.id.clone(), test_profile);
 
-        let mut clients = HashMap::new();
-
-        for profile in profiles.clone() {
-            let client = NostrInstance::new(profile.1).await;
-            clients.insert(profile.0.clone(), client);
-        }
-
+        let nostr_service = NostrService {
+            profiles,
+            ..Default::default()
+        };
         let scheduler = tokio_cron_scheduler::JobScheduler::new().await.unwrap();
         let mut app = App {
             rss,
             scheduler: Arc::new(scheduler),
-            clients,
-            profiles: profiles,
             feeds_jobs: HashMap::new(),
             feeds_map: HashMap::new(),
+            nostr_service,
         };
 
         for feed in app.rss.feeds.clone() {
@@ -60,7 +56,8 @@ mod grpctest_utils {
                 feed.clone().schedule.as_str(),
                 feed.clone(),
                 Arc::new(Mutex::new(app.feeds_map.clone())),
-                Arc::new(Mutex::new(app.clients.clone())),
+                app.nostr_service.get_client().await,
+                app.get_profiles().await,
             )
             .await;
 

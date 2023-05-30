@@ -20,7 +20,7 @@ impl TemplateProcessor {
     fn load_template(path: Option<String>) -> Result<String, TemplateParserError> {
         match path {
             Some(path) => {
-                let file = fs::read_to_string(&path);
+                let file = fs::read_to_string(path);
                 match file {
                     Ok(file_content) => Ok(file_content),
                     Err(e) => {
@@ -53,14 +53,13 @@ impl TemplateProcessor {
 
         let mut tags_string = "".to_string();
 
-        for tag in data.clone().tags.unwrap_or(Vec::new()) {
-            // tags.push(Tag::Hashtag(tag.clone()));
+        for tag in data.tags.unwrap_or(Vec::new()) {
             tags_string = format!("{} #{}", tags_string, tag);
         }
 
         map.insert("tags", tags_string.trim().to_string());
 
-        let templ = Template::new(&template);
+        let templ = Template::new(template);
 
         templ.render(&map)
     }

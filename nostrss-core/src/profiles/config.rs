@@ -6,7 +6,7 @@ use nostr_sdk::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{env, path::Path};
 
-use crate::nostr::{nostr::NostrProfile, relay::Relay};
+use crate::nostr::{relay::Relay, NostrProfile};
 
 #[derive(Debug)]
 pub enum ConfigErrors {
@@ -158,13 +158,10 @@ impl Profile {
     }
 
     fn default_pow_level() -> u8 {
-        match env::var("DEFAULT_POW_LEVEL")
+        env::var("DEFAULT_POW_LEVEL")
             .unwrap_or("0".to_string())
             .parse::<u8>()
-        {
-            Ok(result) => result,
-            Err(_) => 0,
-        }
+            .unwrap_or(0)
     }
 
     pub fn set_name(mut self, name: Option<String>) -> Self {
@@ -373,8 +370,8 @@ impl Profile {
         self
     }
 
-    pub fn set_relays_from_file(self, path: String) -> Self {
-        self.load_relays(&path)
+    pub fn set_relays_from_file(self, path: &str) -> Self {
+        self.load_relays(path)
     }
 }
 

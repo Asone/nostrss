@@ -44,13 +44,29 @@ async fn main() -> Result<()> {
     // Arc the main app
     let global_app_arc = Arc::new(Mutex::new(app));
 
-    // Update profile for each client
-    _ = {
+    // Update profile for each profile
+    {
         let global_app_lock = global_app_arc.lock().await;
-        for client in global_app_lock.clients.clone().into_iter() {
-            let result = client.1.update_profile().await;
+        let profiles_arc = global_app_lock.get_profiles().await;
 
-            println!("result of profile update for {} : {:?}", client.0, result);
+        let profiles_lock = profiles_arc.lock().await;
+        for profile in profiles_lock.clone() {
+            match global_app_lock
+                .nostr_service
+                .update_profile(profile.0.clone())
+                .await
+            {
+                Ok(result) => {
+                    log::info!(
+                        "Profile {} updated with event id {}",
+                        profile.0.clone(),
+                        result
+                    )
+                }
+                Err(e) => {
+                    log::error!("Error updating profile {} : {:#?}", profile.0.clone(), e)
+                }
+            }
         }
     };
 
@@ -64,18 +80,16 @@ async fn main() -> Result<()> {
         // Local instance of feed
         let f = feed.clone();
 
-        // Arc and lock the clients to extract the associated client
-        // for the feed Based on the profile id.
-        let clients_arc = Arc::new(Mutex::new(app_lock.clients.clone()));
+        let client_arc = app_lock.nostr_service.get_client().await;
 
         // Arc the map of feeds for use in the scheduled jobs
         let maps = Arc::new(Mutex::new(app_lock.feeds_map.clone()));
 
         // Extract cronjob rule
         let scheduler_rule = f.schedule.as_str();
-
+        let profiles = app_lock.get_profiles().await;
         // Call job builder
-        let job = schedule(scheduler_rule, feed, maps, clients_arc).await;
+        let job = schedule(scheduler_rule, feed, maps, client_arc, profiles).await;
         info!("Job id for feed {:?}: {:?}", f.name, job.guid());
 
         // Load job reference in jobs map
@@ -89,13 +103,13 @@ async fn main() -> Result<()> {
     // We scope the instructions in a block to avoidd
     // locking the app arc on the whole instance as we
     // need to be able to lock it again later.
-    _ = {
+    {
         let app_lock = global_app_arc.lock().await;
         _ = &app_lock.rss.scheduler.start().await;
     };
 
     // GRPC server
-    _ = {
+    {
         let local_app = Arc::clone(&global_app_arc);
 
         let grpc_address = env::var("GRPC_ADDRESS").unwrap_or("[::1]:33333".to_string());

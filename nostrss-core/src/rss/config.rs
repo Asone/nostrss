@@ -67,26 +67,17 @@ impl Feed {
     }
 
     pub fn default_cache_size() -> usize {
-        match env::var("DEFAULT_CACHE_SIZE")
+        env::var("DEFAULT_CACHE_SIZE")
             .unwrap_or("100".to_string())
             .parse::<usize>()
-        {
-            Ok(result) => {
-                let r = result;
-                r
-            }
-            Err(_) => 100,
-        }
+            .unwrap_or(100)
     }
 
     pub fn default_pow_level() -> u8 {
-        match env::var("DEFAULT_POW_LEVEL")
+        env::var("DEFAULT_POW_LEVEL")
             .unwrap_or("0".to_string())
             .parse::<u8>()
-        {
-            Ok(result) => result,
-            Err(_) => 0,
-        }
+            .unwrap_or(0)
     }
 }
 
@@ -106,15 +97,9 @@ impl Default for Feed {
     }
 }
 /// Builds a RSS config
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RssConfig {
     pub feeds: Vec<Feed>,
-}
-
-impl Default for RssConfig {
-    fn default() -> Self {
-        Self { feeds: Vec::new() }
-    }
 }
 
 impl RssConfig {

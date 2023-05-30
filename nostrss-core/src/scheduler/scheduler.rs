@@ -1,12 +1,13 @@
 use feed_rs::model::Entry;
 use log::{debug, error};
-use nostr_sdk::{EventBuilder, Tag};
+use nostr_sdk::{prelude::FromSkStr, Client, EventBuilder, Keys, Tag};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard};
 use tokio_cron_scheduler::Job;
 
 use crate::{
-    nostr::{nostr::NostrInstance, relay::Relay},
+    nostr::relay::Relay,
+    profiles::config::Profile,
     rss::{config::Feed, parser::RssParser},
     template::template::TemplateProcessor,
 };
@@ -16,7 +17,8 @@ pub async fn schedule(
     rule: &str,
     feed: Feed,
     map: Arc<Mutex<HashMap<String, Vec<String>>>>,
-    clients: Arc<Mutex<HashMap<String, NostrInstance>>>,
+    client: Arc<Mutex<Client>>,
+    profiles: Arc<Mutex<HashMap<String, Profile>>>,
 ) -> Job {
     // Create a copy of the map arc that will be solely used into the job
     let map_job_copy = Arc::clone(&map);
@@ -33,26 +35,30 @@ pub async fn schedule(
             .unwrap_or(["default".to_string()].to_vec());
 
         // Arc instances for current job
-        let clients_arc = Arc::clone(&clients);
-        let map_arc = Arc::clone(&map_job_copy);
 
+        let map_arc = Arc::clone(&map_job_copy);
+        let profiles_arc = Arc::clone(&profiles);
+        let client_arc = Arc::clone(&client);
         Box::pin(async move {
             let mut map_lock = map_arc.lock().await;
             let feed = feed.clone();
             let uuid = &uuid.to_string();
             let mut map = map_lock[uuid].clone();
 
+            let client_lock = client_arc.lock().await;
+
+            let profiles_lock = profiles_arc.lock().await;
+
             match RssParser::get_items(feed.url.to_string()).await {
                 Ok(entries) => {
-                    let clients_lock = clients_arc.lock().await;
-
                     // Calls the method that
                     RssNostrJob::process(
                         feed.clone(),
                         profile_ids,
                         entries,
                         &mut map,
-                        clients_lock,
+                        client_lock,
+                        profiles_lock,
                     )
                     .await;
 
@@ -116,12 +122,20 @@ pub async fn feed_snapshot(feed: Feed) -> Vec<String> {
 pub struct RssNostrJob {}
 
 impl RssNostrJob {
+    pub async fn _client_prepare(
+        _client: MutexGuard<'_, Client>,
+        _profile: MutexGuard<'_, Profile>,
+    ) {
+    }
+
+    pub async fn _client_clean(_client: Client) {}
     pub async fn process(
         feed: Feed,
         profile_ids: Vec<String>,
         entries: Vec<Entry>,
         map: &mut Vec<String>,
-        clients_lock: MutexGuard<'_, HashMap<String, NostrInstance>>,
+        client: MutexGuard<'_, Client>,
+        profiles_lock: MutexGuard<'_, HashMap<String, Profile>>,
     ) {
         for entry in entries {
             let entry_id = &entry.id;
@@ -146,50 +160,56 @@ impl RssNostrJob {
                         Err(e) => {
                             // make tick fail in non-critical way
                             error!("{}", e);
-                            return ();
+                            return;
                         }
                     };
 
                     for profile_id in &profile_ids {
-                        let client = clients_lock.get(profile_id);
+                        let profile = profiles_lock.get(profile_id);
 
-                        if client.is_none() {
+                        if profile.is_none() {
                             error!(
-                                "No client found for this stream : {}. Job skipped.",
-                                feed.name
+                                "Profile {} for stream {} not found. Job skipped.",
+                                profile_id, feed.name
                             );
+                            return;
                         }
 
-                        if client.is_some() {
-                            let client = client.unwrap();
+                        let profile = profile.unwrap();
 
-                            let recommended_relays_ids = client
-                                .config
-                                .recommended_relays
-                                .clone()
-                                .unwrap_or(Vec::new());
-                            let mut recommended_relays_tags = Self::get_recommended_relays(
-                                recommended_relays_ids,
-                                &client.config.relays.clone(),
-                            );
-
-                            _ = &tags.append(&mut recommended_relays_tags);
-
-                            match client.config.pow_level.clone() {
-                                0 => client.send_message(&message, &tags).await,
-                                _ => {
-                                    let keys = client.get_client().keys();
-                                    let note = EventBuilder::new_text_note(&message, &tags)
-                                        .to_pow_event(&keys, client.config.pow_level);
-                                    _ = match note {
-                                        Ok(e) => client.get_client().send_event(e).await,
-                                        Err(_) => panic!("Note couldn't be sent"),
-                                    };
-                                }
+                        let keys = match Keys::from_sk_str(profile.private_key.as_str()) {
+                            Ok(val) => val,
+                            Err(e) => {
+                                println!("{:?}", e);
+                                // warn!("Invalid private key found for Nostr. Generating random keys...");
+                                panic!("Invalid private key found. This should not happen.");
                             }
-                        }
-                    }
+                        };
 
+                        // _ = RssNostrJob::client_prepare(client,profile).await;
+
+                        let recommended_relays_ids =
+                            profile.recommended_relays.clone().unwrap_or(Vec::new());
+                        let mut recommended_relays_tags = Self::get_recommended_relays(
+                            recommended_relays_ids,
+                            &profile.relays.clone(),
+                        );
+
+                        _ = &tags.append(&mut recommended_relays_tags);
+
+                        let event = EventBuilder::new(nostr_sdk::Kind::TextNote, &message, &tags)
+                            .to_pow_event(&keys, profile.pow_level);
+
+                        match event {
+                            Ok(e) => match client.send_event(e).await {
+                                Ok(event_id) => log::info!("Entry published with id {}", event_id),
+                                Err(e) => log::error!("Error publishing entry : {}", e),
+                            },
+                            Err(_) => panic!("Note couldn't be sent"),
+                        };
+
+                        // _ = RssNostrJob::client_clean(client,profile).await;
+                    }
                     map.insert(0, entry.id);
                 }
             }
@@ -206,18 +226,15 @@ impl RssNostrJob {
         }
         tags
     }
-    fn get_recommended_relays(
-        recommended_relays_ids: Vec<String>,
-        relays: &Vec<Relay>,
-    ) -> Vec<Tag> {
+    fn get_recommended_relays(recommended_relays_ids: Vec<String>, relays: &[Relay]) -> Vec<Tag> {
         let mut relay_tags = Vec::new();
         for relay_name in recommended_relays_ids {
-            let r = relays.into_iter().find(|relay| relay.name == relay_name);
+            let r = relays.iter().find(|relay| relay.name == relay_name);
             if r.clone().is_none() {
                 continue;
             }
 
-            let tag = Tag::RelayMetadata(r.clone().unwrap().target.clone(), None);
+            let tag = Tag::RelayMetadata(r.unwrap().target.clone().into(), None);
             relay_tags.push(tag);
         }
 

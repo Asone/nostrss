@@ -53,11 +53,11 @@ impl From<FeedItem> for FullFeedTemplate {
             name: value.name,
             url: value.url,
             schedule: value.schedule,
-            profiles: profiles,
-            tags: tags,
+            profiles,
+            tags,
             template: value.template.unwrap_or("".to_string()),
-            cache_size: cache_size,
-            pow_level: pow_level,
+            cache_size,
+            pow_level,
         }
     }
 }
@@ -161,7 +161,7 @@ impl FeedCommandsHandler {
             name,
             url,
             schedule,
-            profiles: profiles,
+            profiles,
             template: Some(template),
             tags,
             cache_size,
