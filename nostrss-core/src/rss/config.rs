@@ -3,7 +3,7 @@
 use log::{error, info};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
-use std::{env, path::Path, str::FromStr};
+use std::{env, fs::File, path::Path, str::FromStr};
 
 #[derive(Debug)]
 pub enum RssConfigErrors {
@@ -186,6 +186,70 @@ impl RssConfig {
 
         self.feeds = feeds;
         self
+    }
+
+    pub fn save_feeds(self, path: &str, feeds: &Vec<Feed>) -> bool {
+        let path = Path::new(path);
+
+        if path.is_file() {
+            match path.extension() {
+                Some(ext) => match ext.to_str() {
+                    Some("yml") => {
+                        return self.save_yaml_feeds(path, feeds);
+                    }
+                    Some("yaml") => {
+                        return self.save_yaml_feeds(path, feeds);
+                    }
+                    Some("json") => {
+                        return self.save_json_feeds(path, feeds);
+                    }
+                    _ => {
+                        return false;
+                    }
+                },
+                None => {
+                    return false;
+                }
+            }
+        }
+
+        false
+    }
+
+    pub fn save_json_feeds(mut self, path: &Path, feeds: &Vec<Feed>) -> bool {
+        // let serialized = serde_json::to_string(&feeds).unwrap();
+
+        // let result = serde_json::to_writer_pretty(path, &feeds);
+
+        let file = File::create(path).unwrap();
+        let writer = std::io::BufWriter::new(file);
+        let result = serde_json::to_writer_pretty(writer, &feeds);
+
+        match result {
+            Ok(_) => true,
+            Err(e) => {
+                error!("{}", e);
+                false
+            }
+        }
+    }
+
+    pub fn save_yaml_feeds(mut self, path: &Path, feeds: &Vec<Feed>) -> bool {
+        // let serialized = serde_json::to_string(&feeds).unwrap();
+
+        // let result = serde_json::to_writer_pretty(path, &feeds);
+
+        let file = File::create(path).unwrap();
+        let writer = std::io::BufWriter::new(file);
+        let result = serde_yaml::to_writer(writer, &feeds);
+
+        match result {
+            Ok(_) => true,
+            Err(e) => {
+                error!("{}", e);
+                false
+            }
+        }
     }
 }
 

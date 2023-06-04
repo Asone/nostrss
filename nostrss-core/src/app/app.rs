@@ -3,7 +3,10 @@ use std::{collections::HashMap, sync::Arc};
 use crate::{
     nostr::service::NostrService,
     profiles::{config::Profile, profiles::ProfileHandler},
-    rss::{config::RssConfig, rss::RssInstance},
+    rss::{
+        config::{Feed, RssConfig},
+        rss::RssInstance,
+    },
 };
 use clap::Parser;
 use log::info;
@@ -11,11 +14,12 @@ use nostr_sdk::{
     prelude::{FromSkStr, ToBech32},
     Client, Keys,
 };
+
 use tokio::sync::Mutex;
 use tokio_cron_scheduler::JobScheduler;
 use uuid::Uuid;
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone, Default)]
 #[command(author, version, about, long_about = None)]
 pub struct AppConfig {
     /// path to the relays list to load on init
@@ -42,6 +46,8 @@ pub struct App {
     pub feeds_jobs: HashMap<String, Uuid>,
     pub feeds_map: HashMap<String, Vec<String>>,
     pub nostr_service: NostrService,
+    pub config: AppConfig,
+    pub profile_handler: ProfileHandler,
 }
 
 impl App {
@@ -56,18 +62,13 @@ impl App {
             }
         };
 
-        // let mut relays_map = HashMap::new();
-
-        // for relay in profile_handler.clone().get_default_relays() {
-        //     relays_map.insert(relay.clone().name, relay);
-        // }
-
         // RSS feed handler
-        let rss = RssInstance::new(RssConfig::new(config.feeds)).await;
+        let rss = RssInstance::new(RssConfig::new(config.clone().feeds)).await;
 
         let profiles = profile_handler.clone().get_profiles();
 
         let default_relays = profile_handler.clone().get_default_relays();
+
         for profile_entry in profiles {
             let profile_id = profile_entry.0.clone();
             let mut profile = profile_entry.1.clone();
@@ -90,7 +91,6 @@ impl App {
             );
         }
 
-        let feeds_jobs = HashMap::new();
         let client = Client::new(&Keys::generate());
 
         for relay in default_relays.into_iter() {
@@ -105,13 +105,65 @@ impl App {
         Self {
             rss,
             scheduler,
-            feeds_jobs,
+            feeds_jobs: HashMap::new(),
             feeds_map: HashMap::new(),
             nostr_service,
+            config,
+            profile_handler: ProfileHandler(HashMap::new()),
         }
     }
 
     pub async fn get_profiles(&self) -> Arc<Mutex<HashMap<String, Profile>>> {
         Arc::new(Mutex::new(self.nostr_service.profiles.clone()))
+    }
+
+    pub async fn update_profile_config(&self) -> bool {
+        let profiles_arc = self.get_profiles().await;
+        let profiles_lock = profiles_arc.lock().await;
+        let profiles = profiles_lock
+            .iter()
+            .filter_map(|(_, profile)| {
+                if profile.id.as_str() == "default" {
+                    None
+                } else {
+                    Some(profile)
+                }
+            })
+            .collect();
+
+        if self.config.profiles.is_none() {
+            return false;
+        }
+
+        let result = self
+            .profile_handler
+            .clone()
+            .save_profiles(self.config.profiles.clone().unwrap().as_str(), profiles);
+
+        result
+    }
+
+    pub async fn update_feeds_config(&self, feeds: &Vec<Feed>) -> bool {
+        if self.config.feeds.is_none() {
+            return false;
+        }
+        let rss = self
+            .rss
+            .config
+            .clone()
+            .save_feeds(&self.config.feeds.clone().unwrap(), feeds);
+        rss
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use crate::app::{app::App, test_utils};
+
+    #[tokio::test]
+    async fn update_profile_config_test() {
+        let app = test_utils::mock_app().await;
     }
 }

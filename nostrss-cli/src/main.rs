@@ -16,12 +16,20 @@ use clap::{command, Parser};
 
 use nostrss_grpc::grpc::nostrss_grpc_client::NostrssGrpcClient;
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
     subcommand: Subcommands,
+    #[arg(long, short)]
+    /// Save the modifications to config files
+    pub save: bool,
+}
+
+#[derive(Debug, Default)]
+pub struct CliOptions {
+    save: bool,
 }
 
 #[derive(Debug, PartialEq, Parser)]
@@ -69,8 +77,13 @@ async fn main() {
     // Get CLI arguments and parameters
     let cli = Cli::parse();
 
+    let opts = CliOptions {
+        save: cli.save,
+        ..Default::default()
+    };
+
     let mut handler = CliHandler { client };
-    handler.dispatcher(cli.subcommand).await;
+    handler.dispatcher(cli.subcommand, opts).await;
 
     // If we reach this point we close the program gracefully
     exit(1);

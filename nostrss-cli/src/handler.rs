@@ -2,7 +2,7 @@ use crate::{
     commands::{
         feed::FeedCommandsHandler, profile::ProfileCommandsHandler, relay::RelayCommandsHandler,
     },
-    Subcommands,
+    CliOptions, Subcommands,
 };
 
 use nostrss_grpc::grpc::{nostrss_grpc_client::NostrssGrpcClient, StateRequest};
@@ -16,7 +16,7 @@ pub struct CliHandler {
 }
 
 impl CliHandler {
-    pub async fn dispatcher(&mut self, command: Subcommands) {
+    pub async fn dispatcher(&mut self, command: Subcommands, opts: CliOptions) {
         match command {
             Subcommands::State => {
                 let request = tonic::Request::new(StateRequest {});
@@ -34,7 +34,7 @@ impl CliHandler {
                 let mut feed_handler = FeedCommandsHandler {
                     client: self.client.clone(),
                 };
-                feed_handler.handle(action).await;
+                feed_handler.handle(action, opts).await;
             }
             Subcommands::Relay { action } => {
                 let mut relay_handler = RelayCommandsHandler {
@@ -47,7 +47,7 @@ impl CliHandler {
                 let mut profile_handler = ProfileCommandsHandler {
                     client: self.client.clone(),
                 };
-                profile_handler.handle(action).await;
+                profile_handler.handle(action, opts).await;
             }
         };
     }

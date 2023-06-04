@@ -30,8 +30,8 @@ pub struct NostrssServerService {
     pub app: Arc<Mutex<App>>,
 }
 
-impl From<AddFeedRequest> for Feed {
-    fn from(value: AddFeedRequest) -> Self {
+impl From<FeedItem> for Feed {
+    fn from(value: FeedItem) -> Self {
         let url = value.url.as_str();
         let cache_size = match usize::try_from(value.cache_size) {
             Ok(result) => result,
@@ -227,18 +227,21 @@ mod tests {
     #[test]
     fn feed_from_add_feed_request_test() {
         let request = AddFeedRequest {
-            id: "test".to_string(),
-            name: "test".to_string(),
-            url: "https://myrss.rs".to_string(),
-            schedule: "1/10 * * * * *".to_string(),
-            profiles: Vec::new(),
-            tags: Vec::new(),
-            template: None,
-            cache_size: 10,
-            pow_level: 20,
+            feed: FeedItem {
+                id: "test".to_string(),
+                name: "test".to_string(),
+                url: "https://myrss.rs".to_string(),
+                schedule: "1/10 * * * * *".to_string(),
+                profiles: Vec::new(),
+                tags: Vec::new(),
+                template: None,
+                cache_size: 10,
+                pow_level: 20,
+            },
+            save: Some(false),
         };
 
-        let feed = Feed::from(request);
+        let feed = Feed::from(request.feed);
 
         let expected = "test";
         assert_eq!(feed.id.as_str(), expected);

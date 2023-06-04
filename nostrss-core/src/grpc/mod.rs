@@ -10,9 +10,9 @@ mod grpctest_utils {
     use tokio::sync::Mutex;
 
     use crate::{
-        app::app::App,
+        app::app::{App, AppConfig},
         nostr::service::NostrService,
-        profiles::config::Profile,
+        profiles::{config::Profile, profiles::ProfileHandler},
         rss::{config::RssConfig, rss::RssInstance},
         scheduler::scheduler::schedule,
     };
@@ -49,6 +49,10 @@ mod grpctest_utils {
             feeds_jobs: HashMap::new(),
             feeds_map: HashMap::new(),
             nostr_service,
+            config: AppConfig {
+                ..Default::default()
+            },
+            profile_handler: ProfileHandler(HashMap::new()),
         };
 
         for feed in app.rss.feeds.clone() {
