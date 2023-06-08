@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, path::Path, str::FromStr};
+use std::{collections::HashMap, fs::File, path::Path, str::FromStr};
 
 use log::error;
 use reqwest::Url;
@@ -30,6 +30,70 @@ impl ProfileHandler {
         };
 
         profiles
+    }
+
+    pub fn save_profiles(self, path: &str, profiles: Vec<&Profile>) -> bool {
+        let path = Path::new(path);
+
+        if path.is_file() {
+            match path.extension() {
+                Some(ext) => match ext.to_str() {
+                    Some("yml") => {
+                        return self.save_yaml_profiles(path, profiles);
+                    }
+                    Some("yaml") => {
+                        return self.save_yaml_profiles(path, profiles);
+                    }
+                    Some("json") => {
+                        return self.save_json_profiles(path, profiles);
+                    }
+                    _ => {
+                        return false;
+                    }
+                },
+                None => {
+                    return false;
+                }
+            }
+        }
+
+        false
+    }
+
+    pub fn save_json_profiles(self, path: &Path, profiles: Vec<&Profile>) -> bool {
+        // let serialized = serde_json::to_string(&profiles).unwrap();
+
+        // let result = serde_json::to_writer_pretty(path, &profiles);
+
+        let file = File::create(path).unwrap();
+        let writer = std::io::BufWriter::new(file);
+        let result = serde_json::to_writer_pretty(writer, &profiles);
+
+        match result {
+            Ok(_) => true,
+            Err(e) => {
+                error!("{}", e);
+                false
+            }
+        }
+    }
+
+    pub fn save_yaml_profiles(self, path: &Path, profiles: Vec<&Profile>) -> bool {
+        // let serialized = serde_json::to_string(&profiles).unwrap();
+
+        // let result = serde_json::to_writer_pretty(path, &profiles);
+
+        let file = File::create(path).unwrap();
+        let writer = std::io::BufWriter::new(file);
+        let result = serde_yaml::to_writer(writer, &profiles);
+
+        match result {
+            Ok(_) => true,
+            Err(e) => {
+                error!("{}", e);
+                false
+            }
+        }
     }
 
     pub fn load_profiles(self, path: &str) -> Self {

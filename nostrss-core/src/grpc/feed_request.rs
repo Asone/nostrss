@@ -43,7 +43,8 @@ impl FeedRequestHandler {
         request: Request<AddFeedRequest>,
     ) -> Result<Response<AddFeedResponse>, Status> {
         let data = request.into_inner();
-        let feed = Feed::from(data);
+        let save = data.save();
+        let feed = Feed::from(data.feed);
         let map = Arc::new(Mutex::new(app.feeds_map.clone()));
         let profiles = app.get_profiles().await;
         let client = app.nostr_service.get_client().await;
@@ -61,6 +62,10 @@ impl FeedRequestHandler {
         _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
         _ = app.rss.scheduler.add(job).await;
 
+        if save == true {
+            _ = &app.update_feeds_config(&app.rss.feeds).await;
+        }
+
         Ok(Response::new(AddFeedResponse {}))
     }
 
@@ -69,9 +74,12 @@ impl FeedRequestHandler {
         mut app: MutexGuard<'_, App>,
         request: Request<DeleteFeedRequest>,
     ) -> Result<Response<DeleteFeedResponse>, Status> {
-        let feed_id = &request.into_inner().id;
+        let data = request.into_inner();
 
-        let idx = match app.rss.feeds.iter().position(|f| &f.id == feed_id) {
+        let save = data.save();
+        let feed_id = data.id;
+
+        let idx = match app.rss.feeds.iter().position(|f| &f.id == &feed_id) {
             Some(idx) => idx,
             None => {
                 return Err(Status::new(
@@ -92,7 +100,12 @@ impl FeedRequestHandler {
         }
 
         _ = &app.rss.feeds.remove(idx);
-        _ = app.scheduler.remove(job_uuid.unwrap()).await;
+        _ = &app.scheduler.remove(job_uuid.unwrap()).await;
+
+        if save == true {
+            _ = &app.update_feeds_config(&app.rss.feeds).await;
+        }
+
         Ok(Response::new(grpc::DeleteFeedResponse {}))
     }
 }
@@ -130,15 +143,18 @@ mod tests {
         let app = Arc::new(Mutex::new(mock_app().await));
 
         let add_feed_request = AddFeedRequest {
-            id: "test".to_string(),
-            name: "my test feed".to_string(),
-            url: "http://myrss.rs".to_string(),
-            schedule: "1/10 * * * * *".to_string(),
-            profiles: Vec::new(),
-            tags: Vec::new(),
-            template: None,
-            cache_size: 50,
-            pow_level: 50,
+            feed: FeedItem {
+                id: "test".to_string(),
+                name: "my test feed".to_string(),
+                url: "http://myrss.rs".to_string(),
+                schedule: "1/10 * * * * *".to_string(),
+                profiles: Vec::new(),
+                tags: Vec::new(),
+                template: None,
+                cache_size: 50,
+                pow_level: 50,
+            },
+            save: Some(false),
         };
 
         let request = Request::new(add_feed_request);
@@ -171,6 +187,7 @@ mod tests {
 
         let delete_feed_request = DeleteFeedRequest {
             id: "stackernews".to_string(),
+            save: Some(false),
         };
 
         let request = Request::new(delete_feed_request);

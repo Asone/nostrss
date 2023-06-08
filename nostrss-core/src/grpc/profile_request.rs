@@ -84,11 +84,24 @@ impl ProfileRequestHandler {
         mut app: MutexGuard<'_, App>,
         request: Request<DeleteProfileRequest>,
     ) -> Result<Response<DeleteProfileResponse>, Status> {
-        let profile_id = &request.into_inner().id;
+        let delete_profile_inner = request.into_inner();
+        let save = delete_profile_inner.save();
+        let profile_id = &delete_profile_inner.id;
         let profile = app.nostr_service.profiles.remove(profile_id.trim());
 
         if profile.is_none() {
             return Err(Status::new(Code::NotFound, "No profile with that id found"));
+        }
+
+        if profile_id == "default" {
+            return Err(Status::new(
+                Code::PermissionDenied,
+                "Default profile can not be deleted",
+            ));
+        }
+
+        if save == true {
+            _ = &app.update_profile_config().await;
         }
 
         Ok(Response::new(grpc::DeleteProfileResponse {}))
@@ -117,6 +130,7 @@ mod tests {
                     .to_string(),
                 ..Default::default()
             },
+            save: Some(false),
         };
 
         let request = Request::new(add_profile_request);
@@ -164,7 +178,9 @@ mod tests {
 
         let delete_profile_request = DeleteProfileRequest {
             id: "test".to_string(),
+            save: Some(false),
         };
+
         let request = Request::new(delete_profile_request);
 
         let delete_profile_request_result =

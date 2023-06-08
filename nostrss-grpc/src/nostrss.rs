@@ -66,24 +66,10 @@ pub struct FeedsListResponse {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AddFeedRequest {
-    #[prost(string, required, tag = "1")]
-    pub id: ::prost::alloc::string::String,
-    #[prost(string, required, tag = "2")]
-    pub name: ::prost::alloc::string::String,
-    #[prost(string, required, tag = "3")]
-    pub url: ::prost::alloc::string::String,
-    #[prost(string, required, tag = "4")]
-    pub schedule: ::prost::alloc::string::String,
-    #[prost(string, repeated, tag = "5")]
-    pub profiles: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    #[prost(string, repeated, tag = "6")]
-    pub tags: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    #[prost(string, optional, tag = "7")]
-    pub template: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(uint64, required, tag = "8")]
-    pub cache_size: u64,
-    #[prost(uint64, required, tag = "9")]
-    pub pow_level: u64,
+    #[prost(message, required, tag = "1")]
+    pub feed: FeedItem,
+    #[prost(bool, optional, tag = "2")]
+    pub save: ::core::option::Option<bool>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -93,6 +79,8 @@ pub struct AddFeedResponse {}
 pub struct DeleteFeedRequest {
     #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
+    #[prost(bool, optional, tag = "2")]
+    pub save: ::core::option::Option<bool>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -179,6 +167,8 @@ pub struct NewProfileItem {
 pub struct AddProfileRequest {
     #[prost(message, required, tag = "1")]
     pub profile: NewProfileItem,
+    #[prost(bool, optional, tag = "2")]
+    pub save: ::core::option::Option<bool>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -188,6 +178,8 @@ pub struct AddProfileResponse {}
 pub struct DeleteProfileRequest {
     #[prost(string, required, tag = "1")]
     pub id: ::prost::alloc::string::String,
+    #[prost(bool, optional, tag = "2")]
+    pub save: ::core::option::Option<bool>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

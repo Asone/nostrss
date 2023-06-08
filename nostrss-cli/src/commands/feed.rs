@@ -8,7 +8,10 @@ use nostrss_grpc::grpc::{
 use tabled::Tabled;
 use tonic::{async_trait, transport::Channel};
 
-use crate::input::{formatter::InputFormatter, input::InputValidators};
+use crate::{
+    input::{formatter::InputFormatter, input::InputValidators},
+    CliOptions,
+};
 
 use super::CommandsHandler;
 
@@ -108,10 +111,10 @@ impl FeedsTemplate {
 impl CommandsHandler for FeedCommandsHandler {}
 
 impl FeedCommandsHandler {
-    pub async fn handle(&mut self, action: FeedActions) {
+    pub async fn handle(&mut self, action: FeedActions, opts: CliOptions) {
         match action {
-            FeedActions::Add => self.add().await,
-            FeedActions::Delete => self.delete().await,
+            FeedActions::Add => self.add(opts).await,
+            FeedActions::Delete => self.delete(opts).await,
             FeedActions::List => self.list().await,
             FeedActions::Info => self.info().await,
         }
@@ -138,7 +141,7 @@ impl FeedCommandsHandler {
         }
     }
 
-    async fn add(&mut self) {
+    async fn add(&mut self, opts: CliOptions) {
         println!("=== Add a new feed ===");
         let id = self.get_input("Id: ", Some(InputValidators::required_input_validator));
         let name = self.get_input("Name: ", Some(InputValidators::required_input_validator));
@@ -157,15 +160,18 @@ impl FeedCommandsHandler {
         let pow_level = self.get_input("Pow Level: ", None).parse().unwrap_or(0);
 
         let request = tonic::Request::new(AddFeedRequest {
-            id,
-            name,
-            url,
-            schedule,
-            profiles,
-            template: Some(template),
-            tags,
-            cache_size,
-            pow_level,
+            feed: FeedItem {
+                id,
+                name,
+                url,
+                schedule,
+                profiles,
+                template: Some(template),
+                tags,
+                cache_size,
+                pow_level,
+            },
+            save: Some(opts.save),
         });
 
         let response = self.client.add_feed(request).await;
@@ -180,10 +186,13 @@ impl FeedCommandsHandler {
         }
     }
 
-    async fn delete(&mut self) {
+    async fn delete(&mut self, opts: CliOptions) {
         let id = self.get_input("Id: ", None);
 
-        let request = tonic::Request::new(DeleteFeedRequest { id });
+        let request = tonic::Request::new(DeleteFeedRequest {
+            id,
+            save: Some(opts.save),
+        });
 
         let response = self.client.delete_feed(request).await;
 

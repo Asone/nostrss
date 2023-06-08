@@ -8,7 +8,10 @@ use nostrss_grpc::grpc::{
 use tabled::{Table, Tabled};
 use tonic::{async_trait, transport::Channel};
 
-use crate::input::{formatter::InputFormatter, input::InputValidators};
+use crate::{
+    input::{formatter::InputFormatter, input::InputValidators},
+    CliOptions,
+};
 
 use super::CommandsHandler;
 
@@ -148,10 +151,10 @@ impl FullProfileTemplate {
 impl CommandsHandler for ProfileCommandsHandler {}
 
 impl ProfileCommandsHandler {
-    pub async fn handle(&mut self, action: ProfileActions) {
+    pub async fn handle(&mut self, action: ProfileActions, opts: CliOptions) {
         match action {
-            ProfileActions::Add => self.add().await,
-            ProfileActions::Delete => self.delete().await,
+            ProfileActions::Add => self.add(opts).await,
+            ProfileActions::Delete => self.delete(opts).await,
             ProfileActions::List => self.list().await,
             ProfileActions::Info => self.info().await,
         }
@@ -180,7 +183,7 @@ impl ProfileCommandsHandler {
         }
     }
 
-    async fn add(&mut self) {
+    async fn add(&mut self, opts: CliOptions) {
         println!("=== Add a profile ===");
         let id = self.get_input("Id: ", Some(InputValidators::required_input_validator));
         let private_key: String = self
@@ -232,6 +235,7 @@ impl ProfileCommandsHandler {
                 pow_level: Some(pow_level),
                 recommended_relays,
             },
+            save: None,
         });
 
         let response = self.client.add_profile(request).await;
@@ -246,9 +250,12 @@ impl ProfileCommandsHandler {
         }
     }
 
-    async fn delete(&mut self) {
-        let id = self.get_input("Id: ", None);
-        let request = tonic::Request::new(DeleteProfileRequest { id });
+    async fn delete(&mut self, opts: CliOptions) {
+        let id = self.get_input("Id: ", Some(InputValidators::default_guard_validator));
+        let request = tonic::Request::new(DeleteProfileRequest {
+            id,
+            save: Some(opts.save),
+        });
         let response = self.client.delete_profile(request).await;
 
         match response {

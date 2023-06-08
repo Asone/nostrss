@@ -58,15 +58,8 @@ message FeedsListResponse {
 }
 
 message AddFeedRequest {
-    required string id = 1;
-    required string name = 2;
-    required string url = 3;
-    required string schedule = 4;
-    repeated string profiles = 5;
-    repeated string tags = 6;
-    optional string template = 7;
-    required uint64 cache_size = 8;
-    required uint64 pow_level = 9;
+    required FeedItem feed = 1;
+    optional bool save = 2;
 }
 
 message AddFeedResponse {
@@ -75,6 +68,7 @@ message AddFeedResponse {
 
 message DeleteFeedRequest {
     required string id = 1;
+    optional bool save = 2;
 }
 
 message DeleteFeedResponse {
@@ -128,6 +122,7 @@ message NewProfileItem {
 
 message AddProfileRequest {
     required NewProfileItem profile = 1;
+    optional bool save = 2;
 }
 
 message AddProfileResponse {
@@ -136,6 +131,7 @@ message AddProfileResponse {
 
 message DeleteProfileRequest {
     required string id = 1;
+    optional bool save = 2;
 }
 
 message DeleteProfileResponse {

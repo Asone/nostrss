@@ -53,6 +53,14 @@ impl InputValidators {
 
         true
     }
+
+    pub fn default_guard_validator(value: String) -> bool {
+        if value == "default".to_string() {
+            return false;
+        }
+
+        true
+    }
 }
 
 #[cfg(test)]
