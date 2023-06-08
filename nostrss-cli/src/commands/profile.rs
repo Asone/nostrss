@@ -251,7 +251,7 @@ impl ProfileCommandsHandler {
     }
 
     async fn delete(&mut self, opts: CliOptions) {
-        let id = self.get_input("Id: ", None);
+        let id = self.get_input("Id: ", Some(InputValidators::default_guard_validator));
         let request = tonic::Request::new(DeleteProfileRequest {
             id,
             save: Some(opts.save),

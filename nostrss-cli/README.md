@@ -27,7 +27,7 @@ Note that, when using the flag, the config file will be overwritten with the ful
 |-|-|
 | nostrss-cli profile list | Lists the profiles |
 | nostrss-cli profile add | Add a new profile | 
-| nostrss-cli profile delete | Remove a profile | 
+| nostrss-cli profile delete | Remove a profile. Beware, you can not delete default profile for stability issues | 
 | nostrss-cli profile info | Get info of a specific profile | 
 
 ### Feeds
