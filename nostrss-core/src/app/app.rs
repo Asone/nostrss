@@ -158,12 +158,108 @@ impl App {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
+    use super::*;
+    use crate::{app::test_utils, profiles::config::Profile};
+    use std::env;
+    use std::fs;
 
-    use crate::app::{app::App, test_utils};
+    fn prepare_test_files() {
+        let current_dir = env::current_dir().unwrap();
+        let workdir = current_dir.to_str().unwrap();
+
+        let test_dir_path = format!("{}/{}", workdir.clone(), "src/fixtures/tests");
+
+        let r = fs::create_dir_all(test_dir_path.clone()).unwrap();
+
+        let profiles_json_path = format!("{}/{}", workdir.clone(), "src/fixtures/profiles.json");
+        let profiles_json_test_path = format!("{}/{}.test.json", test_dir_path.clone(), "profiles");
+        fs::copy(profiles_json_path, profiles_json_test_path).unwrap();
+
+        let profiles_yaml_path = format!("{}/{}", workdir.clone(), "src/fixtures/profiles.yaml");
+        let profiles_yaml_test_path = format!("{}/{}.test.yaml", test_dir_path.clone(), "profiles");
+        fs::copy(profiles_yaml_path, profiles_yaml_test_path).unwrap();
+
+        let rss_json_path = format!("{}/{}", workdir.clone(), "src/fixtures/rss.json");
+        let rss_json_test_path = format!("{}/{}.test.json", test_dir_path.clone(), "rss");
+        fs::copy(rss_json_path, rss_json_test_path).unwrap();
+
+        let rss_yaml_path = format!("{}/{}", workdir.clone(), "src/fixtures/rss.yaml");
+        let rss_yaml_test_path = format!("{}/{}.test.yaml", test_dir_path.clone(), "rss");
+        fs::copy(rss_yaml_path, rss_yaml_test_path).unwrap();
+    }
+
+    fn clean_test_files() {
+        fs::remove_dir_all("src/fixtures/tests").unwrap();
+    }
 
     #[tokio::test]
     async fn update_profile_config_test() {
-        let app = test_utils::mock_app().await;
+        prepare_test_files();
+        let mut app = test_utils::mock_app().await;
+
+        let mut profiles = HashMap::new();
+
+        let profile_1 = Profile {
+            id: "test1".to_string(),
+            ..Default::default()
+        };
+
+        let _ = &profiles.insert("test1".to_string(), profile_1);
+
+        let profile_2 = Profile {
+            id: "test2".to_string(),
+            ..Default::default()
+        };
+
+        _ = &profiles.insert("test2".to_string(), profile_2);
+
+        let profile_3 = Profile {
+            id: "test3".to_string(),
+            ..Default::default()
+        };
+
+        _ = &profiles.insert("test3".to_string(), profile_3);
+
+        app.nostr_service.profiles = profiles;
+
+        // Point app configuration to profiles json test file
+        app.config.profiles = Some("src/fixtures/tests/profiles.test.json".to_string());
+
+        let r = app.update_profile_config().await;
+        assert_eq!(true, r);
+
+        // Point app configuration to profiles yaml test file
+        app.config.profiles = Some("src/fixtures/tests/profiles.test.yaml".to_string());
+
+        let r = app.update_profile_config().await;
+        assert_eq!(true, r);
+
+        let feeds = [
+            Feed {
+                id: "test1".to_string(),
+                ..Default::default()
+            },
+            Feed {
+                id: "test2".to_string(),
+                ..Default::default()
+            },
+            Feed {
+                id: "test3".to_string(),
+                ..Default::default()
+            },
+        ]
+        .to_vec();
+
+        app.config.feeds = Some("src/fixtures/tests/rss.test.yaml".to_string());
+
+        let r = app.update_feeds_config(&feeds).await;
+        assert_eq!(true, r);
+
+        app.config.feeds = Some("src/fixtures/tests/rss.test.json".to_string());
+
+        let r = app.update_feeds_config(&feeds).await;
+        assert_eq!(true, r);
+
+        clean_test_files()
     }
 }
