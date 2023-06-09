@@ -235,7 +235,7 @@ impl ProfileCommandsHandler {
                 pow_level: Some(pow_level),
                 recommended_relays,
             },
-            save: None,
+            save: Some(opts.save),
         });
 
         let response = self.client.add_profile(request).await;
