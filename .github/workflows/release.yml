@@ -3,9 +3,10 @@ on:
   pull_request:
   push:
     branches:
-      - main
-    tags:
-      - 'v*.*.*'
+    - ci
+    #   - main
+    # tags:
+    #   - 'v*.*.*'
 
 jobs:
   style:
@@ -113,21 +114,21 @@ jobs:
       - name: Build target
         uses: actions-rs/cargo@v1
         with:
-          use-cross: true
+          use-cross: false
           command: build
           args: --release --target ${{ matrix.target }}
-      - name: Package
-        shell: bash
-        run: |
-          #strip target/${{ matrix.target }}/release/nostrss
-          cd target/${{ matrix.target }}/release          
-          tar czvf ../../../nostrss-${{ matrix.target }}.tar.gz nostrss nostrss-cli
-          cd -
-      - name: Publish
-        uses: softprops/action-gh-release@v1
-        # TODO: if any of the build step fails, the release should be deleted.
-        with:
-            files: 'nostrss*'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Package
+      #   shell: bash
+      #   run: |
+      #     #strip target/${{ matrix.target }}/release/nostrss
+      #     cd target/${{ matrix.target }}/release          
+      #     tar czvf ../../../nostrss-${{ matrix.target }}.tar.gz nostrss nostrss-cli
+      #     cd -
+      # - name: Publish
+      #   uses: softprops/action-gh-release@v1
+      #   # TODO: if any of the build step fails, the release should be deleted.
+      #   with:
+      #       files: 'nostrss*'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
