@@ -53,7 +53,7 @@ jobs:
           targets: ${{ matrix.platform.target }}
         if: ${{ !matrix.platform.cross }}
       - name: Install musl-tools on Linux
-        run: sudo apt-get update --yes && sudo apt-get install --yes musl-tools
+        run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
         if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
       - name: Install cross if cross-compiling (*nix)
         id: cross-nix
