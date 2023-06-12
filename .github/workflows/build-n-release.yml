@@ -83,14 +83,15 @@ jobs:
     name: build and package
     needs: [test]
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         platform: 
           - x86_64-unknown-linux-gnu 
           - x86_64-unknown-linux-musl
           - x86_64-unknown-netbsd
-    container:
-      image: docker://ghcr.io/rust-cross/rust-musl-cross:${{ matrix.platform.image_tag }}
+    # container:
+    #   image: docker://ghcr.io/rust-cross/rust-musl-cross:${{ matrix.platform.image_tag }}
     #   env:
     #     CFLAGS_armv7_unknown_linux_musleabihf: '-mfpu=vfpv3-d16'
     steps:
