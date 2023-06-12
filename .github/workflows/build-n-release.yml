@@ -100,12 +100,21 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y pkg-config libssl-dev musl-tools protobuf-compiler
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}    
+
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           use-cross: false
           command: build
           args: --release --target ${{ matrix.platform }}
+    
     #   - name: Upload wheels
     #     uses: actions/upload-artifact@v3
     #     with:
