@@ -106,7 +106,7 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-          target: ${{ matrix.target }}    
+          target: ${{ matrix.platform }}    
 
       - name: Build
         uses: actions-rs/cargo@v1
