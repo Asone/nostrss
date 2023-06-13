@@ -92,12 +92,12 @@ jobs:
         run: |
                     & ${{ matrix.platform.cargo_command }} build --locked --release --target ${{ matrix.platform.target }}
         if: contains(matrix.platform.os, 'windows')
-      - name: Strip binary
-        shell: bash
-        run: |
-                    strip target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
-        # strip doesn't work with cross-arch binaries on Linux or Windows.
-        if: ${{ !(matrix.platform.cross || matrix.platform.target == 'aarch64-pc-windows-msvc') }}
+    #   - name: Strip binary
+    #     shell: bash
+    #     run: |
+    #                 strip target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
+    #     # strip doesn't work with cross-arch binaries on Linux or Windows.
+    #     if: ${{ !(matrix.platform.cross || matrix.platform.target == 'aarch64-pc-windows-msvc') }}
       - name: Package as archive
         shell: bash
         run: |
@@ -108,12 +108,12 @@ jobs:
             tar czvf ../../../${{ matrix.platform.name }} ${{ matrix.platform.bin }}
           fi
           cd -          
-      - name: Publish release artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ubi-${{ matrix.platform.os_name }}
-          path: "ubi*"
-        if: github.ref == 'refs/tags/test-release'
+    #   - name: Publish release artifacts
+    #     uses: actions/upload-artifact@v3
+    #     with:
+    #       name: ubi-${{ matrix.platform.os_name }}
+    #       path: "ubi*"
+    #     if: github.ref == 'refs/tags/test-release'
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v1
         with:
