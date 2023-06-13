@@ -57,8 +57,8 @@ jobs:
     #       profile: minimlinal
     #       override: true
     #     if: ${{ !matrix.platform.cross }}
-    #   - name: Install musl-tools on Linux
-    #     run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
+      - name: Install musl-tools on Linux
+        run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
     #     if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
       - name: Install rust
         uses: actions-rs/toolchain@v1
