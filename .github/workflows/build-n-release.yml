@@ -41,33 +41,26 @@ jobs:
             cross: true
             cargo_command: ./cross
 
-        #   - os_name: Linux-armv7-gnueabihf
-        #     os: ubuntu-20.04
-        #     target: armv7-unknown-linux-gnueabihf 
-        #     name: Linux-armv7-gnueabihf.tar.gz
-        #     cross: true
-        #     cargo_command: cargo
+          - os_name: Linux-armv7-gnueabihf
+            os: ubuntu-20.04
+            target: armv7-unknown-linux-gnueabihf 
+            name: Linux-armv7-gnueabihf.tar.gz
+            cross: true
+            cargo_command: ./cross
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-    #   - name: Install toolchain if not cross-compiling
+
+    #   - name: Install musl-tools on Linux
+    #     run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
+    # #     if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
+    #   - name: Install rust
     #     uses: actions-rs/toolchain@v1
     #     with:
     #       toolchain: stable
-    #       components: rustfmt
-    #       profile: minimlinal
+    #       profile: minimal
     #       override: true
-    #     if: ${{ !matrix.platform.cross }}
-      - name: Install musl-tools on Linux
-        run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
-    #     if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
-      - name: Install rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-          target: ${{ matrix.platform.target }}    
+    #       target: ${{ matrix.platform.target }}    
       - name: Build binary
         uses: houseabsolute/actions-rust-cross@v0
         with:
