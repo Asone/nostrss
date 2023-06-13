@@ -60,13 +60,21 @@ jobs:
     #   - name: Install musl-tools on Linux
     #     run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
     #     if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
-
-      - name: Build target
-        uses: "houseabsolute/actions-rust-cross@v0"
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
         with:
-          command: build
-        #   use-cross: true
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: ${{ matrix.platform.target }}    
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: "build"
           target: ${{ matrix.platform.target }}
+          toolchain: 'stable'
+          args: "--locked --release"
+          strip: true
     #   - name: Install cross if cross-compiling (*nix)
     #     id: cross-nix
     #     shell: bash
