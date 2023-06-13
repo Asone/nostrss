@@ -1,4 +1,4 @@
-# [build]
+[build]
 pre-build = ["apt update && apt upgrade && apt install --assume-yes protobuf-compiler libssl-dev musl-tools"]
 
 [target.aarch64-unknown-linux-gnu]
