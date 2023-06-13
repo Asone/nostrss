@@ -49,17 +49,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install toolchain if not cross-compiling
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          profile: minimal
-          override: true
-        if: ${{ !matrix.platform.cross }}
-      - name: Install musl-tools on Linux
-        run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
-        if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
+    #   - name: Install toolchain if not cross-compiling
+    #     uses: actions-rs/toolchain@v1
+    #     with:
+    #       toolchain: stable
+    #       components: rustfmt
+    #       profile: minimlinal
+    #       override: true
+    #     if: ${{ !matrix.platform.cross }}
+    #   - name: Install musl-tools on Linux
+    #     run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
+    #     if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
 
       - name: Build target
         uses: "houseabsolute/actions-rust-cross@v0"
