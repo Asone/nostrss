@@ -10,13 +10,19 @@ pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
 
 [target.i686-unknown-linux-gnu]
 image = "ghcr.io/cross-rs/i686-unknown-linux-gnu:main"
+pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
 [target.i686-unknown-linux-musl]
 image = "ghcr.io/cross-rs/i686-unknown-linux-musl:main"
+pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
 [target.arm-unknown-linux-gnueabi]
 image = "ghcr.io/cross-rs/arm-unknown-linux-gnueabi:main"
+pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
 [target.x86_64-unknown-linux-gnu]
 image = "ghcr.io/cross-rs/x86_64-unknown-linux-gnu:main"
+pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
 [target.x86_64-unknown-linux-musl]
 image = "ghcr.io/cross-rs/x86_64-unknown-linux-musl:main"
+pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
 [target.x86_64-unknown-netbsd]
 image = "ghcr.io/cross-rs/x86_64-unknown-netbsd:main"
+pre-build = ["apt update && apt upgrade && apt install -y protobuf-compiler"]
