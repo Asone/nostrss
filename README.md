@@ -12,15 +12,6 @@ download the sources and compile it on your own if necessary.
 - See the [core readme](./nostrss-core/README.md) to configure and run the core service.
 - Seee the [cli readme](./nostrss-cli/README.md) to run the CLI program.
 
-## Build from sources
-
-````
-git clone 
-cd nostrss
-cargo build
-cargo run
-````
-
 ##  Licence
 
 MIT Licence.
