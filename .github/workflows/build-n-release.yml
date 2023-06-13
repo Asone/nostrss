@@ -25,10 +25,25 @@ jobs:
             name: Linux-x86_64-musl.tar.gz
             cross: false
             cargo_command: cargo
+          
           - os_name: Linux-x86_64-gnu
             os: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
             name: Linux-x86_64-gnu.tar.gz
+            cross: false
+            cargo_command: cargo
+
+          - os_name: Linux-arm-gnueabi
+            os: ubuntu-20.04
+            target: arm-unknown-linux-gnueabi
+            name: Linux-arm-gnueabi.tar.gz
+            cross: false
+            cargo_command: cargo
+
+          - os_name: Linux-armv7-gnueabihf
+            os: ubuntu-20.04
+            target: armv7-unknown-linux-gnueabihf 
+            name: Linux-armv7-gnueabihf.tar.gz
             cross: false
             cargo_command: cargo
     steps:
