@@ -47,11 +47,11 @@ jobs:
         if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
 
       - name: Build target
-        uses: actions-rs/cargo@v1
+        uses: "houseabsolute/actions-rust-cross@v0"
         with:
-          use-cross: true
           command: build
-          args: --release --target ${{ matrix.platform.target }}
+        #   use-cross: true
+          target: ${{ matrix.platform.target }}
     #   - name: Install cross if cross-compiling (*nix)
     #     id: cross-nix
     #     shell: bash
@@ -62,13 +62,13 @@ jobs:
     #     #   ./bootstrap/bootstrap-ubi.sh
     #       "$HOME/bin/ubi" --project cross-rs/cross --matching musl --in .          
     #     if: matrix.platform.cross && !contains(matrix.platform.os, 'windows')
-      - name: Install cross if cross-compiling (Windows)
-        id: cross-windows
-        shell: powershell
-        run: |
-          .\bootstrap\bootstrap-ubi.ps1
-          .\ubi --project cross-rs/cross --in .          
-        if: matrix.platform.cross && contains(matrix.platform.os, 'windows')
+    #   - name: Install cross if cross-compiling (Windows)
+    #     id: cross-windows
+    #     shell: powershell
+    #     run: |
+    #       .\bootstrap\bootstrap-ubi.ps1
+    #       .\ubi --project cross-rs/cross --in .          
+    #     if: matrix.platform.cross && contains(matrix.platform.os, 'windows')
     #   - name: Build binary (*nix)
     #     shell: bash
     #     run: |
