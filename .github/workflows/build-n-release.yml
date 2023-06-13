@@ -1,128 +1,202 @@
-name: Build & Release
+name: Self-test
 
 on:
   push:
-    branches: [ '*' ]
   pull_request:
-    branches: [ master ]
+
 jobs:
-  release:
-    name: Release - ${{ matrix.platform.os_name }}
-    runs-on: ${{ matrix.platform.os }}
+  test:
+    name: Test
     strategy:
+      fail-fast: false
       matrix:
         platform:
-          - os_name: FreeBSD-x86_64
+          - platform_name: FreeBSD-x86_64
             os: ubuntu-20.04
             target: x86_64-unknown-freebsd
-            name: FreeBSD-x86_64.tar.gz
-            cross: true
-            cargo_command: ./cross
+            expect_cross: true
+            expect_file: "x86-64.+FreeBSD"
+            expect_stripped: false
+            can_test: false
 
-          - os_name: Linux-x86_64-musl
+          - platform_name: Linux-x86_64
             os: ubuntu-20.04
             target: x86_64-unknown-linux-musl
-            name: Linux-x86_64-musl.tar.gz
-            cross: false
-            cargo_command: cargo
-          
-          - os_name: Linux-x86_64-gnu
-            os: ubuntu-20.04
-            target: x86_64-unknown-linux-gnu
-            name: Linux-x86_64-gnu.tar.gz
-            cross: false
-            cargo_command: cargo
+            expect_cross: false
+            expect_file: "ELF.+x86-64"
+            expect_stripped: true
+            can_test: true
 
-          - os_name: Linux-arm-gnueabi
+          - platform_name: Linux-aarch64
             os: ubuntu-20.04
-            target: arm-unknown-linux-gnueabi
-            name: Linux-arm-gnueabi.tar.gz
-            cross: true
-            cargo_command: cargo
+            target: aarch64-unknown-linux-musl
+            expect_cross: true
+            expect_file: "aarch64"
+            expect_stripped: false
+            can_test: true
 
-          - os_name: Linux-armv7-gnueabihf
+          - platform_name: Linux-arm
             os: ubuntu-20.04
-            target: armv7-unknown-linux-gnueabihf 
-            name: Linux-armv7-gnueabihf.tar.gz
-            cross: true
-            cargo_command: cargo
+            target: arm-unknown-linux-musleabi
+            expect_cross: true
+            expect_file: "32.+ARM"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-i586
+            os: ubuntu-20.04
+            target: i586-unknown-linux-musl
+            expect_cross: false
+            expect_file: "ELF.+80386"
+            expect_stripped: true
+            can_test: true
+
+          - platform_name: Linux-mips
+            os: ubuntu-20.04
+            target: mips-unknown-linux-musl
+            expect_cross: true
+            expect_file: "MIPS32.+mips-"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-mipsel
+            os: ubuntu-20.04
+            target: mipsel-unknown-linux-musl
+            expect_cross: true
+            expect_file: "MIPS32.+mipsel-"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-mips64
+            os: ubuntu-20.04
+            target: mips64-unknown-linux-muslabi64
+            expect_cross: true
+            expect_file: "MIPS64"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-mips64el
+            os: ubuntu-20.04
+            target: mips64el-unknown-linux-muslabi64
+            expect_cross: true
+            expect_file: "MIPS64"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-powerpc
+            os: ubuntu-20.04
+            target: powerpc-unknown-linux-gnu
+            expect_cross: true
+            expect_file: "32.+PowerPC"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-powerpc64
+            os: ubuntu-20.04
+            target: powerpc64-unknown-linux-gnu
+            expect_cross: true
+            expect_file: "64.+PowerPC"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-powerpc64le
+            os: ubuntu-20.04
+            target: powerpc64le-unknown-linux-gnu
+            expect_cross: true
+            expect_file: "64.+PowerPC"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-riscv64
+            os: ubuntu-20.04
+            target: riscv64gc-unknown-linux-gnu
+            expect_cross: true
+            expect_file: "64.+RISC-V"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: Linux-s390x
+            os: ubuntu-20.04
+            target: s390x-unknown-linux-gnu
+            expect_cross: true
+            expect_file: "64.+S/390"
+            expect_stripped: false
+            can_test: true
+
+          - platform_name: NetBSD-x86_64
+            os: ubuntu-20.04
+            target: x86_64-unknown-netbsd
+            expect_cross: true
+            expect_file: "x86-64.+NetBSD"
+            expect_stripped: false
+            can_test: false
+
+          - platform_name: Windows-aarch64
+            os: windows-latest
+            target: aarch64-pc-windows-msvc
+            expect_cross: false
+            expect_file: "Aarch64.+Windows"
+            expect_stripped: false
+            can_test: false
+
+          - platform_name: Windows-i686
+            os: windows-latest
+            target: i686-pc-windows-msvc
+            expect_cross: false
+            expect_file: "80386.+Windows"
+            expect_stripped: true
+            can_test: true
+
+          - platform_name: Windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            expect_cross: false
+            expect_file: "x86-64.+Windows"
+            expect_stripped: true
+            can_test: true
+
+          - platform_name: macOS-x86_64
+            os: macOS-latest
+            target: x86_64-apple-darwin
+            expect_cross: false
+            expect_file: "Mach-O.+x86_64"
+            expect_stripped: true
+            can_test: true
+
+          - platform_name: macOS-aarch64
+            os: macOS-latest
+            target: aarch64-apple-darwin
+            expect_cross: false
+            expect_file: "Mach-O.+arm64"
+            expect_stripped: true
+            can_test: false
+
+    runs-on: ${{ matrix.platform.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-    #   - name: Install toolchain if not cross-compiling
-    #     uses: actions-rs/toolchain@v1
-    #     with:
-    #       toolchain: stable
-    #       components: rustfmt
-    #       profile: minimlinal
-    #       override: true
-    #     if: ${{ !matrix.platform.cross }}
-    #   - name: Install musl-tools on Linux
-    #     run: sudo apt-get update --yes && sudo apt-get install --yes pkg-config libssl-dev musl-tools protobuf-compiler
-    #     if: contains(matrix.platform.os, 'ubuntu') && !matrix.platform.cross
-
-      - name: Build target
+      - name: Run both commands
+        uses: "houseabsolute/actions-rust-cross@v0"
+        with:
+          command: both
+          target: ${{ matrix.platform.target }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ matrix.platform.can_test }}
+      - name: Run test command
+        uses: "houseabsolute/actions-rust-cross@v0"
+        with:
+          command: test
+          target: ${{ matrix.platform.target }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ matrix.platform.can_test }}
+      - name: Run build command
         uses: "houseabsolute/actions-rust-cross@v0"
         with:
           command: build
-        #   use-cross: true
           target: ${{ matrix.platform.target }}
-    #   - name: Install cross if cross-compiling (*nix)
-    #     id: cross-nix
-    #     shell: bash
-    #     run: |
-    #       set -e
-    #       export TARGET="$HOME/bin"
-    #       mkdir -p "$TARGET"
-    #     #   ./bootstrap/bootstrap-ubi.sh
-    #       "$HOME/bin/ubi" --project cross-rs/cross --matching musl --in .          
-    #     if: matrix.platform.cross && !contains(matrix.platform.os, 'windows')
-    #   - name: Install cross if cross-compiling (Windows)
-    #     id: cross-windows
-    #     shell: powershell
-    #     run: |
-    #       .\bootstrap\bootstrap-ubi.ps1
-    #       .\ubi --project cross-rs/cross --in .          
-    #     if: matrix.platform.cross && contains(matrix.platform.os, 'windows')
-    #   - name: Build binary (*nix)
-    #     shell: bash
-    #     run: |
-    #                 ${{ matrix.platform.cargo_command }} build --locked --release --target ${{ matrix.platform.target }}
-    #     if: ${{ !contains(matrix.platform.os, 'windows') }}
-    #   - name: Build binary (Windows)
-    #     # We have to use the platform's native shell. If we use bash on
-    #     # Windows then OpenSSL complains that the Perl it finds doesn't use
-    #     # the platform's native paths and refuses to build.
-    #     shell: powershell
-    #     run: |
-    #                 & ${{ matrix.platform.cargo_command }} build --locked --release --target ${{ matrix.platform.target }}
-    #     if: contains(matrix.platform.os, 'windows')
-    #   - name: Strip binary
-    #     shell: bash
-    #     run: |
-    #                 strip target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
-    #     # strip doesn't work with cross-arch binaries on Linux or Windows.
-    #     if: ${{ !(matrix.platform.cross || matrix.platform.target == 'aarch64-pc-windows-msvc') }}
-    #   - name: Package as archive
-    #     shell: bash
-    #     run: |
-    #       cd target/${{ matrix.platform.target }}/release
-    #       if [[ "${{ matrix.platform.os }}" == "windows-latest" ]]; then
-    #         7z a ../../../${{ matrix.platform.name }} ${{ matrix.platform.bin }}
-    #       else
-    #         tar czvf ../../../${{ matrix.platform.name }} ${{ matrix.platform.bin }}
-    #       fi
-    #       cd -          
-    #   - name: Publish release artifacts
-    #     uses: actions/upload-artifact@v3
-    #     with:
-    #       name: ubi-${{ matrix.platform.os_name }}
-    #       path: "ubi*"
-    #     if: github.ref == 'refs/tags/test-release'
-    #   - name: Publish GitHub release
-    #     uses: softprops/action-gh-release@v1
-    #     with:
-    #       draft: true
-    #       files: "ubi*"
-    #       body_path: Changes.md
-    #     if: startsWith( github.ref, 'refs/tags/v' )
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          strip: true
+      - name: Check binary and cross on ${{ matrix.platform.platform_name }}
+        shell: bash
+        run: |
+          tests/check-binary.sh "${{ matrix.platform.target }}" "${{ matrix.platform.expect_cross }}" "${{ matrix.platform.expect_file }}" "${{ matrix.platform.expect_stripped }}"
