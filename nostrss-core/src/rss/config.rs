@@ -157,8 +157,8 @@ impl RssConfig {
         };
         let feeds: Vec<Feed> = match serde_json::from_reader(file) {
             Ok(feeds) => feeds,
-            Err(_) => {
-                error!("Invalid Feed file");
+            Err(e) => {
+                error!("Error parsing json feed file : {}", e);
                 return self;
             }
         };
@@ -178,8 +178,8 @@ impl RssConfig {
         };
         let feeds: Vec<Feed> = match serde_yaml::from_reader(file) {
             Ok(feeds) => feeds,
-            Err(_) => {
-                error!("Invalid Feed file");
+            Err(e) => {
+                error!("Error parsing yaml feed file : {}", e);
                 return self;
             }
         };
@@ -216,7 +216,7 @@ impl RssConfig {
         false
     }
 
-    pub fn save_json_feeds(mut self, path: &Path, feeds: &Vec<Feed>) -> bool {
+    pub fn save_json_feeds(self, path: &Path, feeds: &Vec<Feed>) -> bool {
         // let serialized = serde_json::to_string(&feeds).unwrap();
 
         // let result = serde_json::to_writer_pretty(path, &feeds);
@@ -234,7 +234,7 @@ impl RssConfig {
         }
     }
 
-    pub fn save_yaml_feeds(mut self, path: &Path, feeds: &Vec<Feed>) -> bool {
+    pub fn save_yaml_feeds(self, path: &Path, feeds: &Vec<Feed>) -> bool {
         // let serialized = serde_json::to_string(&feeds).unwrap();
 
         // let result = serde_json::to_writer_pretty(path, &feeds);

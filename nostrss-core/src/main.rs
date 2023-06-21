@@ -45,28 +45,36 @@ async fn main() -> Result<()> {
     let global_app_arc = Arc::new(Mutex::new(app));
 
     // Update profile for each profile
-    {
+    let _ = {
         let global_app_lock = global_app_arc.lock().await;
+
         let profiles_arc = global_app_lock.get_profiles().await;
 
         let profiles_lock = profiles_arc.lock().await;
-        for profile in profiles_lock.clone() {
-            match global_app_lock
-                .nostr_service
-                .update_profile(profile.0.clone())
-                .await
-            {
-                Ok(result) => {
-                    log::info!(
-                        "Profile {} updated with event id {}",
-                        profile.0.clone(),
-                        result
-                    )
-                }
-                Err(e) => {
-                    log::error!("Error updating profile {} : {:#?}", profile.0.clone(), e)
+        let update_flag = global_app_lock.config.update.unwrap_or(true);
+
+        match update_flag {
+            true => {
+                for profile in profiles_lock.clone() {
+                    match global_app_lock
+                        .nostr_service
+                        .update_profile(profile.0.clone())
+                        .await
+                    {
+                        Ok(result) => {
+                            log::info!(
+                                "Profile {} updated with event id {}",
+                                profile.0.clone(),
+                                result
+                            )
+                        }
+                        Err(e) => {
+                            log::error!("Error updating profile {} : {:#?}", profile.0.clone(), e)
+                        }
+                    }
                 }
             }
+            false => {}
         }
     };
 

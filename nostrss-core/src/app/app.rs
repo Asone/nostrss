@@ -37,6 +37,9 @@ pub struct AppConfig {
     /// The private key to populate keys
     #[arg(long)]
     pub private_key: Option<String>,
+
+    #[arg(long)]
+    pub update: Option<bool>,
 }
 
 pub struct App {
@@ -169,7 +172,7 @@ mod tests {
 
         let test_dir_path = format!("{}/{}", workdir.clone(), "src/fixtures/tests");
 
-        let r = fs::create_dir_all(test_dir_path.clone()).unwrap();
+        let _ = fs::create_dir_all(test_dir_path.clone()).unwrap();
 
         let profiles_json_path = format!("{}/{}", workdir.clone(), "src/fixtures/profiles.json");
         let profiles_json_test_path = format!("{}/{}.test.json", test_dir_path.clone(), "profiles");
