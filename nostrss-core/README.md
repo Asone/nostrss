@@ -4,7 +4,7 @@
 
 To run the program you will have to provide two arguments : 
 
-> nostrss --relays <path/to/relays> --feeds <path/to/feeds> --profiles <path/to/profiles>
+> nostrss --relays <path/to/relays> --feeds <path/to/feeds> --profiles <path/to/profiles> --update <boolean>
 
 Both provided files can be either `yaml` or `json` files. 
 You will find examples of the files structure in the [fixtures](./src/fixtures/) folder.

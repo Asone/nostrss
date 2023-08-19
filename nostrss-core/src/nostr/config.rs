@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use core::panic;
-use log::{info, warn};
+use log::{info, warn, error};
 use nostr_sdk::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr, path::Path};
@@ -383,13 +383,17 @@ impl NostrConfig {
     pub fn load_json_relays(mut self, path: &Path) -> Self {
         let file = match std::fs::File::open(path) {
             Ok(file) => file,
-            Err(_) => {
+            Err(e) => {
+                error!("Error loading relay yaml file : {}",e);
                 return self;
             }
         };
         let relays: Vec<Relay> = match serde_json::from_reader(file) {
             Ok(relays) => relays,
-            Err(_) => return self,
+            Err(e) => { 
+                error!("Error parsing relay json file : {}",e);
+                return self 
+            },
         };
 
         self.relays = relays;
@@ -427,13 +431,17 @@ impl NostrConfig {
     pub fn load_yaml_relays(mut self, path: &Path) -> Self {
         let file = match std::fs::File::open(path) {
             Ok(file) => file,
-            Err(_) => {
+            Err(e) => {
+                error!("Error loading relay yaml file : {}",e);
                 return self;
             }
         };
         let relays: Vec<Relay> = match serde_yaml::from_reader(file) {
             Ok(relays) => relays,
-            Err(_) => return self,
+            Err(e) => { 
+                error!("Error parsing relay yaml file : {}",e);
+                return self
+            }
         };
 
         self.relays = relays;

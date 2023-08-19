@@ -32,8 +32,9 @@ impl RssParser {
         // parse
         let feed = match feed_rs::parser::parse(content.as_bytes()) {
             Ok(feed) => feed,
-            Err(_) => {
-                return Err(RssParserError::new("Error while parsing Rss feed stream"));
+            Err(e) => {
+                let error = format!("Error while parsing Rss feed stream : {}", e);
+                return Err(RssParserError::new(&error));
             }
         };
 
