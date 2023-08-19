@@ -1,5 +1,5 @@
 [workspace]
-members = ["nostrss-core","nostrss-cli","nostrss-grpc"]
+members = ["nostrss-core","nostrss-cli","nostrss-grpc","nostrss-api"]
 
 [profile.release]
 strip = true  # Automatically strip symbols from the binary.
