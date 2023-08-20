@@ -86,7 +86,7 @@ impl TemplateProcessor {
 
         // published time
         if data.published.is_some() {
-            map.insert("published",data.published.unwrap().to_string());
+            map.insert("published", data.published.unwrap().to_string());
         }
 
         if data.content.is_some() {
@@ -94,17 +94,15 @@ impl TemplateProcessor {
 
             if content.body.is_some() {
                 let body = content.body.unwrap();
-                map.insert("content",body);
+                map.insert("content", body);
             }
         }
-        
-        // authors 
-        if data.authors.len() > 0 {
-            let authors = data.authors.into_iter().map(|author|{
-                author.name
-            }).collect();
 
-            map.insert("author",authors);
+        // authors
+        if data.authors.len() > 0 {
+            let authors = data.authors.into_iter().map(|author| author.name).collect();
+
+            map.insert("author", authors);
         }
         map
     }
