@@ -64,7 +64,7 @@ impl TemplateProcessor {
         templ.render(&map)
     }
 
-    // created a HashMap from the entry data
+    // creates a HashMap from the entry data
     // The HashMap is currently consumed by the template engine
     fn parse_entry_to_hashmap(data: Entry) -> HashMap<&'static str, String> {
         let mut map = HashMap::new();
@@ -84,6 +84,28 @@ impl TemplateProcessor {
 
         map.insert("summary", summary);
 
+        // published time
+        if data.published.is_some() {
+            map.insert("published",data.published.unwrap().to_string());
+        }
+
+        if data.content.is_some() {
+            let content = data.content.unwrap();
+
+            if content.body.is_some() {
+                let body = content.body.unwrap();
+                map.insert("content",body);
+            }
+        }
+        
+        // authors 
+        if data.authors.len() > 0 {
+            let authors = data.authors.into_iter().map(|author|{
+                author.name
+            }).collect();
+
+            map.insert("author",authors);
+        }
         map
     }
 }
