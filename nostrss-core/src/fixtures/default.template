@@ -2,3 +2,5 @@ Default nostrss template file
 Feed: {name}
 Url: {url}
 Tags: {tags}
+Author: {author}
+Published: {published}

@@ -113,13 +113,22 @@ mod tests {
     extern crate mime;
 
     use super::*;
+    use chrono::{DateTime, NaiveDateTime, Utc};
     use dotenv::from_filename;
 
-    use feed_rs::model::{Content, Link, Text};
+    use feed_rs::model::{Content, Link, Person, Text};
 
     #[test]
     fn test_default_template_fallback() {
         from_filename(".env.test").ok();
+
+        let published_datetime = NaiveDateTime::new(
+            chrono::NaiveDate::from_ymd(2009, 1, 3),
+            chrono::NaiveTime::from_hms(18, 15, 05),
+        );
+
+        // Convert the NaiveDateTime to a DateTime in the UTC time zone
+        let utc_published: DateTime<Utc> = DateTime::from_utc(published_datetime, Utc);
 
         let entry = Entry {
             content: Some(Content {
@@ -135,6 +144,13 @@ mod tests {
                 length: None,
             }]
             .to_vec(),
+            authors: [Person {
+                name: "Satoshi Nakamoto".to_string(),
+                uri: None,
+                email: None,
+            }]
+            .to_vec(),
+            published: Some(utc_published),
             ..Default::default()
         };
 
@@ -148,7 +164,7 @@ mod tests {
         assert_eq!(result.is_ok(), true);
 
         let expected =
-            "test nostrss template\nFeed: Generic feed\nUrl: https://www.nostr.info\nTags: "
+            "test nostrss template\nFeed: Generic feed\nUrl: https://www.nostr.info\nTags: \nAuthor: Satoshi Nakamoto\nPublished: 2009-01-03 18:15:05 UTC"
                 .to_string();
         let result = result.unwrap();
 
@@ -158,6 +174,14 @@ mod tests {
     #[test]
     fn test_custom_template() {
         from_filename(".env.test").ok();
+
+        let published_datetime = NaiveDateTime::new(
+            chrono::NaiveDate::from_ymd(2009, 1, 3),
+            chrono::NaiveTime::from_hms(18, 15, 05),
+        );
+
+        // Convert the NaiveDateTime to a DateTime in the UTC time zone
+        let utc_published: DateTime<Utc> = DateTime::from_utc(published_datetime, Utc);
 
         let entry = Entry {
             title: Some(Text {
@@ -169,6 +193,13 @@ mod tests {
                 body: Some("Test body".to_string()),
                 ..Default::default()
             }),
+            authors: [Person {
+                name: "Satoshi Nakamoto".to_string(),
+                uri: None,
+                email: None,
+            }]
+            .to_vec(),
+            published: Some(utc_published),
             links: [Link {
                 href: "https://www.nostr.info".to_string(),
                 rel: None,
@@ -193,7 +224,7 @@ mod tests {
         assert_eq!(result.is_ok(), true);
 
         let result = result.unwrap();
-        let expected = "Default nostrss template file\nFeed: Generic feed\nUrl: https://www.nostr.info\nTags: #Test #nostrss".to_string();
+        let expected = "Default nostrss template file\nFeed: Generic feed\nUrl: https://www.nostr.info\nTags: #Test #nostrss\nAuthor: Satoshi Nakamoto\nPublished: 2009-01-03 18:15:05 UTC".to_string();
 
         assert_eq!(result, expected);
     }
@@ -211,6 +242,13 @@ mod tests {
                 body: Some("Test body".to_string()),
                 ..Default::default()
             }),
+            authors: [Person {
+                name: "Satoshi Nakamoto".to_string(),
+                uri: None,
+                email: None,
+            }]
+            .to_vec(),
+            published: None,
             links: [Link {
                 href: "https://www.nostr.info".to_string(),
                 rel: None,
@@ -237,7 +275,7 @@ mod tests {
 
         let result = result.unwrap();
         let expected =
-            "Default nostrss template file\nFeed: {name}\nUrl: {url}\nTags: {tags}".to_string();
+            "Default nostrss template file\nFeed: {name}\nUrl: {url}\nTags: {tags}\nAuthor: {author}\nPublished: {published}".to_string();
         assert_eq!(result, expected);
 
         let bad_path = "./src/fixture/nonexistant.template".to_string();
@@ -249,7 +287,7 @@ mod tests {
         assert_eq!(result.is_ok(), true);
 
         let result = result.unwrap();
-        let expected = "test nostrss template\nFeed: {name}\nUrl: {url}\nTags: {tags}".to_string();
+        let expected = "test nostrss template\nFeed: {name}\nUrl: {url}\nTags: {tags}\nAuthor: {author}\nPublished: {published}".to_string();
         assert_eq!(result, expected);
     }
 }
