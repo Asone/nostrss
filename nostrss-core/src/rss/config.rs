@@ -23,7 +23,7 @@ pub struct Feed {
     // The feed name to be displayed in the nostr messages
     pub name: String,
     // The URL to the RSS feed
-    pub url: Url,
+    pub url: nostr_sdk::Url,
     // The cronjob ticker rule for the feed job
     pub schedule: String,
     // The clients profiles to be used for publishing updates. Will use default profile if none provided
@@ -86,7 +86,7 @@ impl Default for Feed {
         Self {
             id: "default".to_string(),
             name: "Generic feed".to_string(),
-            url: Url::from_str("https://www.nostr.info").unwrap(),
+            url: nostr_sdk::Url::from_str("https://www.nostr.info").unwrap(),
             schedule: "0/10 * * * * *".to_string(),
             profiles: None,
             tags: Some(Vec::new()),

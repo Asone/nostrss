@@ -724,7 +724,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::StateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).state(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::state(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -769,7 +771,7 @@ pub mod nostrss_grpc_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).profiles_list(request).await
+                                <T as NostrssGrpc>::profiles_list(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -815,7 +817,7 @@ pub mod nostrss_grpc_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).profile_info(request).await
+                                <T as NostrssGrpc>::profile_info(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -861,7 +863,7 @@ pub mod nostrss_grpc_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).delete_profile(request).await
+                                <T as NostrssGrpc>::delete_profile(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -906,7 +908,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::AddProfileRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).add_profile(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::add_profile(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -950,7 +954,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::FeedsListRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).feeds_list(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::feeds_list(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -994,7 +1000,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::FeedInfoRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).feed_info(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::feed_info(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -1038,7 +1046,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::DeleteFeedRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).delete_feed(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::delete_feed(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -1082,7 +1092,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::AddFeedRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).add_feed(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::add_feed(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -1126,7 +1138,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::StartJobRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).start_job(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::start_job(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -1170,7 +1184,9 @@ pub mod nostrss_grpc_server {
                             request: tonic::Request<super::StopJobRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).stop_job(request).await };
+                            let fut = async move {
+                                <T as NostrssGrpc>::stop_job(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }

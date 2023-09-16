@@ -75,7 +75,7 @@ impl NostrService {
         };
 
         if profile.clone().get_picture().is_some() {
-            let parsed_url = Url::parse(profile.clone().get_picture().unwrap().as_str());
+            let parsed_url = nostr_sdk::Url::parse(profile.clone().get_picture().unwrap().as_str());
 
             if parsed_url.is_ok() {
                 metadata = metadata.picture(parsed_url.unwrap());
@@ -83,7 +83,7 @@ impl NostrService {
         };
 
         if profile.clone().get_banner().is_some() {
-            let parsed_url = Url::parse(profile.clone().get_banner().unwrap().as_str());
+            let parsed_url = nostr_sdk::Url::parse(profile.clone().get_banner().unwrap().as_str());
 
             if parsed_url.is_ok() {
                 metadata = metadata.banner(parsed_url.unwrap());

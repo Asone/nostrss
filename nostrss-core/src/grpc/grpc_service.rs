@@ -46,7 +46,7 @@ impl From<FeedItem> for Feed {
         Self {
             id: value.id,
             name: value.name,
-            url: Url::from_str(url).unwrap(),
+            url: nostr_sdk::Url::from_str(url).unwrap(),
             schedule: value.schedule,
             profiles: Some(value.profiles),
             tags: Some(value.tags),
@@ -293,7 +293,7 @@ mod tests {
         let feed = Feed {
             id: "test".to_string(),
             name: "My test".to_string(),
-            url: Url::from_str("https://myrss.rss").unwrap(),
+            url: nostr_sdk::Url::from_str("https://myrss.rss").unwrap(),
             schedule: "1/10 * * * * *".to_string(),
             ..Default::default()
         };
