@@ -1,6 +1,6 @@
 use feed_rs::model::Entry;
 use log::{debug, error};
-use nostr_sdk::{prelude::FromSkStr, Client, EventBuilder, Keys, Tag};
+use nostr_sdk::{prelude::FromSkStr, Client, EventBuilder, Keys, Kind, Tag};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard};
 use tokio_cron_scheduler::Job;
@@ -155,6 +155,9 @@ impl RssNostrJob {
 
                     let mut tags = Self::get_tags(&feed.tags);
 
+                    // Declare NIP-48.
+                    tags.push(Self::get_nip48(&tags, entry.id.clone()));
+
                     let message = match TemplateProcessor::parse(feed.clone(), entry.clone()) {
                         Ok(message) => message,
                         Err(e) => {
@@ -226,6 +229,16 @@ impl RssNostrJob {
         }
         tags
     }
+
+    fn get_nip48(mut tags: &Vec<Tag>, guid: String) -> Tag {
+        // Declare NIP-48.
+        // NIP-48 : declares to be a proxy from an external signal (rss,activityPub)
+        Tag::Proxy {
+            id: guid,
+            protocol: nostr_sdk::prelude::Protocol::Rss,
+        }
+    }
+
     fn get_recommended_relays(recommended_relays_ids: Vec<String>, relays: &[Relay]) -> Vec<Tag> {
         let mut relay_tags = Vec::new();
         for relay_name in recommended_relays_ids {
@@ -248,6 +261,9 @@ mod tests {
     use nostr_sdk::prelude::TagKind;
 
     use super::*;
+
+    #[test]
+    fn test_nip_48_signal() {}
 
     #[test]
     fn test_get_tags() {
@@ -275,6 +291,15 @@ mod tests {
         assert_eq!(tag.kind(), TagKind::R);
         assert_eq!(tag.as_vec()[0], "r");
         assert_eq!(tag.as_vec()[1], "wss://nostr.up");
+    }
+
+    #[test]
+    fn test_nip_48() {
+        let guid = "https://www.test.com";
+        let mut tags: Vec<Tag> = [].to_vec();
+        let nip_48 = RssNostrJob::get_nip48(&tags, guid.clone().to_string());
+
+        assert_eq!(nip_48.kind(), TagKind::Proxy);
     }
 
     #[test]
