@@ -34,6 +34,7 @@ url = "2.4.1"
 tempfile = "3.6.0"
 mockall = "0.11.4"
 mime = "0.3.17"
+chrono = "0.4.26"
 
 [dependencies.nostrss_grpc]
 path = "../nostrss-grpc"
