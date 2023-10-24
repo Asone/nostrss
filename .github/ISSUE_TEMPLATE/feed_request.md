@@ -1,6 +1,11 @@
-## Request additional feeds on [Nostrss.re]() instance.
+---
+name: Feeds Request
+about: Request a feed to be added to nostrss.re instance
+title: ''
+labels: ''
+assignees: ''
 
-**List feeds to add below**
+---
 
 | Feed name | Feed URL | Logo URL | Banner URL |
 |-|-|-|-|
