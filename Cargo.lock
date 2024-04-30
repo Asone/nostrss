@@ -1839,7 +1839,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "async-std",
  "async-trait",
@@ -1875,7 +1875,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss-cli"
-version = "1.0.0"
+version = "1.0.2"
 dependencies = [
  "bech32 0.11.0",
  "clap",
@@ -1893,7 +1893,7 @@ dependencies = [
 
 [[package]]
 name = "nostrss_grpc"
-version = "1.0.0"
+version = "1.0.2"
 dependencies = [
  "prost",
  "protoc",

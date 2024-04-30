@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use log::{error, info};
-use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use std::{env, fs::File, path::Path, str::FromStr};
 

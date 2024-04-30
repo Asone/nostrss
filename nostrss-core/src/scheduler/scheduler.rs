@@ -1,6 +1,6 @@
 use feed_rs::model::Entry;
 use log::{debug, error};
-use nostr_sdk::{Client, EventBuilder, Keys, Kind, Tag};
+use nostr_sdk::{Client, EventBuilder, Keys, Tag};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard};
 use tokio_cron_scheduler::Job;
@@ -166,7 +166,7 @@ impl RssNostrJob {
                         let mut tags = Self::get_tags(&feed.tags);
 
                         // Declare NIP-48.
-                        tags.push(Self::get_nip48(&tags, entry.id.clone()));
+                        tags.push(Self::get_nip48(entry.id.clone()));
 
                         let profile = profiles_lock.get(profile_id);
 
@@ -230,7 +230,7 @@ impl RssNostrJob {
         tags
     }
 
-    fn get_nip48(mut tags: &Vec<Tag>, guid: String) -> Tag {
+    fn get_nip48(guid: String) -> Tag {
         // Declare NIP-48.
         // NIP-48 : declares to be a proxy from an external signal (rss,activityPub)
         Tag::Proxy {
@@ -304,7 +304,7 @@ mod tests {
     fn test_nip_48() {
         let guid = "https://www.test.com";
         let mut tags: Vec<Tag> = [].to_vec();
-        let nip_48 = RssNostrJob::get_nip48(&tags, guid.clone().to_string());
+        let nip_48 = RssNostrJob::get_nip48(guid.clone().to_string());
 
         assert_eq!(nip_48.kind(), TagKind::Proxy);
     }

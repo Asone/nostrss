@@ -1,5 +1,4 @@
 use std::str::FromStr;
-#[allow(implied_bounds_entailment)]
 use std::sync::Arc;
 
 use nostr_sdk::{prelude::ToBech32, Keys};
@@ -13,7 +12,6 @@ use nostrss_grpc::grpc::{
     ProfilesListResponse, StartJobRequest, StartJobResponse, StateRequest, StateResponse,
     StopJobRequest, StopJobResponse,
 };
-use reqwest::Url;
 use tokio::sync::{Mutex, MutexGuard};
 use tonic::{Request, Response, Status};
 
