@@ -100,7 +100,7 @@ impl NostrService {
 
         debug!("{:?}", metadata);
 
-        let event = EventBuilder::set_metadata(metadata)
+        let event = EventBuilder::metadata(&metadata)
             .to_event(&profile.get_keys())
             .unwrap();
 

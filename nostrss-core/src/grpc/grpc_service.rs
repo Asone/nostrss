@@ -2,10 +2,7 @@ use std::str::FromStr;
 #[allow(implied_bounds_entailment)]
 use std::sync::Arc;
 
-use nostr_sdk::{
-    prelude::{FromSkStr, ToBech32},
-    Keys,
-};
+use nostr_sdk::{prelude::ToBech32, Keys};
 
 use crate::rss::config::Feed;
 use nostrss_grpc::grpc::{
@@ -59,7 +56,7 @@ impl From<FeedItem> for Feed {
 
 impl From<Profile> for ProfileItem {
     fn from(value: Profile) -> Self {
-        let public_key = match Keys::from_sk_str(&value.private_key) {
+        let public_key = match Keys::parse(&value.private_key) {
             Ok(keys) => keys.public_key().to_bech32().unwrap(),
             Err(_) => "".to_string(),
         };
@@ -277,7 +274,7 @@ mod tests {
 
         assert_eq!(profile_item.id, profile.id);
 
-        let keys = Keys::from_sk_str(profile.private_key.as_str()).unwrap();
+        let keys = Keys::parse(profile.private_key.as_str()).unwrap();
 
         assert_eq!(
             profile_item.public_key,

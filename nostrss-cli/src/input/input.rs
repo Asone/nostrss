@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use bech32::FromBase32;
+use bech32::Hrp;
 use url::Url;
 
 pub struct InputValidators {}
@@ -27,11 +27,8 @@ impl InputValidators {
 
         match decoded {
             Ok(result) => {
-                if let Ok(bytes) = Vec::<u8>::from_base32(&result.1) {
-                    // Check if the decoded bytes have the expected length
-                    if bytes.len() != 32 {
-                        return false;
-                    }
+                if result.0 != Hrp::parse("nsec").unwrap() {
+                    return false;
                 }
             }
             Err(_) => {

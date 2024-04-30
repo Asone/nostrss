@@ -110,7 +110,7 @@ impl NostrProfile for Profile {
     }
 
     fn get_keys(&self) -> Keys {
-        match Keys::from_sk_str(&self.private_key) {
+        match Keys::parse(&self.private_key) {
             Ok(val) => val,
             Err(_) => {
                 // warn!("Invalid private key found for Nostr. Generating random keys...");
@@ -293,7 +293,7 @@ impl Profile {
     }
 
     pub fn set_keys(secret_key: &str) -> Result<Keys, ConfigErrors> {
-        match Keys::from_sk_str(secret_key) {
+        match Keys::parse(secret_key) {
             Ok(keys) => Ok(keys),
             Err(_) => Err(ConfigErrors::KeyParsingError),
         }

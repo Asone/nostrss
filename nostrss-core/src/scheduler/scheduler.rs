@@ -1,6 +1,6 @@
 use feed_rs::model::Entry;
 use log::{debug, error};
-use nostr_sdk::{prelude::FromSkStr, Client, EventBuilder, Keys, Kind, Tag};
+use nostr_sdk::{Client, EventBuilder, Keys, Kind, Tag};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard};
 use tokio_cron_scheduler::Job;
@@ -153,11 +153,6 @@ impl RssNostrJob {
                         entry_id, &feed.id
                     );
 
-                    let mut tags = Self::get_tags(&feed.tags);
-
-                    // Declare NIP-48.
-                    tags.push(Self::get_nip48(&tags, entry.id.clone()));
-
                     let message = match TemplateProcessor::parse(feed.clone(), entry.clone()) {
                         Ok(message) => message,
                         Err(e) => {
@@ -168,6 +163,11 @@ impl RssNostrJob {
                     };
 
                     for profile_id in &profile_ids {
+                        let mut tags = Self::get_tags(&feed.tags);
+
+                        // Declare NIP-48.
+                        tags.push(Self::get_nip48(&tags, entry.id.clone()));
+
                         let profile = profiles_lock.get(profile_id);
 
                         if profile.is_none() {
@@ -180,7 +180,7 @@ impl RssNostrJob {
 
                         let profile = profile.unwrap();
 
-                        let keys = match Keys::from_sk_str(profile.private_key.as_str()) {
+                        let keys = match Keys::parse(profile.private_key.as_str()) {
                             Ok(val) => val,
                             Err(e) => {
                                 println!("{:?}", e);
@@ -200,7 +200,7 @@ impl RssNostrJob {
 
                         _ = &tags.append(&mut recommended_relays_tags);
 
-                        let event = EventBuilder::new(nostr_sdk::Kind::TextNote, &message, &tags)
+                        let event = EventBuilder::new(nostr_sdk::Kind::TextNote, &message, tags)
                             .to_pow_event(&keys, profile.pow_level);
 
                         match event {
@@ -258,7 +258,8 @@ impl RssNostrJob {
 #[cfg(test)]
 mod tests {
 
-    use nostr_sdk::prelude::TagKind;
+    use nostr_sdk::Alphabet::{R, T};
+    use nostr_sdk::{prelude::TagKind, SingleLetterTag};
 
     use super::*;
 
@@ -288,7 +289,13 @@ mod tests {
         let tags = RssNostrJob::get_recommended_relays(relay_ids, &relays);
 
         let tag = tags[0].clone();
-        assert_eq!(tag.kind(), TagKind::R);
+        assert_eq!(
+            tag.kind(),
+            TagKind::SingleLetter(SingleLetterTag {
+                character: R,
+                uppercase: false
+            })
+        );
         assert_eq!(tag.as_vec()[0], "r");
         assert_eq!(tag.as_vec()[1], "wss://nostr.up");
     }
@@ -309,7 +316,13 @@ mod tests {
 
         assert_eq!(tags.len(), 3);
         let tag = tags[0].clone();
-        assert_eq!(tag.kind(), TagKind::T);
+        assert_eq!(
+            tag.kind(),
+            TagKind::SingleLetter(SingleLetterTag {
+                character: T,
+                uppercase: false
+            })
+        );
         assert_eq!(tag.as_vec()[0], "t");
         assert_eq!(tag.as_vec()[1], "ad");
     }

@@ -10,10 +10,7 @@ use crate::{
 };
 use clap::Parser;
 use log::info;
-use nostr_sdk::{
-    prelude::{FromSkStr, ToBech32},
-    Client, Keys,
-};
+use nostr_sdk::{prelude::RelayOptions, prelude::ToBech32, Client, Keys};
 
 use tokio::sync::Mutex;
 use tokio_cron_scheduler::JobScheduler;
@@ -80,7 +77,7 @@ impl App {
                 profile.relays = default_relays.clone();
             }
 
-            let keys = Keys::from_sk_str(profile.private_key.as_str()).unwrap();
+            let keys = Keys::parse(profile.private_key.as_str()).unwrap();
             let profile_keys = &keys.public_key();
 
             info!(
@@ -97,7 +94,11 @@ impl App {
         let client = Client::new(&Keys::generate());
 
         for relay in default_relays.into_iter() {
-            _ = &client.add_relay(relay.target, relay.proxy).await;
+            let mut opts = RelayOptions::new();
+
+            opts = opts.proxy(relay.proxy);
+
+            _ = &client.add_relay_with_opts(relay.target, opts).await;
         }
 
         _ = &client.connect().await;
