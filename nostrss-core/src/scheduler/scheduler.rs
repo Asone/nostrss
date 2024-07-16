@@ -216,7 +216,6 @@ impl RssNostrJob {
 
                                 match dry_run_flag {
                                     true => {
-                                        
                                         log::info!("dry-mode on : {:?}", e.as_json());
                                     }
                                     false => match client.send_event(e).await {

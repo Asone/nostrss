@@ -36,7 +36,7 @@ pub struct AppConfig {
     pub private_key: Option<String>,
 
     /// Run the progam without broadcasting onto the network
-    #[arg(long,action)]
+    #[arg(long, action)]
     pub dry_run: bool,
 
     #[arg(long)]
