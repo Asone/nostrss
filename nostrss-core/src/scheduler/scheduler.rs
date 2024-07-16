@@ -212,12 +212,12 @@ impl RssNostrJob {
 
                         match event {
                             Ok(e) => {
-                                let dry_run_flag = app_config_lock.dry_run.unwrap_or(false);
+                                let dry_run_flag = app_config_lock.dry_run;
 
                                 match dry_run_flag {
                                     true => {
-                                        log::info!("Running in dry-run mode, therefore skipping publishing. Run in debug mode for event serialized details");
-                                        log::debug!("{:?}", e.as_json());
+                                        
+                                        log::info!("dry-mode on : {:?}", e.as_json());
                                     }
                                     false => match client.send_event(e).await {
                                         Ok(event_id) => {
