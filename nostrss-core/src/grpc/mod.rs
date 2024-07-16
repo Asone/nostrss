@@ -62,6 +62,7 @@ mod grpctest_utils {
                 Arc::new(Mutex::new(app.feeds_map.clone())),
                 app.nostr_service.get_client().await,
                 app.get_profiles().await,
+                app.get_config().await,
             )
             .await;
 

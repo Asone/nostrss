@@ -35,6 +35,10 @@ pub struct AppConfig {
     #[arg(long)]
     pub private_key: Option<String>,
 
+    // Run the progam without broadcasting onto the network
+    #[arg(long)]
+    pub dry_run: Option<bool>,
+
     #[arg(long)]
     pub update: Option<bool>,
 }
@@ -119,6 +123,10 @@ impl App {
 
     pub async fn get_profiles(&self) -> Arc<Mutex<HashMap<String, Profile>>> {
         Arc::new(Mutex::new(self.nostr_service.profiles.clone()))
+    }
+
+    pub async fn get_config(&self) -> Arc<Mutex<AppConfig>> {
+        Arc::new(Mutex::new(self.config.clone()))
     }
 
     pub async fn update_profile_config(&self) -> bool {
