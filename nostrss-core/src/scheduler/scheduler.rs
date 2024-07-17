@@ -1,11 +1,12 @@
 use feed_rs::model::Entry;
 use log::{debug, error};
-use nostr_sdk::{Client, EventBuilder, Keys, Tag};
+use nostr_sdk::{Client, EventBuilder, JsonUtil, Keys, Tag};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard};
 use tokio_cron_scheduler::Job;
 
 use crate::{
+    app::app::AppConfig,
     nostr::relay::Relay,
     profiles::config::Profile,
     rss::{config::Feed, parser::RssParser},
@@ -19,6 +20,7 @@ pub async fn schedule(
     map: Arc<Mutex<HashMap<String, Vec<String>>>>,
     client: Arc<Mutex<Client>>,
     profiles: Arc<Mutex<HashMap<String, Profile>>>,
+    app_config: Arc<Mutex<AppConfig>>,
 ) -> Job {
     // Create a copy of the map arc that will be solely used into the job
     let map_job_copy = Arc::clone(&map);
@@ -38,6 +40,8 @@ pub async fn schedule(
 
         let map_arc = Arc::clone(&map_job_copy);
         let profiles_arc = Arc::clone(&profiles);
+
+        let app_config_arc = Arc::clone(&app_config);
         let client_arc = Arc::clone(&client);
         Box::pin(async move {
             let mut map_lock = map_arc.lock().await;
@@ -48,7 +52,7 @@ pub async fn schedule(
             let client_lock = client_arc.lock().await;
 
             let profiles_lock = profiles_arc.lock().await;
-
+            let app_config_lock = app_config_arc.lock().await;
             match RssParser::get_items(feed.url.to_string()).await {
                 Ok(entries) => {
                     // Calls the method that
@@ -59,6 +63,7 @@ pub async fn schedule(
                         &mut map,
                         client_lock,
                         profiles_lock,
+                        app_config_lock,
                     )
                     .await;
 
@@ -129,6 +134,7 @@ impl RssNostrJob {
     }
 
     pub async fn _client_clean(_client: Client) {}
+
     pub async fn process(
         feed: Feed,
         profile_ids: Vec<String>,
@@ -136,6 +142,7 @@ impl RssNostrJob {
         map: &mut Vec<String>,
         client: MutexGuard<'_, Client>,
         profiles_lock: MutexGuard<'_, HashMap<String, Profile>>,
+        app_config_lock: MutexGuard<'_, AppConfig>,
     ) {
         for entry in entries {
             let entry_id = &entry.id;
@@ -204,10 +211,21 @@ impl RssNostrJob {
                             .to_pow_event(&keys, profile.pow_level);
 
                         match event {
-                            Ok(e) => match client.send_event(e).await {
-                                Ok(event_id) => log::info!("Entry published with id {}", event_id),
-                                Err(e) => log::error!("Error publishing entry : {}", e),
-                            },
+                            Ok(e) => {
+                                let dry_run_flag = app_config_lock.dry_run;
+
+                                match dry_run_flag {
+                                    true => {
+                                        log::info!("dry-mode on : {:?}", e.as_json());
+                                    }
+                                    false => match client.send_event(e).await {
+                                        Ok(event_id) => {
+                                            log::info!("Entry published with id {}", event_id)
+                                        }
+                                        Err(e) => log::error!("Error publishing entry : {}", e),
+                                    },
+                                }
+                            }
                             Err(_) => panic!("Note couldn't be sent"),
                         };
 

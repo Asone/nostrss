@@ -48,6 +48,7 @@ impl FeedRequestHandler {
         let map = Arc::new(Mutex::new(app.feeds_map.clone()));
         let profiles = app.get_profiles().await;
         let client = app.nostr_service.get_client().await;
+        let config = app.get_config().await;
         app.rss.feeds.push(feed.clone());
 
         let job = schedule(
@@ -56,6 +57,7 @@ impl FeedRequestHandler {
             map,
             client,
             profiles,
+            config,
         )
         .await;
 
