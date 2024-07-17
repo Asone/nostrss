@@ -69,7 +69,7 @@ impl Feed {
         env::var("DEFAULT_CACHE_SIZE")
             .unwrap_or("100".to_string())
             .parse::<usize>()
-            .unwrap_or(100)
+            .unwrap_or(1000)
     }
 
     pub fn default_pow_level() -> u8 {
