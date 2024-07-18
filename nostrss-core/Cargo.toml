@@ -34,7 +34,7 @@ url = "2.5.2"
 tempfile = "3.10.1"
 mockall = "0.12.1"
 mime = "0.3.17"
-
+mediatype = "0.19.18"
 [dependencies.nostrss_grpc]
 path = "../nostrss-grpc"
 

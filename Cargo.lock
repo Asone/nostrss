@@ -1796,6 +1796,7 @@ dependencies = [
  "feed-rs",
  "log",
  "md5",
+ "mediatype",
  "mime",
  "mockall",
  "new_string_template",

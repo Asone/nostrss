@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn test_custom_template() {
         from_filename(".env.test").ok();
-        let text_plain: MediaTypeBuf = "text/plain; charset=UTF-8".parse().unwrap();
+        let text_plain: mediatype::MediaTypeBuf = "text/plain; charset=UTF-8".parse().unwrap();
         let entry = Entry {
             title: Some(Text {
                 content_type: text_plain,
