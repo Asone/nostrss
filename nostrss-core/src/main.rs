@@ -92,12 +92,20 @@ async fn main() -> Result<()> {
 
         // Arc the map of feeds for use in the scheduled jobs
         let maps = Arc::new(Mutex::new(app_lock.feeds_map.clone()));
-
+        let app_config_arc = app_lock.get_config().await;
         // Extract cronjob rule
         let scheduler_rule = f.schedule.as_str();
         let profiles = app_lock.get_profiles().await;
         // Call job builder
-        let job = schedule(scheduler_rule, feed, maps, client_arc, profiles).await;
+        let job = schedule(
+            scheduler_rule,
+            feed,
+            maps,
+            client_arc,
+            profiles,
+            app_config_arc,
+        )
+        .await;
         info!("Job id for feed {:?}: {:?}", f.name, job.guid());
 
         // Load job reference in jobs map

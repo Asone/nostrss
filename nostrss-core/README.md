@@ -100,3 +100,13 @@ An example template is provided in the [fixtures](./src/fixtures/default.templat
 Cronjob rules are defined in the [feeds config file](./nostrss-core/src/fixtures/rss.json) following the [cron crate rules](https://crates.io/crates/cron).
 
 For each tick the remote feed will be matched with a local fingerprint, for which, any unmatching entry against of the feed will be broadcasted to relays. 
+
+### Dry run mode
+
+You can run the program in a `dry-run` mode, so the program will run the whole processes as usual but will avoid broadcasting the final result onto the network. 
+
+When activating the `dry-run` mode, the programm will log the json that would have been broadcasted into the `STDOUT`. 
+
+To run the `dry-run` mode use the `--dry-run` flag when instanciating `nostrss` : 
+
+> nostrss --relays <path/to/relays> --feeds <path/to/feeds> --profiles <path/to/profiles> --update <boolean> --dry-run
