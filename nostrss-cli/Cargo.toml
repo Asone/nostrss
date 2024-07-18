@@ -4,14 +4,14 @@ version = "1.0.2"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.5.4", features = ["derive"] }
-serde = "1.0.199"
-tokio = { version = "1.37.0", features = ["full"] }
+clap = { version = "4.5.9", features = ["derive"] }
+serde = "1.0.204"
+tokio = { version = "1.38.1", features = ["full"] }
 dotenv = "0.15.0"
-log = "0.4.21"
-tonic = "0.11.0"
+log = "0.4.22"
+tonic = "0.12.1"
 tabled = "0.15.0"
-url = "2.3.1"
+url = "2.5.2"
 cron = "0.12.1"
 secp256k1 = "0.29.0"
 bech32 = "0.11.0"

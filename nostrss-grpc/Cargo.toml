@@ -5,10 +5,10 @@ edition = "2021"
 build = "src/build.rs"
 
 [dependencies]
-prost = "0.12.1"
-tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
-tonic = "0.11.0"
+prost = "0.13.1"
+tokio = { version = "1.38.1", features = ["macros", "rt-multi-thread"] }
+tonic = "0.12.1"
 protoc = "2.28.0"
-serde = "1.0.152"
+serde = "1.0.204"
 [build-dependencies]
-tonic-build = "0.11.0"
+tonic-build = "0.12.1"
