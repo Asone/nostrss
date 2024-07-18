@@ -94,8 +94,8 @@ mod tests {
 
     use super::*;
     use dotenv::from_filename;
-
     use feed_rs::model::{Content, Link, Text};
+    use mediatype::MediaTypeBuf;
 
     #[test]
     fn test_default_template_fallback() {
@@ -138,10 +138,10 @@ mod tests {
     #[test]
     fn test_custom_template() {
         from_filename(".env.test").ok();
-
+        let text_plain: MediaTypeBuf = "text/plain; charset=UTF-8".parse().unwrap();
         let entry = Entry {
             title: Some(Text {
-                content_type: mime::TEXT_PLAIN,
+                content_type: text_plain,
                 src: None,
                 content: "Test content".to_string(),
             }),
@@ -180,10 +180,11 @@ mod tests {
 
     #[test]
     fn test_entry_to_hashmap() {
+        let text_plain: MediaTypeBuf = "text/plain; charset=UTF-8".parse().unwrap();
         from_filename(".env.test").ok();
         let entry = Entry {
             title: Some(Text {
-                content_type: mime::TEXT_PLAIN,
+                content_type: text_plain,
                 src: None,
                 content: "Test content".to_string(),
             }),
