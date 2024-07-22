@@ -23,7 +23,7 @@ bytes = "1.6.1"
 async-trait = "0.1.81"
 env_logger = "0.11.3"
 uuid = "1.10.0"
-openssl = { version = "0.10.64", features = ["vendored"] }
+openssl = { version = "0.10.66", features = ["vendored"] }
 new_string_template = "1.5.1"
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 regex = "1.10.5"
