@@ -27,7 +27,7 @@ openssl = { version = "0.10.66", features = ["vendored"] }
 new_string_template = "1.5.1"
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 regex = "1.10.5"
-tonic = "0.12.1"
+tonic = "0.12.3"
 url = "2.5.2"
 
 [dev-dependencies]
