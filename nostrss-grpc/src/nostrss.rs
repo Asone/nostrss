@@ -199,7 +199,13 @@ pub struct ProfileInfoResponse {
 }
 /// Generated client implementations.
 pub mod nostrss_grpc_client {
-    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
@@ -221,8 +227,8 @@ pub mod nostrss_grpc_client {
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
-        T::ResponseBody: Body<Data = Bytes> + Send + 'static,
-        <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
     {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
@@ -247,7 +253,7 @@ pub mod nostrss_grpc_client {
             >,
             <T as tonic::codegen::Service<
                 http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + Send + Sync,
+            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             NostrssGrpcClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -290,8 +296,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -314,8 +319,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -339,8 +343,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -364,8 +367,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -389,8 +391,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -414,8 +415,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -439,8 +439,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -464,8 +463,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -489,8 +487,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -514,8 +511,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -539,8 +535,7 @@ pub mod nostrss_grpc_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
+                    tonic::Status::unknown(
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -557,11 +552,17 @@ pub mod nostrss_grpc_client {
 }
 /// Generated server implementations.
 pub mod nostrss_grpc_server {
-    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with NostrssGrpcServer.
     #[async_trait]
-    pub trait NostrssGrpc: Send + Sync + 'static {
+    pub trait NostrssGrpc: std::marker::Send + std::marker::Sync + 'static {
         async fn state(
             &self,
             request: tonic::Request<super::StateRequest>,
@@ -632,14 +633,14 @@ pub mod nostrss_grpc_server {
         ) -> std::result::Result<tonic::Response<super::StopJobResponse>, tonic::Status>;
     }
     #[derive(Debug)]
-    pub struct NostrssGrpcServer<T: NostrssGrpc> {
+    pub struct NostrssGrpcServer<T> {
         inner: Arc<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
         max_decoding_message_size: Option<usize>,
         max_encoding_message_size: Option<usize>,
     }
-    impl<T: NostrssGrpc> NostrssGrpcServer<T> {
+    impl<T> NostrssGrpcServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -693,8 +694,8 @@ pub mod nostrss_grpc_server {
     impl<T, B> tonic::codegen::Service<http::Request<B>> for NostrssGrpcServer<T>
     where
         T: NostrssGrpc,
-        B: Body + Send + 'static,
-        B::Error: Into<StdError> + Send + 'static,
+        B: Body + std::marker::Send + 'static,
+        B::Error: Into<StdError> + std::marker::Send + 'static,
     {
         type Response = http::Response<tonic::body::BoxBody>;
         type Error = std::convert::Infallible;
@@ -1202,23 +1203,25 @@ pub mod nostrss_grpc_server {
                 }
                 _ => {
                     Box::pin(async move {
-                        Ok(
-                            http::Response::builder()
-                                .status(200)
-                                .header("grpc-status", tonic::Code::Unimplemented as i32)
-                                .header(
-                                    http::header::CONTENT_TYPE,
-                                    tonic::metadata::GRPC_CONTENT_TYPE,
-                                )
-                                .body(empty_body())
-                                .unwrap(),
-                        )
+                        let mut response = http::Response::new(empty_body());
+                        let headers = response.headers_mut();
+                        headers
+                            .insert(
+                                tonic::Status::GRPC_STATUS,
+                                (tonic::Code::Unimplemented as i32).into(),
+                            );
+                        headers
+                            .insert(
+                                http::header::CONTENT_TYPE,
+                                tonic::metadata::GRPC_CONTENT_TYPE,
+                            );
+                        Ok(response)
                     })
                 }
             }
         }
     }
-    impl<T: NostrssGrpc> Clone for NostrssGrpcServer<T> {
+    impl<T> Clone for NostrssGrpcServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -1230,7 +1233,9 @@ pub mod nostrss_grpc_server {
             }
         }
     }
-    impl<T: NostrssGrpc> tonic::server::NamedService for NostrssGrpcServer<T> {
-        const NAME: &'static str = "nostrss.NostrssGRPC";
+    /// Generated gRPC service name
+    pub const SERVICE_NAME: &str = "nostrss.NostrssGRPC";
+    impl<T> tonic::server::NamedService for NostrssGrpcServer<T> {
+        const NAME: &'static str = SERVICE_NAME;
     }
 }
