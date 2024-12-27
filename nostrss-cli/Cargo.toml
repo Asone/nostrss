@@ -6,14 +6,14 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
 serde = "1.0.204"
-tokio = { version = "1.38.1", features = ["full"] }
+tokio = { version = "1.42.0", features = ["full"] }
 dotenv = "0.15.0"
 log = "0.4.22"
 tonic = "0.12.3"
-tabled = "0.15.0"
+tabled = "0.17.0"
 url = "2.5.2"
-cron = "0.12.1"
-secp256k1 = "0.29.0"
+cron = "0.14.0"
+secp256k1 = "0.30.0"
 bech32 = "0.11.0"
 
 [dependencies.nostrss_grpc]
