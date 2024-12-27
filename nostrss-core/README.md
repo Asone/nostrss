@@ -97,7 +97,10 @@ An example template is provided in the [fixtures](./src/fixtures/default.templat
 
 ## RSS broadcasting 
 
-Cronjob rules are defined in the [feeds config file](./nostrss-core/src/fixtures/rss.json) following the [cron crate rules](https://crates.io/crates/cron).
+> [!WARNING]
+> If you're using nostrss release up to v1.0.3, use [cron crate rules](https://crates.io/crates/cron) pattern instead. For any upper version you can rely on the information below. 
+
+Cronjob rules are defined in the [feeds config file](./nostrss-core/src/fixtures/rss.json) following the [croner-rust crate rules](https://docs.rs/croner/latest/croner/#pattern).
 
 For each tick the remote feed will be matched with a local fingerprint, for which, any unmatching entry against of the feed will be broadcasted to relays. 
 
