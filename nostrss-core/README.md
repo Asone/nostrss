@@ -21,7 +21,7 @@ You will find examples of the files structure in the [fixtures](./src/fixtures/)
 | profile   | Array of strings | No       | The profiles to be used for this rss feed                   |
 | tags   | Array of strings        | No       | A list of tags to be used for messages                   |
 | template | String | No | An optional path to a template to use for feed publishing. |
-| cache_size | Integer | No | The snapshot size made in job |
+| cache_size | Integer | No | The snapshot size made in job. If no value is provided and no default value is set through env, cache will have no limit. |
 
 ##### Examples : 
 - [json file example](./src/fixtures/rss.json)       
