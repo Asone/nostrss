@@ -2,7 +2,12 @@
 
 use log::{error, info};
 use serde::{Deserialize, Serialize};
-use std::{env, fs::File, path::Path, str::FromStr};
+use std::{
+    env::{self, VarError},
+    fs::File,
+    path::Path,
+    str::FromStr,
+};
 
 #[derive(Debug)]
 pub enum RssConfigErrors {
@@ -32,7 +37,7 @@ pub struct Feed {
     // The template path for publication
     pub template: Option<String>,
     #[serde(default = "Feed::default_cache_size")]
-    pub cache_size: usize,
+    pub cache_size: Option<usize>,
     #[serde(default = "Feed::default_pow_level")]
     pub pow_level: u8,
 }
@@ -65,11 +70,15 @@ impl Feed {
         self
     }
 
-    pub fn default_cache_size() -> usize {
-        env::var("DEFAULT_CACHE_SIZE")
-            .unwrap_or("100".to_string())
-            .parse::<usize>()
-            .unwrap_or(1000)
+    pub fn default_cache_size() -> Option<usize> {
+        match env::var("DEFAULT_CACHE_SIZE") {
+            Ok(r) => Some(r.parse::<usize>().unwrap_or(1000)),
+            Err(e) => None,
+        }
+        // let default_value = env::var("DEFAULT_CACHE_SIZE")
+        //     .unwrap_or("100".to_string())
+        //     .parse::<usize>()
+        //     .unwrap_or(1000);
     }
 
     pub fn default_pow_level() -> u8 {
@@ -297,10 +306,10 @@ pub mod tests {
         let path = Some("./src/fixtures/rss.json".to_string());
         let config = RssConfig::new(path);
 
-        assert_eq!(config.feeds[0].cache_size, 5);
+        assert_eq!(config.feeds[0].cache_size, Some(5));
 
         // Test undeclared cache size that should fall back to hard-coded cache value
-        assert_eq!(config.feeds[1].cache_size, 100);
+        assert_eq!(config.feeds[1].cache_size, None);
     }
 
     #[test]
@@ -310,9 +319,9 @@ pub mod tests {
         let config = RssConfig::new(path);
 
         // Test declared cache size
-        assert_eq!(config.feeds[0].cache_size, 5);
+        assert_eq!(config.feeds[0].cache_size, Some(5));
 
         // Test undeclared cache size that should fall back on env var value
-        assert_eq!(config.feeds[1].cache_size, 20);
+        assert_eq!(config.feeds[1].cache_size, Some(20));
     }
 }

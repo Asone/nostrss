@@ -153,7 +153,7 @@ mod tests {
                 profiles: Vec::new(),
                 tags: Vec::new(),
                 template: None,
-                cache_size: 50,
+                cache_size: Some(50),
                 pow_level: 50,
             },
             save: Some(false),

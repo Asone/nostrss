@@ -28,10 +28,18 @@ pub struct NostrssServerService {
 impl From<FeedItem> for Feed {
     fn from(value: FeedItem) -> Self {
         let url = value.url.as_str();
-        let cache_size = match usize::try_from(value.cache_size) {
-            Ok(result) => result,
-            Err(_) => Self::default_cache_size(),
+
+        let cache_size = match value.cache_size {
+            Some(r) => match usize::try_from(r) {
+                Ok(result) => Some(result),
+                Err(_) => Self::default_cache_size(),
+            },
+            None => None,
         };
+        // let cache_size = match usize::try_from(value.cache_size) {
+        //     Ok(result) => Some(result),
+        //     Err(_) => Self::default_cache_size(),
+        // };
 
         let pow_level = match u8::try_from(value.pow_level) {
             Ok(result) => result,
@@ -88,7 +96,10 @@ impl From<Feed> for FeedItem {
             None => Vec::new(),
         };
 
-        let cache_size = value.cache_size as u64;
+        let cache_size = match value.cache_size {
+            Some(r) => Some(r as u64),
+            None => None,
+        };
         let pow_level = value.pow_level as u64;
 
         FeedItem {
@@ -230,7 +241,7 @@ mod tests {
                 profiles: Vec::new(),
                 tags: Vec::new(),
                 template: None,
-                cache_size: 10,
+                cache_size: Some(10),
                 pow_level: 20,
             },
             save: Some(false),

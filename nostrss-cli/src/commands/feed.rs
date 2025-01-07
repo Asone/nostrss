@@ -41,7 +41,7 @@ pub struct FullFeedTemplate {
     pub profiles: String,
     pub tags: String,
     pub template: String,
-    pub cache_size: String,
+    pub cache_size: Option<String>,
     pub pow_level: String,
 }
 
@@ -49,7 +49,10 @@ impl From<FeedItem> for FullFeedTemplate {
     fn from(value: FeedItem) -> Self {
         let profiles = value.profiles.join(",");
         let tags = value.tags.join(",");
-        let cache_size = value.cache_size.to_string();
+        let cache_size = match value.cache_size {
+            Some(r) => Some(r.to_string()),
+            None => None,
+        };
         let pow_level = value.pow_level.to_string();
         Self {
             id: value.id,
@@ -67,6 +70,7 @@ impl From<FeedItem> for FullFeedTemplate {
 
 impl FullFeedTemplate {
     fn properties_to_vec(&self) -> Vec<FeedDetailsTemplate> {
+        let cache_binding = self.cache_size.clone().unwrap_or_else(|| "".to_string());
         let properties: Vec<(String, &String)> = [
             ("id".to_string(), &self.id),
             ("name".to_string(), &self.name),
@@ -75,7 +79,7 @@ impl FullFeedTemplate {
             ("profiles".to_string(), &self.profiles),
             ("tags".to_string(), &self.tags),
             ("template".to_string(), &self.template),
-            ("cache_size".to_string(), &self.cache_size),
+            ("cache_size".to_string(), &cache_binding),
             ("pow_level".to_string(), &self.pow_level),
         ]
         .to_vec();
@@ -156,7 +160,12 @@ impl FeedCommandsHandler {
         let tags: Vec<String> =
             InputFormatter::input_to_vec(self.get_input("Tags (separated with coma):", None));
         let template = self.get_input("Template path: ", None);
-        let cache_size = self.get_input("Cache size: ", None).parse().unwrap_or(100);
+        let cache_size_input = self.get_input("Cache size: ", None);
+        let cache_size = if cache_size_input.is_empty() {
+            None
+        } else {
+            Some(cache_size_input.parse().unwrap_or(1000))
+        };
         let pow_level = self.get_input("Pow Level: ", None).parse().unwrap_or(0);
 
         let request = tonic::Request::new(AddFeedRequest {
