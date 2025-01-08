@@ -4,24 +4,24 @@ version = "1.1.0"
 edition = "2021"
 
 [dependencies]
-serde = "1.0.216"
-serde_json = "1.0.134"
+serde = "1.0.217"
+serde_json = "1.0.135"
 tokio = { version = "1.42.0", features = ["full"] }
 nostr-sdk = "0.30.0"
 tungstenite = { version = "0.26.1", features = ["rustls-tls-webpki-roots"]}
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.24", features = ["derive"] }
 tokio-cron-scheduler = "0.13.0"
-reqwest = "0.12.9"
+reqwest = "0.12.12"
 serde_yaml = "0.9.34-deprecated"
 dotenv = "0.15.0"
-quick-xml = "0.37.1"
+quick-xml = "0.37.2"
 md5 = "0.7.0"
 log = "0.4.22"
 atom_syndication = "0.12.6"
-feed-rs = "2.3.0"
+feed-rs = "2.3.1"
 bytes = "1.9.0"
-async-trait = "0.1.83"
-env_logger = "0.11.5"
+async-trait = "0.1.85"
+env_logger = "0.11.6"
 uuid = "1.11.0"
 openssl = { version = "0.10.68", features = ["vendored"] }
 new_string_template = "1.5.3"
@@ -31,7 +31,7 @@ tonic = "0.12.3"
 url = "2.5.4"
 
 [dev-dependencies]
-tempfile = "3.14.0"
+tempfile = "3.15.0"
 mockall = "0.13.1"
 mime = "0.3.17"
 mediatype = "0.19.18"
