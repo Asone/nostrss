@@ -49,8 +49,8 @@ pub struct FeedItem {
     pub tags: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     #[prost(string, optional, tag = "7")]
     pub template: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(uint64, required, tag = "8")]
-    pub cache_size: u64,
+    #[prost(uint64, optional, tag = "8")]
+    pub cache_size: ::core::option::Option<u64>,
     #[prost(uint64, required, tag = "9")]
     pub pow_level: u64,
 }

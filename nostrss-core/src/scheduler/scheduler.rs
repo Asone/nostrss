@@ -67,10 +67,10 @@ pub async fn schedule(
                     )
                     .await;
 
-                    // Remove old entries if the vec has over 200 elements
-                    // The limit of entries should be provided dynamicaly in further
-                    // iterations.
-                    map.truncate(feed.cache_size);
+                    if feed.cache_size.is_some() {
+                        map.truncate(feed.cache_size.unwrap());
+                    }
+
                     _ = &map_lock.insert(uuid.to_string(), map);
                 }
                 Err(_) => {

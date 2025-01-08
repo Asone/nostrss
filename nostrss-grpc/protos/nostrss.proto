@@ -46,7 +46,7 @@ message FeedItem {
     repeated string profiles = 5;
     repeated string tags = 6;
     optional string template = 7;
-    required uint64 cache_size = 8;
+    optional uint64 cache_size = 8;
     required uint64 pow_level = 9;
 }
 
