@@ -3,21 +3,21 @@
         "id": "stackernews",
         "name": "Stacker news",
         "url": "https://stacker.news/rss",
-        "schedule": "1/2 * * * * * *",
+        "schedule": "1/2 * * * * *",
         "cache_size": 5
     },
     {
         "id": "bitcoin-reddit",
         "name": "reddit r/bitcoin",
         "url": "https://www.reddit.com/r/bitcoin/.rss",
-        "schedule": "1/5 * * * * * *",
+        "schedule": "1/5 * * * * *",
         "template": "./src/fixtures/default.template"
     },
     {
         "id": "nostr-reddit",
         "name": "reddit r/nostr",
         "url": "https://www.reddit.com/r/nostr/.rss",
-        "schedule": "1/10 * * * * * *",
+        "schedule": "1/10 * * * * *",
         "profiles": [
             "reddit"
         ],

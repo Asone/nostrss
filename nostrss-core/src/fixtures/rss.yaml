@@ -2,7 +2,7 @@
 - id: "wikipedia"
   name: "New pages on French wikipedia"
   url: "https://fr.wikipedia.org/w/index.php?title=Sp%C3%A9cial:Nouvelles_pages&feed=atom"
-  schedule: "1/15 * * * * "
+  schedule: "1/15 * * * * *"
   tags: ["wikipedia","changes"]
   pow_level: 15
   profiles: null
@@ -10,10 +10,10 @@
 - id: "stackernews"
   name: "Stacker news feed"
   url: "https://stacker.news/rss"
-  schedule: "1/30 * * * * "
+  schedule: "1/30 * * * * *"
   template: null
 - id: "bitcoin-reddit"
   name: "r/bitcoin reddit feed"
   url: "https://www.reddit.com/r/bitcoin/.rss"
-  schedule: "1/10 * * * * "
+  schedule: "1/10 * * * * *"
   profiles: ["reddit"]
