@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 serde = "1.0.217"
 serde_json = "1.0.135"
-tokio = { version = "1.42.0", features = ["full"] }
+tokio = { version = "1.43.1", features = ["full"] }
 nostr-sdk = "0.30.0"
 tungstenite = { version = "0.26.1", features = ["rustls-tls-webpki-roots"]}
 clap = { version = "4.5.24", features = ["derive"] }
