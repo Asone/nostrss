@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
 serde = "1.0.204"
-tokio = { version = "1.42.0", features = ["full"] }
+tokio = { version = "1.43.1", features = ["full"] }
 dotenv = "0.15.0"
 log = "0.4.22"
 tonic = "0.12.3"
