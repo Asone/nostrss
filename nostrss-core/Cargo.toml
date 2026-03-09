@@ -10,22 +10,19 @@ tokio = { version = "1.43.1", features = ["full"] }
 nostr-sdk = "0.30.0"
 tungstenite = { version = "0.26.1", features = ["rustls-tls-webpki-roots"]}
 clap = { version = "4.5.24", features = ["derive"] }
-tokio-cron-scheduler = "0.13.0"
-reqwest = "0.12.12"
-serde_yaml = "0.9.34-deprecated"
+tokio-cron-scheduler = "0.15.1"
+reqwest = "0.13.2"
+serde_yml = "0.0.12"
 dotenv = "0.15.0"
 quick-xml = "0.37.2"
-md5 = "0.7.0"
 log = "0.4.22"
 atom_syndication = "0.12.6"
 feed-rs = "2.3.1"
-bytes = "1.9.0"
 async-trait = "0.1.85"
 env_logger = "0.11.6"
 uuid = "1.11.0"
 openssl = { version = "0.10.72", features = ["vendored"] }
 new_string_template = "1.5.3"
-async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
 regex = "1.11.1"
 tonic = "0.12.3"
 url = "2.5.4"
@@ -37,12 +34,6 @@ mime = "0.3.17"
 mediatype = "0.19.18"
 [dependencies.nostrss_grpc]
 path = "../nostrss-grpc"
-
-[profile.release]
-strip = true  # Automatically strip symbols from the binary.
-opt-level = "z"  # Optimize for size.
-lto = true
-panic = "abort"
 
 [build-dependencies]
 tonic-build = "0.12.3"

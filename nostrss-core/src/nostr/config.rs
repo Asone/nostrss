@@ -436,7 +436,7 @@ impl NostrConfig {
                 return self;
             }
         };
-        let relays: Vec<Relay> = match serde_yaml::from_reader(file) {
+        let relays: Vec<Relay> = match serde_yml::from_reader(file) {
             Ok(relays) => relays,
             Err(e) => { 
                 error!("Error parsing relay yaml file : {}",e);
