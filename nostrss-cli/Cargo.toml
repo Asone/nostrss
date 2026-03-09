@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
-serde = "1.0.204"
+serde = "1.0.217"
 tokio = { version = "1.43.1", features = ["full"] }
 dotenv = "0.15.0"
 log = "0.4.22"
@@ -19,8 +19,3 @@ bech32 = "0.11.0"
 [dependencies.nostrss_grpc]
 path = "../nostrss-grpc"
 
-[profile.release]
-strip = true  # Automatically strip symbols from the binary.
-opt-level = "z"  # Optimize for size.
-lto = true
-panic = "abort"

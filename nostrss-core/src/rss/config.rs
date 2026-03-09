@@ -184,7 +184,7 @@ impl RssConfig {
                 return self;
             }
         };
-        let feeds: Vec<Feed> = match serde_yaml::from_reader(file) {
+        let feeds: Vec<Feed> = match serde_yml::from_reader(file) {
             Ok(feeds) => feeds,
             Err(e) => {
                 error!("Error parsing yaml feed file : {}", e);
@@ -249,7 +249,7 @@ impl RssConfig {
 
         let file = File::create(path).unwrap();
         let writer = std::io::BufWriter::new(file);
-        let result = serde_yaml::to_writer(writer, &feeds);
+        let result = serde_yml::to_writer(writer, &feeds);
 
         match result {
             Ok(_) => true,
