@@ -4,7 +4,7 @@ on:
   push:
     branches: [ '*' ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,26 +14,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: ⚒ Install rust toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-          toolchain: 1.83
-          override: true
+          toolchain: "1.85"
           components: rustc
+
     - name: Install protobuf dependency
       run: sudo apt-get -y install protobuf-compiler
+
     - name: ⚡ Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry
           ~/.cargo/git
           target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
     - name: 🏗 Build
       run: cargo build --verbose
+
     - name: 🎯 Run tests
       env:
         RUST_TEST_THREADS: 1
