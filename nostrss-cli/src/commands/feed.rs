@@ -238,7 +238,7 @@ impl FeedCommandsHandler {
     }
 }
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
 
     #[test]
