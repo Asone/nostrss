@@ -86,7 +86,10 @@ pub async fn schedule(
     let job = match job {
         Ok(j) => j,
         Err(e) => {
-            error!("Failed to create scheduler job for feed '{}': {:?}", feed.id, e);
+            error!(
+                "Failed to create scheduler job for feed '{}': {:?}",
+                feed.id, e
+            );
             return Err(e);
         }
     };
@@ -226,7 +229,10 @@ impl RssNostrJob {
                                 }
                             }
                             Err(e) => {
-                                error!("Failed to build Nostr event for feed '{}': {:?}", feed.id, e);
+                                error!(
+                                    "Failed to build Nostr event for feed '{}': {:?}",
+                                    feed.id, e
+                                );
                                 continue;
                             }
                         };

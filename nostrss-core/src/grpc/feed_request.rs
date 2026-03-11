@@ -45,8 +45,7 @@ impl FeedRequestHandler {
     ) -> Result<Response<AddFeedResponse>, Status> {
         let data = request.into_inner();
         let save = data.save();
-        let feed = Feed::try_from(data.feed)
-            .map_err(|e| Status::new(Code::InvalidArgument, e))?;
+        let feed = Feed::try_from(data.feed).map_err(|e| Status::new(Code::InvalidArgument, e))?;
         let map = Arc::new(Mutex::new(app.feeds_map.clone()));
         let profiles = app.get_profiles().await;
         let client = app.nostr_service.get_client().await;

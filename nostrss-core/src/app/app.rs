@@ -84,7 +84,11 @@ impl App {
             let keys = match Keys::parse(profile.private_key.as_str()) {
                 Ok(k) => k,
                 Err(e) => {
-                    log::warn!("Skipping profile '{}': invalid private key: {:?}", &profile_id, e);
+                    log::warn!(
+                        "Skipping profile '{}': invalid private key: {:?}",
+                        &profile_id,
+                        e
+                    );
                     continue;
                 }
             };
@@ -97,7 +101,9 @@ impl App {
             );
             info!(
                 "bech32 public key : {:?}",
-                &profile_keys.to_bech32().unwrap_or_else(|_| "unknown".to_string())
+                &profile_keys
+                    .to_bech32()
+                    .unwrap_or_else(|_| "unknown".to_string())
             );
         }
 
