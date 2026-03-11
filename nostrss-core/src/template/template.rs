@@ -3,11 +3,30 @@ use feed_rs::model::Entry;
 use log::error;
 use new_string_template::{error::TemplateError, template::Template};
 use std::env;
+use std::fmt;
 use std::{collections::HashMap, fs};
 
 #[derive(Debug)]
 pub enum TemplateParserError {
     LoadError,
+    EnvVarError,
+    RenderError(TemplateError),
+}
+
+impl fmt::Display for TemplateParserError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TemplateParserError::LoadError => write!(f, "Failed to load template file"),
+            TemplateParserError::EnvVarError => write!(f, "DEFAULT_TEMPLATE env var not set"),
+            TemplateParserError::RenderError(e) => write!(f, "Template render error: {}", e),
+        }
+    }
+}
+
+impl From<TemplateError> for TemplateParserError {
+    fn from(e: TemplateError) -> Self {
+        TemplateParserError::RenderError(e)
+    }
 }
 
 /// Provides template rendering to the application
@@ -29,24 +48,24 @@ impl TemplateProcessor {
                     }
                 }
             }
-            None => Ok(Self::get_default_env_template()),
+            None => Self::get_default_env_template(),
         }
     }
 
     // Parses template from environment
-    fn get_default_env_template() -> String {
+    fn get_default_env_template() -> Result<String, TemplateParserError> {
         match env::var("DEFAULT_TEMPLATE") {
-            Ok(val) => val,
+            Ok(val) => Ok(val),
             Err(e) => {
                 error!("{}", e);
-                panic!();
+                Err(TemplateParserError::EnvVarError)
             }
         }
     }
 
     // Parses template with data
-    pub fn parse(data: Feed, entry: Entry) -> Result<String, TemplateError> {
-        let template = Self::load_template(data.clone().template).unwrap();
+    pub fn parse(data: Feed, entry: Entry) -> Result<String, TemplateParserError> {
+        let template = Self::load_template(data.clone().template)?;
         let mut map = Self::parse_entry_to_hashmap(entry);
 
         map.insert("name", data.name.clone());
@@ -61,7 +80,7 @@ impl TemplateProcessor {
 
         let templ = Template::new(template);
 
-        templ.render(&map)
+        templ.render(&map).map_err(TemplateParserError::from)
     }
 
     // created a HashMap from the entry data
