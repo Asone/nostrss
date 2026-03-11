@@ -44,5 +44,5 @@ jobs:
 
     - name: 🔒 Security audit
       run: |
-        cargo install cargo-audit --quiet
+        cargo install cargo-audit --quiet --locked
         cargo audit
