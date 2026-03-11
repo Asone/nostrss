@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use core::panic;
-use log::warn;
 use nostr_sdk::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{env, path::Path};
@@ -303,8 +302,7 @@ impl Profile {
         match env::var("NOSTR_PK") {
             Ok(val) => val,
             Err(_) => {
-                warn!("No private key found for Nostr. Generating random keys...");
-                panic!("No default profile key defined. Declare using NOSTR_PK in env file.");
+                panic!("No default profile key defined. Declare NOSTR_PK in your env file.");
             }
         }
     }
