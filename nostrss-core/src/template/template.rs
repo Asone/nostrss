@@ -75,7 +75,11 @@ impl TemplateProcessor {
         };
 
         map.insert("title", title);
-        let url = data.links.first().map(|l| l.href.clone()).unwrap_or_default();
+        let url = data
+            .links
+            .first()
+            .map(|l| l.href.clone())
+            .unwrap_or_default();
         map.insert("url", url);
 
         let summary = match data.summary {
