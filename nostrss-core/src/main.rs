@@ -97,7 +97,7 @@ async fn main() -> Result<()> {
         let scheduler_rule = f.schedule.as_str();
         let profiles = app_lock.get_profiles().await;
         // Call job builder
-        let job = schedule(
+        let job = match schedule(
             scheduler_rule,
             feed,
             maps,
@@ -105,7 +105,14 @@ async fn main() -> Result<()> {
             profiles,
             app_config_arc,
         )
-        .await;
+        .await
+        {
+            Ok(j) => j,
+            Err(e) => {
+                log::error!("Failed to schedule feed '{}': {:?}", f.name, e);
+                continue;
+            }
+        };
         info!("Job id for feed {:?}: {:?}", f.name, job.guid());
 
         // Load job reference in jobs map

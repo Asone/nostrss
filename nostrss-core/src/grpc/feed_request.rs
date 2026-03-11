@@ -1,3 +1,4 @@
+use log::error;
 use nostrss_grpc::grpc::{
     self, AddFeedRequest, AddFeedResponse, DeleteFeedRequest, DeleteFeedResponse, FeedInfoRequest,
     FeedInfoResponse, FeedItem, FeedsListRequest, FeedsListResponse,
@@ -44,14 +45,14 @@ impl FeedRequestHandler {
     ) -> Result<Response<AddFeedResponse>, Status> {
         let data = request.into_inner();
         let save = data.save();
-        let feed = Feed::from(data.feed);
+        let feed = Feed::try_from(data.feed).map_err(|e| Status::new(Code::InvalidArgument, e))?;
         let map = Arc::new(Mutex::new(app.feeds_map.clone()));
         let profiles = app.get_profiles().await;
         let client = app.nostr_service.get_client().await;
         let config = app.get_config().await;
         app.rss.feeds.push(feed.clone());
 
-        let job = schedule(
+        let job = match schedule(
             feed.schedule.clone().as_str(),
             feed.clone(),
             map,
@@ -59,7 +60,14 @@ impl FeedRequestHandler {
             profiles,
             config,
         )
-        .await;
+        .await
+        {
+            Ok(j) => j,
+            Err(e) => {
+                error!("Failed to schedule feed '{}': {:?}", feed.id, e);
+                return Err(Status::new(Code::Internal, "Failed to schedule feed"));
+            }
+        };
 
         _ = app.rss.feeds_jobs.insert(feed.id.clone(), job.guid());
         _ = app.rss.scheduler.add(job).await;

@@ -3,7 +3,7 @@ use log::{debug, error};
 use nostr_sdk::{Client, EventBuilder, JsonUtil, Keys, Tag};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard};
-use tokio_cron_scheduler::Job;
+use tokio_cron_scheduler::{Job, JobSchedulerError};
 
 use crate::{
     app::app::AppConfig,
@@ -21,7 +21,7 @@ pub async fn schedule(
     client: Arc<Mutex<Client>>,
     profiles: Arc<Mutex<HashMap<String, Profile>>>,
     app_config: Arc<Mutex<AppConfig>>,
-) -> Job {
+) -> Result<Job, JobSchedulerError> {
     // Create a copy of the map arc that will be solely used into the job
     let map_job_copy = Arc::clone(&map);
 
@@ -86,8 +86,11 @@ pub async fn schedule(
     let job = match job {
         Ok(j) => j,
         Err(e) => {
-            println!("{:?}", e);
-            panic!()
+            error!(
+                "Failed to create scheduler job for feed '{}': {:?}",
+                feed.id, e
+            );
+            return Err(e);
         }
     };
 
@@ -99,7 +102,7 @@ pub async fn schedule(
     let initial_snapshot = feed_snapshot(f).await;
     map_lock.insert(job.guid().to_string(), initial_snapshot);
 
-    job
+    Ok(job)
 }
 
 // Retrieves a feed and returns a vec of ids for the feed.
@@ -190,9 +193,8 @@ impl RssNostrJob {
                         let keys = match Keys::parse(profile.private_key.as_str()) {
                             Ok(val) => val,
                             Err(e) => {
-                                println!("{:?}", e);
-                                // warn!("Invalid private key found for Nostr. Generating random keys...");
-                                panic!("Invalid private key found. This should not happen.");
+                                error!("Invalid private key for profile '{}': {:?}", profile_id, e);
+                                continue;
                             }
                         };
 
@@ -226,7 +228,13 @@ impl RssNostrJob {
                                     },
                                 }
                             }
-                            Err(_) => panic!("Note couldn't be sent"),
+                            Err(e) => {
+                                error!(
+                                    "Failed to build Nostr event for feed '{}': {:?}",
+                                    feed.id, e
+                                );
+                                continue;
+                            }
                         };
 
                         // _ = RssNostrJob::client_clean(client,profile).await;

@@ -81,7 +81,17 @@ impl App {
                 profile.relays = default_relays.clone();
             }
 
-            let keys = Keys::parse(profile.private_key.as_str()).unwrap();
+            let keys = match Keys::parse(profile.private_key.as_str()) {
+                Ok(k) => k,
+                Err(e) => {
+                    log::warn!(
+                        "Skipping profile '{}': invalid private key: {:?}",
+                        &profile_id,
+                        e
+                    );
+                    continue;
+                }
+            };
             let profile_keys = &keys.public_key();
 
             info!(
@@ -91,7 +101,9 @@ impl App {
             );
             info!(
                 "bech32 public key : {:?}",
-                &profile_keys.to_bech32().unwrap()
+                &profile_keys
+                    .to_bech32()
+                    .unwrap_or_else(|_| "unknown".to_string())
             );
         }
 

@@ -64,7 +64,8 @@ mod grpctest_utils {
                 app.get_profiles().await,
                 app.get_config().await,
             )
-            .await;
+            .await
+            .expect("Failed to schedule feed in mock_app");
 
             _ = &app.rss.feeds_jobs.insert(feed.id, job.guid());
         }

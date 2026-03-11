@@ -100,9 +100,10 @@ impl NostrService {
 
         debug!("{:?}", metadata);
 
-        let event = EventBuilder::metadata(&metadata)
-            .to_event(&profile.get_keys())
-            .unwrap();
+        let event = match EventBuilder::metadata(&metadata).to_event(&profile.get_keys()) {
+            Ok(e) => e,
+            Err(_) => return Err(NostrServiceError::BroadcastError),
+        };
 
         // Broadcast metadata (NIP-01) to relays
         let result = self.client.clone().send_event(event).await;
