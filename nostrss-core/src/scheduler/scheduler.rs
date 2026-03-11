@@ -290,9 +290,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_nip_48_signal() {}
-
-    #[test]
     fn test_get_tags() {
         let relay_ids = ["test".to_string()].to_vec();
         let relays = [
@@ -329,8 +326,7 @@ mod tests {
     #[test]
     fn test_nip_48() {
         let guid = "https://www.test.com";
-        let mut tags: Vec<Tag> = [].to_vec();
-        let nip_48 = RssNostrJob::get_nip48(guid.clone().to_string());
+        let nip_48 = RssNostrJob::get_nip48(guid.to_string());
 
         assert_eq!(nip_48.kind(), TagKind::Proxy);
     }
