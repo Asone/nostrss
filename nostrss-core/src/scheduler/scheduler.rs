@@ -2,7 +2,7 @@ use feed_rs::model::Entry;
 use log::{debug, error};
 use nostr_sdk::{Client, EventBuilder, JsonUtil, Keys, Tag};
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::Mutex;
 use tokio_cron_scheduler::{Job, JobSchedulerError};
 
 use crate::{
@@ -44,34 +44,35 @@ pub async fn schedule(
         let app_config_arc = Arc::clone(&app_config);
         let client_arc = Arc::clone(&client);
         Box::pin(async move {
-            let mut map_lock = map_arc.lock().await;
-            let feed = feed.clone();
-            let uuid = &uuid.to_string();
-            let mut map = map_lock[uuid].clone();
+            let uuid = uuid.to_string();
 
-            let client_lock = client_arc.lock().await;
+            // Clone all needed state out from behind locks before doing any I/O.
+            // This keeps locks held only for the brief clone, not for the full
+            // HTTP fetch + Nostr publish duration.
+            let mut map = map_arc.lock().await.get(&uuid).cloned().unwrap_or_default();
+            let profiles_snapshot = profiles_arc.lock().await.clone();
+            let dry_run = app_config_arc.lock().await.dry_run;
+            let client = client_arc.lock().await.clone();
 
-            let profiles_lock = profiles_arc.lock().await;
-            let app_config_lock = app_config_arc.lock().await;
+            // HTTP fetch — no locks held
             match RssParser::get_items(feed.url.to_string()).await {
                 Ok(entries) => {
-                    // Calls the method that
                     RssNostrJob::process(
                         feed.clone(),
                         profile_ids,
                         entries,
                         &mut map,
-                        client_lock,
-                        profiles_lock,
-                        app_config_lock,
+                        &client,
+                        &profiles_snapshot,
+                        dry_run,
                     )
                     .await;
 
-                    if feed.cache_size.is_some() {
-                        map.truncate(feed.cache_size.unwrap());
+                    if let Some(cache_size) = feed.cache_size {
+                        map.truncate(cache_size);
                     }
 
-                    _ = &map_lock.insert(uuid.to_string(), map);
+                    map_arc.lock().await.insert(uuid, map);
                 }
                 Err(_) => {
                     error!(
@@ -130,11 +131,7 @@ pub async fn feed_snapshot(feed: Feed) -> Vec<String> {
 pub struct RssNostrJob {}
 
 impl RssNostrJob {
-    pub async fn _client_prepare(
-        _client: MutexGuard<'_, Client>,
-        _profile: MutexGuard<'_, Profile>,
-    ) {
-    }
+    pub async fn _client_prepare(_client: &Client, _profile: &Profile) {}
 
     pub async fn _client_clean(_client: Client) {}
 
@@ -143,9 +140,9 @@ impl RssNostrJob {
         profile_ids: Vec<String>,
         entries: Vec<Entry>,
         map: &mut Vec<String>,
-        client: MutexGuard<'_, Client>,
-        profiles_lock: MutexGuard<'_, HashMap<String, Profile>>,
-        app_config_lock: MutexGuard<'_, AppConfig>,
+        client: &Client,
+        profiles: &HashMap<String, Profile>,
+        dry_run: bool,
     ) {
         for entry in entries {
             let entry_id = &entry.id;
@@ -178,7 +175,7 @@ impl RssNostrJob {
                         // Declare NIP-48.
                         tags.push(Self::get_nip48(entry.id.clone()));
 
-                        let profile = profiles_lock.get(profile_id);
+                        let profile = profiles.get(profile_id);
 
                         if profile.is_none() {
                             error!(
@@ -213,21 +210,17 @@ impl RssNostrJob {
                             .to_pow_event(&keys, profile.pow_level);
 
                         match event {
-                            Ok(e) => {
-                                let dry_run_flag = app_config_lock.dry_run;
-
-                                match dry_run_flag {
-                                    true => {
-                                        log::info!("dry-mode on : {:?}", e.as_json());
-                                    }
-                                    false => match client.send_event(e).await {
-                                        Ok(event_id) => {
-                                            log::info!("Entry published with id {}", event_id)
-                                        }
-                                        Err(e) => log::error!("Error publishing entry : {}", e),
-                                    },
+                            Ok(e) => match dry_run {
+                                true => {
+                                    log::info!("dry-mode on : {:?}", e.as_json());
                                 }
-                            }
+                                false => match client.send_event(e).await {
+                                    Ok(event_id) => {
+                                        log::info!("Entry published with id {}", event_id)
+                                    }
+                                    Err(e) => log::error!("Error publishing entry : {}", e),
+                                },
+                            },
                             Err(e) => {
                                 error!(
                                     "Failed to build Nostr event for feed '{}': {:?}",

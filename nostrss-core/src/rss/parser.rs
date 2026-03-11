@@ -4,6 +4,13 @@ use feed_rs::model::{Entry, Feed as RemoteFeed};
 use log::info;
 use std::error::Error;
 use std::fmt;
+use std::sync::OnceLock;
+
+static HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+
+fn http_client() -> &'static reqwest::Client {
+    HTTP_CLIENT.get_or_init(reqwest::Client::new)
+}
 
 /// RSS parsing processor
 pub struct RssParser {}
@@ -14,7 +21,7 @@ impl RssParser {
         info!("requesting {:?}", url);
 
         // fetch
-        let request_response = match reqwest::get(url).await {
+        let request_response = match http_client().get(&url).send().await {
             Ok(value) => value,
             Err(_) => {
                 return Err(RssParserError::new("Error while fetching Rss Feed"));
