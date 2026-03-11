@@ -87,17 +87,18 @@ impl ProfileRequestHandler {
         let delete_profile_inner = request.into_inner();
         let save = delete_profile_inner.save();
         let profile_id = &delete_profile_inner.id;
-        let profile = app.nostr_service.profiles.remove(profile_id.trim());
 
-        if profile.is_none() {
-            return Err(Status::new(Code::NotFound, "No profile with that id found"));
-        }
-
-        if profile_id == "default" {
+        if profile_id.trim() == "default" {
             return Err(Status::new(
                 Code::PermissionDenied,
                 "Default profile can not be deleted",
             ));
+        }
+
+        let profile = app.nostr_service.profiles.remove(profile_id.trim());
+
+        if profile.is_none() {
+            return Err(Status::new(Code::NotFound, "No profile with that id found"));
         }
 
         if save == true {
