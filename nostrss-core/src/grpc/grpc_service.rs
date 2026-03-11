@@ -25,8 +25,10 @@ pub struct NostrssServerService {
     pub app: Arc<Mutex<App>>,
 }
 
-impl From<FeedItem> for Feed {
-    fn from(value: FeedItem) -> Self {
+impl TryFrom<FeedItem> for Feed {
+    type Error = String;
+
+    fn try_from(value: FeedItem) -> Result<Self, Self::Error> {
         let url = value.url.as_str();
 
         let cache_size = match value.cache_size {
@@ -36,27 +38,24 @@ impl From<FeedItem> for Feed {
             },
             None => None,
         };
-        // let cache_size = match usize::try_from(value.cache_size) {
-        //     Ok(result) => Some(result),
-        //     Err(_) => Self::default_cache_size(),
-        // };
 
         let pow_level = match u8::try_from(value.pow_level) {
             Ok(result) => result,
             Err(_) => Self::default_pow_level(),
         };
 
-        Self {
+        Ok(Self {
             id: value.id,
             name: value.name,
-            url: nostr_sdk::Url::from_str(url).unwrap(),
+            url: nostr_sdk::Url::from_str(url)
+                .map_err(|e| format!("Invalid feed URL '{}': {}", url, e))?,
             schedule: value.schedule,
             profiles: Some(value.profiles),
             tags: Some(value.tags),
             template: value.template,
             cache_size,
             pow_level,
-        }
+        })
     }
 }
 
@@ -247,7 +246,7 @@ mod tests {
             save: Some(false),
         };
 
-        let feed = Feed::from(request.feed);
+        let feed = Feed::try_from(request.feed).unwrap();
 
         let expected = "test";
         assert_eq!(feed.id.as_str(), expected);
