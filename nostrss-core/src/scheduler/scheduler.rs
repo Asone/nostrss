@@ -49,10 +49,7 @@ pub async fn schedule(
             // Clone all needed state out from behind locks before doing any I/O.
             // This keeps locks held only for the brief clone, not for the full
             // HTTP fetch + Nostr publish duration.
-            let mut map = map_arc.lock().await
-                .get(&uuid)
-                .cloned()
-                .unwrap_or_default();
+            let mut map = map_arc.lock().await.get(&uuid).cloned().unwrap_or_default();
             let profiles_snapshot = profiles_arc.lock().await.clone();
             let dry_run = app_config_arc.lock().await.dry_run;
             let client = client_arc.lock().await.clone();
@@ -213,19 +210,17 @@ impl RssNostrJob {
                             .to_pow_event(&keys, profile.pow_level);
 
                         match event {
-                            Ok(e) => {
-                                match dry_run {
-                                    true => {
-                                        log::info!("dry-mode on : {:?}", e.as_json());
-                                    }
-                                    false => match client.send_event(e).await {
-                                        Ok(event_id) => {
-                                            log::info!("Entry published with id {}", event_id)
-                                        }
-                                        Err(e) => log::error!("Error publishing entry : {}", e),
-                                    },
+                            Ok(e) => match dry_run {
+                                true => {
+                                    log::info!("dry-mode on : {:?}", e.as_json());
                                 }
-                            }
+                                false => match client.send_event(e).await {
+                                    Ok(event_id) => {
+                                        log::info!("Entry published with id {}", event_id)
+                                    }
+                                    Err(e) => log::error!("Error publishing entry : {}", e),
+                                },
+                            },
                             Err(e) => {
                                 error!(
                                     "Failed to build Nostr event for feed '{}': {:?}",
