@@ -2,12 +2,7 @@
 
 use log::{error, info};
 use serde::{Deserialize, Serialize};
-use std::{
-    env::{self, VarError},
-    fs::File,
-    path::Path,
-    str::FromStr,
-};
+use std::{env, fs::File, path::Path, str::FromStr};
 
 #[derive(Debug)]
 pub enum RssConfigErrors {
@@ -73,7 +68,7 @@ impl Feed {
     pub fn default_cache_size() -> Option<usize> {
         match env::var("DEFAULT_CACHE_SIZE") {
             Ok(r) => Some(r.parse::<usize>().unwrap_or(1000)),
-            Err(e) => None,
+            Err(_) => None,
         }
         // let default_value = env::var("DEFAULT_CACHE_SIZE")
         //     .unwrap_or("100".to_string())
