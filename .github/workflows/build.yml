@@ -41,3 +41,8 @@ jobs:
       env:
         RUST_TEST_THREADS: 1
       run: cargo test --verbose
+
+    - name: 🔒 Security audit
+      run: |
+        cargo install cargo-audit --quiet
+        cargo audit
