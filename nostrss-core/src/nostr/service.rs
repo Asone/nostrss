@@ -36,7 +36,7 @@ pub struct NostrService {
 impl Default for NostrService {
     fn default() -> Self {
         Self {
-            client: Client::new(&Keys::generate()),
+            client: Client::new(Keys::generate()),
             default_relays: HashMap::new(),
             profiles: HashMap::new(),
         }
@@ -100,19 +100,19 @@ impl NostrService {
 
         debug!("{:?}", metadata);
 
-        let event = match EventBuilder::metadata(&metadata).to_event(&profile.get_keys()) {
+        let event = match EventBuilder::metadata(&metadata).sign_with_keys(&profile.get_keys()) {
             Ok(e) => e,
             Err(_) => return Err(NostrServiceError::BroadcastError),
         };
 
         // Broadcast metadata (NIP-01) to relays
-        let result = self.client.clone().send_event(event).await;
+        let result = self.client.clone().send_event(&event).await;
 
         if result.is_err() {
             return Err(NostrServiceError::BroadcastError);
         }
 
-        Ok(result.unwrap())
+        Ok(result.unwrap().val)
     }
 
     pub async fn get_client(&self) -> Arc<Mutex<Client>> {

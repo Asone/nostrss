@@ -1,6 +1,6 @@
 use feed_rs::model::Entry;
 use log::{debug, error};
-use nostr_sdk::{Client, EventBuilder, JsonUtil, Keys, Tag};
+use nostr_sdk::{Client, EventBuilder, JsonUtil, Keys, Tag, TagStandard};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use tokio_cron_scheduler::{Job, JobSchedulerError};
@@ -206,17 +206,19 @@ impl RssNostrJob {
 
                         _ = &tags.append(&mut recommended_relays_tags);
 
-                        let event = EventBuilder::new(nostr_sdk::Kind::TextNote, &message, tags)
-                            .to_pow_event(&keys, profile.pow_level);
+                        let event = EventBuilder::new(nostr_sdk::Kind::TextNote, &message)
+                            .tags(tags)
+                            .pow(profile.pow_level)
+                            .sign_with_keys(&keys);
 
                         match event {
                             Ok(e) => match dry_run {
                                 true => {
                                     log::info!("dry-mode on : {:?}", e.as_json());
                                 }
-                                false => match client.send_event(e).await {
+                                false => match client.send_event(&e).await {
                                     Ok(event_id) => {
-                                        log::info!("Entry published with id {}", event_id)
+                                        log::info!("Entry published with id {}", event_id.val)
                                     }
                                     Err(e) => log::error!("Error publishing entry : {}", e),
                                 },
@@ -243,7 +245,7 @@ impl RssNostrJob {
 
         if feed_tags.is_some() {
             for tag in feed_tags.clone().unwrap() {
-                tags.push(Tag::Hashtag(tag.clone()));
+                tags.push(Tag::hashtag(tag.clone()));
             }
         }
         tags
@@ -252,10 +254,10 @@ impl RssNostrJob {
     fn get_nip48(guid: String) -> Tag {
         // Declare NIP-48.
         // NIP-48 : declares to be a proxy from an external signal (rss,activityPub)
-        Tag::Proxy {
+        Tag::from_standardized(TagStandard::Proxy {
             id: guid,
             protocol: nostr_sdk::prelude::Protocol::Rss,
-        }
+        })
     }
 
     fn get_recommended_relays(recommended_relays_ids: Vec<String>, relays: &[Relay]) -> Vec<Tag> {
@@ -266,7 +268,12 @@ impl RssNostrJob {
                 continue;
             }
 
-            let tag = Tag::RelayMetadata(r.unwrap().target.clone().into(), None);
+            let relay_target = r.unwrap().target.clone();
+            let relay_url = match nostr_sdk::RelayUrl::parse(&relay_target) {
+                Ok(u) => u,
+                Err(_) => continue,
+            };
+            let tag = Tag::relay_metadata(relay_url, None);
             relay_tags.push(tag);
         }
 
@@ -312,8 +319,9 @@ mod tests {
                 uppercase: false
             })
         );
-        assert_eq!(tag.as_vec()[0], "r");
-        assert_eq!(tag.as_vec()[1], "wss://nostr.up");
+        let tag_vec = tag.to_vec();
+        assert_eq!(tag_vec[0], "r");
+        assert_eq!(tag_vec[1], "wss://nostr.up");
     }
 
     #[test]
@@ -338,7 +346,8 @@ mod tests {
                 uppercase: false
             })
         );
-        assert_eq!(tag.as_vec()[0], "t");
-        assert_eq!(tag.as_vec()[1], "ad");
+        let tag_vec = tag.to_vec();
+        assert_eq!(tag_vec[0], "t");
+        assert_eq!(tag_vec[1], "ad");
     }
 }
