@@ -21,7 +21,7 @@ feed-rs = "2.3.1"
 async-trait = "0.1.85"
 env_logger = "0.11.6"
 uuid = "1.11.0"
-openssl = { version = "0.10.72", features = ["vendored"] }
+openssl = { version = "0.10.78", features = ["vendored"] }
 new_string_template = "1.5.3"
 regex = "1.11.1"
 tonic = { version = "0.14.5", features = ["transport"] }
